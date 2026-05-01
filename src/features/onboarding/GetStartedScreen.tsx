@@ -20,8 +20,122 @@ import { usePreferenceContext } from '@/shared/preferences';
 import { createShadow } from '@/shared/theme/shadows';
 
 interface GetStartedScreenProps {
-  onComplete: () => void;
+  onComplete: (role: 'electrician' | 'dealer' | 'user') => void;
 }
+
+// Animated product ticker — cycles through real SRV products inside the stat card
+const PRODUCTS = [
+  { label: 'Fan Box', color: '#E8453C', bg: '#FEE2E2' },
+  { label: 'Concealed Box', color: '#7C3AED', bg: '#EDE9FE' },
+  { label: 'Module Box', color: '#2563EB', bg: '#DBEAFE' },
+  { label: 'Junction Box', color: '#059669', bg: '#D1FAE5' },
+  { label: 'Change Over', color: '#D97706', bg: '#FEF3C7' },
+  { label: 'Bus Bar', color: '#0891B2', bg: '#CFFAFE' },
+  { label: 'Axial Fans', color: '#7C3AED', bg: '#EDE9FE' },
+  { label: 'Kitchen Fan', color: '#E8453C', bg: '#FEE2E2' },
+  { label: 'LED Flood Light', color: '#059669', bg: '#D1FAE5' },
+  { label: '5 Pin Multi Plug', color: '#2563EB', bg: '#DBEAFE' },
+  { label: '2 Pin Tops', color: '#D97706', bg: '#FEF3C7' },
+  { label: 'MCB Box', color: '#0891B2', bg: '#CFFAFE' },
+  { label: 'Switch Board', color: '#E8453C', bg: '#FEE2E2' },
+  { label: 'Ceiling Rose', color: '#7C3AED', bg: '#EDE9FE' },
+  { label: 'Batten Holder', color: '#059669', bg: '#D1FAE5' },
+  { label: 'Extension Board', color: '#2563EB', bg: '#DBEAFE' },
+  { label: 'Surface Box', color: '#D97706', bg: '#FEF3C7' },
+  { label: 'Conduit Box', color: '#0891B2', bg: '#CFFAFE' },
+  { label: 'Weatherproof Box', color: '#E8453C', bg: '#FEE2E2' },
+  { label: 'Round Box', color: '#7C3AED', bg: '#EDE9FE' },
+  { label: 'Modular Plate', color: '#059669', bg: '#D1FAE5' },
+  { label: 'Cable Clip', color: '#2563EB', bg: '#DBEAFE' },
+  { label: 'PVC Casing', color: '#D97706', bg: '#FEF3C7' },
+  { label: 'Exhaust Fan', color: '#0891B2', bg: '#CFFAFE' },
+  { label: 'Industrial Plug', color: '#E8453C', bg: '#FEE2E2' },
+];
+
+function ProductTickerCard() {
+  const [activeIdx, setActiveIdx] = useState(0);
+  const [bgIdx, setBgIdx] = useState(0); // bg changes after name exits
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+  const slideAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    let cancelled = false;
+    const interval = setInterval(() => {
+      if (cancelled) return;
+      Animated.parallel([
+        Animated.timing(fadeAnim, { toValue: 0, duration: 200, useNativeDriver: supportsNativeAnimatedDriver }),
+        Animated.timing(slideAnim, { toValue: -8, duration: 200, useNativeDriver: supportsNativeAnimatedDriver }),
+      ]).start(() => {
+        if (cancelled) return;
+        const next = (activeIdx + 1) % PRODUCTS.length;
+        setActiveIdx(next);
+        setBgIdx(next);
+        slideAnim.setValue(8);
+        Animated.parallel([
+          Animated.timing(fadeAnim, { toValue: 1, duration: 250, useNativeDriver: supportsNativeAnimatedDriver }),
+          Animated.spring(slideAnim, { toValue: 0, useNativeDriver: supportsNativeAnimatedDriver, tension: 70, friction: 9 }),
+        ]).start();
+      });
+    }, 1800);
+    return () => { cancelled = true; clearInterval(interval); };
+  }, [activeIdx, fadeAnim, slideAnim]);
+
+  const product = PRODUCTS[activeIdx];
+  const bgProduct = PRODUCTS[bgIdx];
+
+  return (
+    <View style={[tickerCardStyles.card, { backgroundColor: bgProduct.bg }]}>
+      {/* Pinned to top — never moves */}
+      <Text style={[tickerCardStyles.ourProducts, { color: bgProduct.color }]}>
+        Our Products
+      </Text>
+      {/* Centered in remaining space — only this animates */}
+      <View style={tickerCardStyles.nameWrap}>
+        <Animated.Text
+          style={[
+            tickerCardStyles.label,
+            { color: product.color, opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
+          ]}
+          numberOfLines={2}
+        >
+          {product.label}
+        </Animated.Text>
+      </View>
+    </View>
+  );
+}
+
+const tickerCardStyles = StyleSheet.create({
+  card: {
+    flex: 1.6,
+    borderRadius: 12,
+    minHeight: 56,
+    overflow: 'hidden',
+    paddingTop: 5,
+    paddingHorizontal: 6,
+    paddingBottom: 6,
+  },
+  ourProducts: {
+    fontSize: 7,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    opacity: 0.7,
+    textAlign: 'center',
+  },
+  nameWrap: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  label: {
+    fontSize: 9,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+    textAlign: 'center',
+    lineHeight: 12,
+  },
+});
 
 export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
   const { tx, theme, darkMode } = usePreferenceContext();
@@ -30,16 +144,13 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
   const isSmallScreen = screenWidth <= 360;
   const isMediumScreen = screenWidth > 360 && screenWidth <= 768;
   const isCompactScreen = screenWidth <= 380;
-  const topBarPaddingTop = isSmallScreen ? 28 : isMediumScreen ? 40 : 48;
-  const slidePaddingTop = isSmallScreen ? 0 : isMediumScreen ? 2 : 4;
-  const slideBottomGap = isSmallScreen ? 16 : isMediumScreen ? 14 : 12;
-  const bottomSectionPaddingTop = isSmallScreen ? 10 : isMediumScreen ? 12 : 16;
   const bottomSectionPaddingBottom = isSmallScreen ? 18 : isMediumScreen ? 24 : 28;
   const scrollRef = useRef<ScrollView>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [baseCardHeight, setBaseCardHeight] = useState<number | null>(null);
+  const [selectedAudience, setSelectedAudience] = useState<'user' | 'dealer' | 'electrician' | null>(
+    null
+  );
   const scrollX = useRef(new Animated.Value(0)).current;
-  const cardWidth = Math.min(screenWidth - 48, 460);
 
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
@@ -57,7 +168,7 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
   const sparkle8 = useRef(new Animated.Value(0)).current;
   const sparkleRotate = useRef(new Animated.Value(0)).current;
 
-  const totalSlides = 3;
+  const totalSlides = 4;
 
   // One-time entry animation
   useEffect(() => {
@@ -183,25 +294,49 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
     scrollRef.current?.scrollTo({ x: index * screenWidth, animated: true });
   };
 
-  const handleNext = () => {
-    if (currentIndex < totalSlides - 1) {
-      goToSlide(currentIndex + 1);
-    } else {
-      onComplete();
+  const handleRoleSelect = (audience: 'user' | 'dealer' | 'electrician') => {
+    setSelectedAudience(audience);
+    if (audience === 'user') {
+      goToSlide(1);
+      return;
     }
+
+    goToSlide(audience === 'dealer' ? 2 : 3);
   };
 
-  const handleSkip = () => {
-    onComplete();
+  const handleContinue = () => {
+    if (currentIndex === 2) {
+      onComplete('dealer');
+      return;
+    }
+
+    if (currentIndex === 3) {
+      onComplete('electrician');
+    }
   };
 
   const slideGradients = [
     { start: '#E8453C', end: '#FF6B6B', icon: 'star' as const },
+    { start: '#2563EB', end: '#60A5FA', icon: 'star' as const },
     { start: '#7C3AED', end: '#A78BFA', icon: 'refer' as const },
     { start: '#059669', end: '#34D399', icon: 'redeem' as const },
   ];
 
   const currentGradient = slideGradients[currentIndex];
+
+  useEffect(() => {
+    if (currentIndex !== 1 || selectedAudience !== 'user') {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      onComplete('user');
+    }, 1100);
+
+    return () => clearTimeout(timer);
+  }, [currentIndex, onComplete, selectedAudience]);
+
+  const showContinueButton = currentIndex === 2 || currentIndex === 3;
 
   // --- Slide 1: Individual animated sparkles from file 1, content from file 2 ---
   const Slide1 = () => {
@@ -317,69 +452,222 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
             {tx('North India Largest')}
           </Text>
 
+          <View style={styles.roleSelectorWrap}>
+            {/* Animated "Choose your profile" heading */}
+            <View style={styles.roleSelectorTitleRow}>
+              <View style={[styles.roleSelectorTitleLine, { backgroundColor: C.primary }]} />
+              <Text style={[styles.roleSelectorTitle, { color: theme.textPrimary }]}>
+                {tx('Choose your profile')}
+              </Text>
+              <View style={[styles.roleSelectorTitleLine, { backgroundColor: C.primary }]} />
+            </View>
+            <View style={styles.roleSelectorRow}>
+              {(
+                [
+                  {
+                    key: 'user' as const,
+                    label: tx('User'),
+                    sub: tx('Browse products'),
+                    image: require('../../../assets/user.png'),
+                    color: '#2563EB',
+                    bg: '#EFF6FF',
+                    activeBg: '#DBEAFE',
+                    border: '#93C5FD',
+                  },
+                  {
+                    key: 'dealer' as const,
+                    label: tx('Dealer'),
+                    sub: tx('Manage network'),
+                    image: require('../../../assets/new dealer.png'),
+                    color: '#7C3AED',
+                    bg: '#F5F3FF',
+                    activeBg: '#EDE9FE',
+                    border: '#C4B5FD',
+                  },
+                  {
+                    key: 'electrician' as const,
+                    label: tx('Electrician'),
+                    sub: tx('Scan & earn'),
+                    image: require('../../../assets/new electrician.png'),
+                    color: '#059669',
+                    bg: '#ECFDF5',
+                    activeBg: '#D1FAE5',
+                    border: '#6EE7B7',
+                  },
+                ] as const
+              ).map((role, idx) => {
+                const isActive = selectedAudience === role.key;
+                const scaleAnim = useRef(new Animated.Value(1)).current;
+                const entryAnim = useRef(new Animated.Value(0)).current;
+                const entrySlide = useRef(new Animated.Value(20)).current;
+
+                useEffect(() => {
+                  Animated.parallel([
+                    Animated.timing(entryAnim, {
+                      toValue: 1,
+                      duration: 400,
+                      delay: 120 + idx * 100,
+                      useNativeDriver: supportsNativeAnimatedDriver,
+                    }),
+                    Animated.spring(entrySlide, {
+                      toValue: 0,
+                      delay: 120 + idx * 100,
+                      useNativeDriver: supportsNativeAnimatedDriver,
+                      tension: 60,
+                      friction: 9,
+                    }),
+                  ]).start();
+                }, [entryAnim, entrySlide]);
+
+                const handlePressIn = () => {
+                  Animated.spring(scaleAnim, {
+                    toValue: 0.93,
+                    useNativeDriver: supportsNativeAnimatedDriver,
+                    tension: 120,
+                    friction: 8,
+                  }).start();
+                };
+                const handlePressOut = () => {
+                  Animated.spring(scaleAnim, {
+                    toValue: 1,
+                    useNativeDriver: supportsNativeAnimatedDriver,
+                    tension: 80,
+                    friction: 6,
+                  }).start();
+                };
+
+                return (
+                  <Pressable
+                    key={role.key}
+                    onPress={() => handleRoleSelect(role.key)}
+                    onPressIn={handlePressIn}
+                    onPressOut={handlePressOut}
+                    style={{ flex: 1 }}
+                  >
+                    <Animated.View
+                      style={{
+                        transform: [{ scale: scaleAnim }, { translateY: entrySlide }],
+                        opacity: entryAnim,
+                      }}
+                    >
+                      <View
+                        style={[
+                          styles.roleCard,
+                          {
+                            borderColor: isActive ? role.color : role.border,
+                            borderWidth: isActive ? 2 : 1,
+                          },
+                        ]}
+                      >
+                        <Image
+                          source={role.image}
+                          style={[
+                            styles.roleCardImage,
+                            role.key === 'electrician' && styles.roleCardImageCover,
+                          ]}
+                          resizeMode="cover"
+                        />
+                        {isActive && (
+                          <View style={[styles.roleCardCheck, { backgroundColor: role.color }]}>
+                            <Text style={styles.roleCardCheckText}>✓</Text>
+                          </View>
+                        )}
+                      </View>
+
+                      {/* Stylish label below card */}
+                      <View style={styles.roleCardLabelWrap}>
+                        <View
+                          style={[
+                            styles.roleCardPill,
+                            {
+                              backgroundColor: isActive ? role.color : role.bg,
+                              borderColor: isActive ? role.color : role.border,
+                            },
+                          ]}
+                        >
+                          <Text
+                            numberOfLines={1}
+                            adjustsFontSizeToFit
+                            style={[styles.roleCardLabel, { color: isActive ? '#fff' : role.color }]}
+                          >
+                            {role.label}
+                          </Text>
+                        </View>
+                        <Text style={[styles.roleCardSub, { color: isActive ? role.color : '#94A3B8' }]}>
+                          {role.sub}
+                        </Text>
+                      </View>
+                    </Animated.View>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+
           <View style={styles.statsHighlightRow}>
-            <View style={[styles.statsHighlightCard, { backgroundColor: C.primaryLight }]}>
+            <View style={[styles.statsHighlightCard, styles.statsHighlightCardSmall, { backgroundColor: C.primaryLight }]}>
               <Text style={[styles.statsHighlightNum, { color: C.primary }]}>25+</Text>
               <Text style={[styles.statsHighlightLabel, { color: C.primary }]}>{tx('Years')}</Text>
             </View>
-            <View style={[styles.statsHighlightCard, { backgroundColor: C.goldLight }]}>
+            <ProductTickerCard />
+            <View style={[styles.statsHighlightCard, styles.statsHighlightCardSmall, { backgroundColor: C.goldLight }]}>
               <Text style={[styles.statsHighlightNum, { color: C.gold }]}>250+</Text>
               <Text style={[styles.statsHighlightLabel, { color: C.gold }]}>{tx('Products')}</Text>
             </View>
-            <View style={[styles.statsHighlightCard, { backgroundColor: C.tealLight }]}>
-              <Text style={[styles.statsHighlightNum, { color: C.teal }]}>100%</Text>
-              <Text style={[styles.statsHighlightLabel, { color: C.teal }]}>
-                {tx('Made in India')}
-              </Text>
-            </View>
           </View>
 
-          <View style={styles.features}>
-            <View style={[styles.featureItem, { backgroundColor: theme.bg }]}>
-              <View style={[styles.featureIcon, { backgroundColor: C.primaryLight }]}>
-                <AppIcon name="building" size={20} color={C.primary} />
-              </View>
-              <View style={styles.featureText}>
-                <Text style={[styles.featureTitle, { color: theme.textPrimary }]}>
-                  {tx('Manufacturing')}
-                </Text>
-                <Text style={[styles.featureSub, { color: theme.textMuted }]}>
-                  {tx('Premium quality products')}
-                </Text>
-              </View>
-            </View>
-            <View style={[styles.featureItem, { backgroundColor: theme.bg }]}>
-              <View style={[styles.featureIcon, { backgroundColor: C.tealLight }]}>
-                <AppIcon name="offer" size={20} color={C.teal} />
-              </View>
-              <View style={styles.featureText}>
-                <Text style={[styles.featureTitle, { color: theme.textPrimary }]}>
-                  {tx('Smart Product Range')}
-                </Text>
-                <Text style={[styles.featureSub, { color: theme.textMuted }]}>
-                  {tx('Innovative designs for modern homes')}
-                </Text>
-              </View>
-            </View>
-          </View>
+          <Text style={[styles.trustText, { color: C.gold }]}>
+            ✦ {tx('25 Years of Trust & Improvement')} ✦
+          </Text>
 
-          <View style={styles.pills}>
-            <View style={[styles.pill, { backgroundColor: C.primaryLight }]}>
-              <AppIcon name="star" size={12} color={C.primary} />
-              <Text style={[styles.pillText, { color: C.primary }]}>{tx('ISO Certified')}</Text>
-            </View>
-            <View style={[styles.pill, { backgroundColor: C.goldLight }]}>
-              <AppIcon name="location" size={12} color={C.gold} />
-              <Text style={[styles.pillText, { color: C.gold }]}>{tx('Pan India Delivery')}</Text>
-            </View>
-          </View>
         </View>
       </View>
     );
   };
 
-  // --- Slide 2: From file 2 ---
-  const Slide2 = ({
+  const Slide2 = () => (
+    <View>
+      <View style={[styles.bannerHeader, styles.userBannerHeader]}>
+        <View style={styles.userHeroBadge}>
+          <AppIcon name="star" size={26} color="#2563EB" />
+        </View>
+      </View>
+
+      <View style={[styles.cardBody, isCompactScreen && styles.cardBodyCompact]}>
+        <Text style={[styles.centeredChip, { color: '#2563EB' }]}>{tx('For Every Home User')}</Text>
+        <Text
+          style={[
+            styles.cardTitle,
+            isCompactScreen && styles.cardTitleCompact,
+            { color: theme.textPrimary },
+          ]}
+        >
+          {tx('Opening SRV Home Experience')}
+        </Text>
+        <Text
+          style={[
+            styles.cardDesc,
+            isCompactScreen && styles.cardDescCompact,
+            { color: theme.textSecondary },
+          ]}
+        >
+          {tx('Taking you directly to the app home screen')}
+        </Text>
+
+        <View style={styles.userInfoCard}>
+          <Text style={[styles.userInfoTitle, { color: theme.textPrimary }]}>
+            {tx('No login needed right now')}
+          </Text>
+          <Text style={[styles.userInfoText, { color: theme.textMuted }]}>
+            {tx('You will be redirected automatically in a moment.')}
+          </Text>
+        </View>
+      </View>
+    </View>
+  );
+
+  // --- Slide 3: Dealer ---
+  const Slide3 = ({
     gradient,
   }: {
     gradient: { start: string; end: string; icon: 'star' | 'refer' | 'redeem' };
@@ -583,8 +871,8 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
     </View>
   );
 
-  // --- Slide 3: From file 2 ---
-  const Slide3 = ({
+  // --- Slide 4: Electrician ---
+  const Slide4 = ({
     gradient,
   }: {
     gradient: { start: string; end: string; icon: 'star' | 'refer' | 'redeem' };
@@ -786,20 +1074,12 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
   );
 
   return (
-    <View
-      style={[
-        styles.container,
-        { backgroundColor: darkMode ? '#0F172A' : '#F8FAFC', paddingTop: insets.top },
-      ]}
-    >
-      <View style={[styles.topBar, { paddingTop: topBarPaddingTop }]}>
-        <View style={{ width: 60 }} />
-      </View>
-
+    <View style={[styles.container, { backgroundColor: darkMode ? '#0F172A' : '#F8FAFC' }]}>
       <Animated.ScrollView
         ref={scrollRef}
         horizontal
         pagingEnabled
+        scrollEnabled={false}
         snapToInterval={screenWidth}
         snapToAlignment="start"
         disableIntervalMomentum
@@ -815,190 +1095,115 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
         scrollEventThrottle={16}
         decelerationRate="normal"
         style={styles.slider}
-        contentContainerStyle={{ width: screenWidth * totalSlides, paddingBottom: slideBottomGap }}
+        contentContainerStyle={{ width: screenWidth * totalSlides }}
       >
-        {[0, 1, 2].map((i) => (
-          <View key={i} style={[styles.slide, { width: screenWidth, paddingTop: slidePaddingTop }]}>
-            {(() => {
-              const inputRange = [(i - 1) * screenWidth, i * screenWidth, (i + 1) * screenWidth];
-              const cardOpacity = scrollX.interpolate({
-                inputRange,
-                outputRange: [0.7, 1, 0.7],
-                extrapolate: 'clamp',
-              });
-              const cardScale = scrollX.interpolate({
-                inputRange,
-                outputRange: [0.92, 1, 0.92],
-                extrapolate: 'clamp',
-              });
-              const cardTranslateY = scrollX.interpolate({
-                inputRange,
-                outputRange: [16, 0, 16],
-                extrapolate: 'clamp',
-              });
-              const cardTranslateX = scrollX.interpolate({
-                inputRange,
-                outputRange: [20, 0, -20],
-                extrapolate: 'clamp',
-              });
-              const cardRotate = scrollX.interpolate({
-                inputRange,
-                outputRange: ['3deg', '0deg', '-3deg'],
-                extrapolate: 'clamp',
-              });
-              const cardSheenOpacity = scrollX.interpolate({
-                inputRange,
-                outputRange: [0.08, 0.2, 0.08],
-                extrapolate: 'clamp',
-              });
-              const cardSheenTranslate = scrollX.interpolate({
-                inputRange,
-                outputRange: [-28, 0, 28],
-                extrapolate: 'clamp',
-              });
-              const contentParallax = scrollX.interpolate({
-                inputRange,
-                outputRange: [18, 0, -18],
-                extrapolate: 'clamp',
-              });
-
-              return (
-                <Animated.View
-                  onLayout={
-                    i === 0
-                      ? (event) => {
-                          const measuredHeight = event.nativeEvent.layout.height;
-                          if (measuredHeight > 0 && measuredHeight !== baseCardHeight) {
-                            setBaseCardHeight(measuredHeight);
-                          }
-                        }
-                      : undefined
-                  }
-                  style={[
-                    styles.card,
-                    { width: cardWidth },
-                    baseCardHeight ? { height: baseCardHeight } : null,
-                    {
-                      backgroundColor: theme.surface,
-                      opacity: Animated.multiply(fadeAnim, cardOpacity),
-                      transform: [
-                        { translateX: cardTranslateX },
-                        { translateY: Animated.add(slideAnim, cardTranslateY) },
-                        { scale: cardScale },
-                        { rotate: cardRotate },
-                      ],
-                    },
-                  ]}
-                >
-                  <Animated.View
-                    style={[
-                      styles.cardSheen,
-                      { pointerEvents: 'none' },
-                      {
-                        opacity: cardSheenOpacity,
-                        transform: [{ translateX: cardSheenTranslate }],
-                      },
-                    ]}
-                  />
-                  <Animated.View style={{ transform: [{ translateX: contentParallax }] }}>
-                    {i === 0 && <Slide1 />}
-                    {i === 1 && <Slide2 gradient={slideGradients[1]} />}
-                    {i === 2 && <Slide3 gradient={slideGradients[2]} />}
-                  </Animated.View>
-                </Animated.View>
-              );
-            })()}
-          </View>
+        {[0, 1, 2, 3].map((i) => (
+          <Animated.View
+            key={i}
+            style={[
+              styles.slide,
+              { width: screenWidth, backgroundColor: theme.surface },
+              { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
+            ]}
+          >
+            <ScrollView
+              style={{ flex: 1 }}
+              contentContainerStyle={{ paddingTop: insets.top, paddingBottom: showContinueButton ? 100 : 24 }}
+              showsVerticalScrollIndicator={false}
+              bounces={false}
+            >
+              {i === 0 && <Slide1 />}
+              {i === 1 && <Slide2 />}
+              {i === 2 && <Slide3 gradient={slideGradients[2]} />}
+              {i === 3 && <Slide4 gradient={slideGradients[3]} />}
+            </ScrollView>
+          </Animated.View>
         ))}
       </Animated.ScrollView>
 
-      <View
-        style={[
-          styles.bottomSection,
-          { paddingTop: bottomSectionPaddingTop, paddingBottom: bottomSectionPaddingBottom },
-        ]}
-      >
-        <View style={styles.dots}>
-          {[0, 1, 2].map((i) => (
-            <View
-              key={i}
-              style={[
-                styles.dot,
-                currentIndex === i
-                  ? { backgroundColor: currentGradient.start, width: 24 }
-                  : { backgroundColor: theme.border, width: 8 },
-              ]}
-            />
-          ))}
-        </View>
-
-        <Pressable
-          style={styles.nextBtn}
-          onPress={handleNext}
-          testID="get-started-next"
-          accessible
-          accessibilityRole="button"
-          accessibilityLabel="Get started next"
+      {showContinueButton && (
+        <View
+          style={[
+            styles.bottomSection,
+            { paddingBottom: insets.bottom + bottomSectionPaddingBottom },
+          ]}
         >
-          <View style={[styles.nextBtnGradient, { backgroundColor: currentGradient.start }]}>
-            {slideGradients.map((gradient, i) => (
-              <Animated.View
-                key={`next-gradient-${i}`}
-                style={[
-                  styles.nextBtnGradientLayer,
-                  {
-                    opacity: scrollX.interpolate({
-                      inputRange: [(i - 1) * screenWidth, i * screenWidth, (i + 1) * screenWidth],
-                      outputRange: [0, 1, 0],
-                      extrapolate: 'clamp',
-                    }),
-                  },
-                ]}
-              >
-                <LinearGradient
-                  colors={[gradient.start, gradient.end]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={styles.nextBtnGradientFill}
-                />
-              </Animated.View>
-            ))}
-            <View style={styles.nextBtnContent}>
-              <Text style={styles.nextBtnText}>
-                {currentIndex === totalSlides - 1 ? tx('Get Started') : tx('Next')}
-              </Text>
-              <AppIcon name="chevronRight" size={20} color="#fff" />
+          <Pressable
+            style={styles.nextBtn}
+            onPress={handleContinue}
+            testID="get-started-continue"
+            accessible
+            accessibilityRole="button"
+            accessibilityLabel="Get started continue"
+          >
+            <View style={[styles.nextBtnGradient, { backgroundColor: currentGradient.start }]}>
+              {slideGradients.map((gradient, i) => (
+                <Animated.View
+                  key={`next-gradient-${i}`}
+                  style={[
+                    styles.nextBtnGradientLayer,
+                    {
+                      opacity: scrollX.interpolate({
+                        inputRange: [(i - 1) * screenWidth, i * screenWidth, (i + 1) * screenWidth],
+                        outputRange: [0, 1, 0],
+                        extrapolate: 'clamp',
+                      }),
+                    },
+                  ]}
+                >
+                  <LinearGradient
+                    colors={[gradient.start, gradient.end]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.nextBtnGradientFill}
+                  />
+                </Animated.View>
+              ))}
+              <View style={styles.nextBtnContent}>
+                <Text style={styles.nextBtnText}>{tx('Continue')}</Text>
+                <AppIcon name="chevronRight" size={20} color="#fff" />
+              </View>
             </View>
-          </View>
-        </Pressable>
-
-        <Pressable
-          onPress={handleSkip}
-          style={styles.skipBtn}
-          testID="get-started-skip"
-          accessible
-          accessibilityRole="button"
-          accessibilityLabel="Get started skip"
-        >
-          <Text style={[styles.skipBtnText, { color: theme.textMuted }]}>{tx('Skip for now')}</Text>
-        </Pressable>
-      </View>
+          </Pressable>
+        </View>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  topBar: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    paddingHorizontal: 20,
-    paddingTop: 48,
-    paddingBottom: 8,
-  },
-  skipBtnText: { fontSize: 14, fontWeight: '600' },
   slider: { flex: 1 },
-  slide: { alignItems: 'center', paddingTop: 4 },
+  slide: { flex: 1 },
+  userBannerHeader: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#EAF2FF',
+  },
+  userHeroBadge: {
+    width: 84,
+    height: 84,
+    borderRadius: 42,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  userInfoCard: {
+    borderRadius: 18,
+    padding: 18,
+    backgroundColor: '#EFF6FF',
+    gap: 6,
+  },
+  userInfoTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  userInfoText: {
+    fontSize: 13,
+    lineHeight: 18,
+    textAlign: 'center',
+  },
   card: {
     borderRadius: 28,
     overflow: 'hidden',
@@ -1015,12 +1220,12 @@ const styles = StyleSheet.create({
     transform: [{ skewX: '-14deg' }],
   },
   cardHeader: {
-    height: 140,
+    height: 150,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
   },
-  cardLogo: { width: 150, height: 65 },
+  cardLogo: { width: 170, height: 75 },
   logoGlow: {
     ...createShadow({ color: '#fff', offsetY: 0, blur: 20, opacity: 0.5, elevation: 10 }),
   },
@@ -1115,8 +1320,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   // Card body
-  cardBody: { padding: 18 },
-  cardBodyCompact: { padding: 14 },
+  cardBody: { padding: 24, paddingTop: 12 },
+  cardBodyCompact: { padding: 18, paddingTop: 10 },
   // Slide 1 content styles
   tricolorWrapper: { marginBottom: 14 },
   tricolorContainer: {
@@ -1139,14 +1344,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '800',
     textAlign: 'center',
-    marginBottom: 14,
+    marginBottom: 6,
     letterSpacing: 0.5,
   },
-  statsHighlightRow: { flexDirection: 'row', gap: 10, marginBottom: 16 },
-  statsHighlightCard: { flex: 1, padding: 14, borderRadius: 16, alignItems: 'center' },
-  statsHighlightNum: { fontSize: 22, fontWeight: '900', marginBottom: 2 },
+  trustText: {
+    fontSize: 11,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: 14,
+    letterSpacing: 0.4,
+  },
+  statsHighlightRow: { flexDirection: 'row', gap: 8, marginBottom: 14, marginTop: 6 },
+  statsHighlightCard: { flex: 1, padding: 9, borderRadius: 12, alignItems: 'center' },
+  statsHighlightCardSmall: { flex: 0.7 },
+  statsHighlightNum: { fontSize: 17, fontWeight: '900', marginBottom: 1 },
   statsHighlightLabel: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '700',
     textTransform: 'uppercase',
     textAlign: 'center',
@@ -1239,6 +1452,127 @@ const styles = StyleSheet.create({
     gap: 6,
     justifyContent: 'center',
   },
+  roleSelectorWrap: {
+    marginTop: 24,
+    marginBottom: 14,
+    gap: 10,
+  },
+  roleSelectorTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  roleSelectorTitleLine: {
+    flex: 1,
+    height: 1.5,
+    borderRadius: 1,
+    opacity: 0.25,
+  },
+  roleSelectorTitle: {
+    fontSize: 11,
+    fontWeight: '900',
+    textAlign: 'center',
+    textTransform: 'uppercase',
+    letterSpacing: 1.5,
+  },
+  roleSelectorRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  roleSelectorChip: {
+    flex: 1,
+    minHeight: 42,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#D8E2F0',
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 8,
+  },
+  roleSelectorChipActive: {
+    borderColor: '#E8453C',
+    backgroundColor: '#FFF1EF',
+  },
+  roleSelectorChipText: {
+    color: '#334155',
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  roleSelectorChipTextActive: {
+    color: '#E8453C',
+  },
+  roleCard: {
+    borderRadius: 18,
+    overflow: 'hidden',
+    position: 'relative',
+    backgroundColor: '#F1F5F9',
+    aspectRatio: 0.85,
+    width: '100%',
+  },
+  roleCardImage: {
+    width: '110%',
+    height: '110%',
+    marginLeft: '-5%',
+    marginTop: '-5%',
+  },
+  roleCardImageCover: {
+    width: '110%',
+    height: '145%',
+    marginLeft: '-5%',
+    marginTop: '-8%',
+  },
+  roleCardOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingVertical: 7,
+    paddingHorizontal: 4,
+    alignItems: 'center',
+    gap: 1,
+  },
+  roleCardLabelWrap: {
+    alignItems: 'center',
+    paddingTop: 8,
+    gap: 4,
+  },
+  roleCardPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+    borderWidth: 1.5,
+  },
+  roleCardLabel: {
+    fontSize: 10,
+    fontWeight: '900',
+    textAlign: 'center',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+  },
+  roleCardSub: {
+    fontSize: 9,
+    fontWeight: '600',
+    textAlign: 'center',
+    letterSpacing: 0.2,
+  },
+  roleCardCheck: {
+    position: 'absolute',
+    top: 7,
+    right: 7,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  roleCardCheckText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '900',
+  },
   rolePills: {
     marginTop: 'auto',
     marginBottom: 4,
@@ -1254,15 +1588,16 @@ const styles = StyleSheet.create({
   pillText: { fontSize: 10, fontWeight: '700' },
   // Bottom navigation
   bottomSection: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 28,
     alignItems: 'center',
     gap: 12,
   },
-  skipBtn: { paddingVertical: 4 },
-  dots: { flexDirection: 'row', gap: 6 },
-  dot: { height: 8, borderRadius: 4 },
   nextBtn: {
     width: '100%',
     borderRadius: 16,

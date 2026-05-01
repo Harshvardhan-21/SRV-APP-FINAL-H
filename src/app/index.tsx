@@ -13,12 +13,19 @@ import { BottomNav as ElectricianBottomNav } from '@/features/electrician/Bottom
 import { ElectricianTierScreen } from '@/features/electrician/ElectricianTierScreen';
 import { HomeScreen as ElectricianHomeScreen } from '@/features/electrician/HomeScreen';
 import { NotificationScreen as ElectricianNotificationScreen } from '@/features/electrician/NotificationScreen';
-import { OnboardingScreen } from '@/features/electrician/screens/OnboardingScreen';
 import { ProductScreen as ElectricianProductScreen } from '@/features/electrician/screens/ProductScreen';
 import { ProfileScreen as ElectricianProfileScreen } from '@/features/electrician/ProfileScreen';
 import { RewardsScreen as ElectricianRewardsScreen } from '@/features/electrician/RewardsScreen';
 import { ScanScreen as ElectricianScanScreen } from '@/features/electrician/ScanScreen';
 import { WalletScreen as ElectricianWalletScreen } from '@/features/electrician/WalletScreen';
+import { BottomNav as UserBottomNav } from '@/features/user/BottomNav';
+import { HomeScreen as UserHomeScreen } from '@/features/user/screens/HomeScreen';
+import { NotificationScreen as UserNotificationScreen } from '@/features/user/NotificationScreen';
+import { ProductScreen as UserProductScreen } from '@/features/user/ProductScreen';
+import { ProfileScreen as UserProfileScreen } from '@/features/user/ProfileScreen';
+import { RewardsScreen as UserRewardsScreen } from '@/features/user/RewardsScreen';
+import { ScanScreen as UserScanScreen } from '@/features/user/ScanScreen';
+import { WalletScreen as UserWalletScreen } from '@/features/user/WalletScreen';import { AuthLandingScreen } from '@/features/profile/screens/AuthLandingScreen';
 import {
   WalletBankDetailsScreen,
   WalletDealerBonusScreen,
@@ -46,7 +53,6 @@ function AppContent() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('home');
   const [screenResetKey, setScreenResetKey] = useState(0);
   const [showOnboarding, setShowOnboarding] = useState(true);
-  const [showGetStarted, setShowGetStarted] = useState(true);
   const [currentRole, setCurrentRole] = useState<UserRole>('electrician');
   const [authResolved, setAuthResolved] = useState(false);
   const [selectedProductCategory, setSelectedProductCategory] = useState('fanbox');
@@ -57,14 +63,17 @@ function AppContent() {
   >({
     dealer: false,
     electrician: false,
+    user: false,
   });
   const [profilePhotoByRole, setProfilePhotoByRole] = useState<Record<UserRole, string | null>>({
     dealer: null,
     electrician: null,
+    user: null,
   });
   const [passwordValueByRole, setPasswordValueByRole] = useState<Record<UserRole, string>>({
     dealer: '',
     electrician: '',
+    user: '',
   });
   const [electricianRewardPoints, setElectricianRewardPoints] = useState(
     user?.totalPoints ?? 0
@@ -76,6 +85,7 @@ function AppContent() {
   const [hasUnreadNotif, setHasUnreadNotif] = useState(false);
 
   const isDealer = currentRole === 'dealer';
+  const isUser = currentRole === 'user';
 
   // Once auth loading is done, set initial state
   useEffect(() => {
@@ -87,7 +97,6 @@ function AppContent() {
         setElectricianRewardPoints(user.totalPoints ?? 0);
         setElectricianRewardScans(user.totalScans ?? 0);
         setShowOnboarding(false);
-        setShowGetStarted(false);
       }
     }
   }, [authLoading, authResolved, isAuthenticated, user, authRole]);
@@ -162,7 +171,6 @@ function AppContent() {
     void (async () => {
       await logout(); // clears storage + resets AuthContext state
       setShowOnboarding(true);
-      setShowGetStarted(false);
       setCurrentRole('electrician');
       setCurrentScreen('home');
       setSelectedProductCategory('fanbox');
@@ -176,6 +184,42 @@ function AppContent() {
   const handleNotificationsSeen = useCallback(() => {
     setHasUnreadNotif(false);
   }, []);
+
+  const handleAuthenticatedRoleStart = useCallback(
+    (role: UserRole, options?: OnboardingStartOptions) => {
+      if (typeof options?.passwordConfigured === 'boolean') {
+        setPasswordConfiguredByRole((current) => ({
+          ...current,
+          [role]: options.passwordConfigured,
+        }));
+        if (!options.passwordConfigured) {
+          setPasswordValueByRole((current) => ({ ...current, [role]: '' }));
+        }
+      }
+
+      if (typeof options?.passwordValue === 'string') {
+        setPasswordValueByRole((current) => ({
+          ...current,
+          [role]: options.passwordValue,
+        }));
+      }
+
+      const realUser = (globalThis as any).__srvLoginUser;
+      if (realUser) {
+        login(realUser, role);
+        if (role === 'electrician') {
+          setElectricianRewardPoints(realUser.totalPoints ?? 0);
+          setElectricianRewardScans(realUser.totalScans ?? 0);
+        }
+        delete (globalThis as any).__srvLoginUser;
+      }
+
+      setCurrentRole(role);
+      setCurrentScreen('profile');
+      setShowOnboarding(false);
+    },
+    [login]
+  );
 
   const handleElectricianRewardCommit = useCallback(
     (items: Omit<RewardHistoryItem, 'id' | 'time'>[]) => {
@@ -208,8 +252,7 @@ function AppContent() {
   );
 
   const activeScreen = useMemo(() => {
-    if (isDealer) {
-      switch (currentScreen) {
+    if (isDealer) {      switch (currentScreen) {
         case 'home':
           return (
             <DealerHomeScreen
@@ -253,7 +296,7 @@ function AppContent() {
             />
           );
         case 'profile':
-          return (
+          return isAuthenticated ? (
             <DealerProfileScreen
               onNavigate={handleNavigate}
               onSignOut={handleSignOut}
@@ -273,6 +316,15 @@ function AppContent() {
               onProfilePhotoChange={(photoUri) =>
                 setProfilePhotoByRole((current) => ({ ...current, dealer: photoUri }))
               }
+            />
+          ) : (
+            <AuthLandingScreen
+              role="dealer"
+              onAuthenticated={handleAuthenticatedRoleStart}
+              onBack={() => {
+                setShowOnboarding(true);
+                setCurrentScreen('home');
+              }}
             />
           );
         case 'dealer_tier':
@@ -320,6 +372,96 @@ function AppContent() {
       }
     }
 
+    if (isUser) {
+      switch (currentScreen) {
+        case 'home':
+          return (
+            <UserHomeScreen
+              onNavigate={handleNavigate}
+              onOpenProductCategory={handleOpenProductCategory}
+              profilePhotoUri={profilePhotoByRole.user}
+              totalPoints={electricianRewardPoints}
+              totalScans={electricianRewardScans}
+              hasUnreadNotif={hasUnreadNotif}
+            />
+          );
+        case 'product':
+          return (
+            <UserProductScreen
+              onNavigate={handleNavigate}
+              initialCategory={selectedProductCategory}
+            />
+          );
+        case 'notification':
+          return <UserNotificationScreen onNavigate={handleNavigate} role="electrician" onNotificationsSeen={handleNotificationsSeen} />;
+        case 'scan':
+          return (
+            <UserScanScreen
+              onNavigate={handleNavigate}
+              rewardHistory={electricianRewardHistory}
+              onCommitRewards={handleElectricianRewardCommit}
+            />
+          );
+        case 'rewards':
+          return <UserRewardsScreen onBack={() => setCurrentScreen('home')} />;
+        case 'profile':
+          return isAuthenticated ? (
+            <UserProfileScreen
+              onNavigate={handleNavigate}
+              onSignOut={handleSignOut}
+              hasPasswordConfigured={passwordConfiguredByRole.user}
+              storedPassword={passwordValueByRole.user}
+              onPasswordConfiguredChange={(configured) =>
+                setPasswordConfiguredByRole((current) => ({ ...current, user: configured }))
+              }
+              onPasswordChange={(password) =>
+                setPasswordValueByRole((current) => ({ ...current, user: password }))
+              }
+              language={language}
+              onLanguageChange={setLanguage}
+              darkMode={darkMode}
+              onDarkModeChange={setDarkMode}
+              profilePhotoUri={profilePhotoByRole.user}
+              onProfilePhotoChange={(photoUri) =>
+                setProfilePhotoByRole((current) => ({ ...current, user: photoUri }))
+              }
+              totalPoints={electricianRewardPoints}
+              totalScans={electricianRewardScans}
+            />
+          ) : (
+            <AuthLandingScreen
+              role="electrician"
+              onAuthenticated={handleAuthenticatedRoleStart}
+              onBack={() => {
+                setShowOnboarding(true);
+                setCurrentScreen('home');
+              }}
+            />
+          );
+        case 'wallet':
+          return (
+            <UserWalletScreen
+              role="electrician"
+              onNavigate={handleNavigate}
+              totalPoints={electricianRewardPoints}
+              totalScans={electricianRewardScans}
+              historyItems={electricianRewardHistory}
+            />
+          );
+        default:
+          return (
+            <UserHomeScreen
+              onNavigate={handleNavigate}
+              onOpenProductCategory={handleOpenProductCategory}
+              profilePhotoUri={profilePhotoByRole.user}
+              totalPoints={electricianRewardPoints}
+              totalScans={electricianRewardScans}
+              hasUnreadNotif={hasUnreadNotif}
+            />
+          );
+      }
+    }
+
     switch (currentScreen) {
       case 'home':
         return (
@@ -352,7 +494,7 @@ function AppContent() {
       case 'rewards':
         return <ElectricianRewardsScreen onBack={() => setCurrentScreen('home')} />;
       case 'profile':
-        return (
+        return isAuthenticated ? (
           <ElectricianProfileScreen
             onNavigate={handleNavigate}
             onSignOut={handleSignOut}
@@ -374,6 +516,15 @@ function AppContent() {
             }
             totalPoints={electricianRewardPoints}
             totalScans={electricianRewardScans}
+          />
+        ) : (
+          <AuthLandingScreen
+            role="electrician"
+            onAuthenticated={handleAuthenticatedRoleStart}
+            onBack={() => {
+              setShowOnboarding(true);
+              setCurrentScreen('home');
+            }}
           />
         );
       case 'wallet':
@@ -424,12 +575,17 @@ function AppContent() {
   }, [
     currentScreen,
     isDealer,
+    isUser,
+    isAuthenticated,
     passwordConfiguredByRole.dealer,
     passwordConfiguredByRole.electrician,
+    passwordConfiguredByRole.user,
     profilePhotoByRole.dealer,
     profilePhotoByRole.electrician,
+    profilePhotoByRole.user,
     passwordValueByRole.dealer,
     passwordValueByRole.electrician,
+    passwordValueByRole.user,
     electricianRewardHistory,
     electricianRewardPoints,
     electricianRewardScans,
@@ -441,52 +597,17 @@ function AppContent() {
     handleOpenProductCategory,
     handleSignOut,
     handleNotificationsSeen,
+    handleAuthenticatedRoleStart,
     hasUnreadNotif,
   ]);
 
   if (showOnboarding) {
-    if (showGetStarted) {
-      return (
-        <View style={styles.root}>
-          <ExpoStatusBar style={statusBarStyle} />
-          <PreferenceContext.Provider value={preferenceValue}>
-            <GetStartedScreen onComplete={() => setShowGetStarted(false)} />
-          </PreferenceContext.Provider>
-        </View>
-      );
-    }
-
     return (
       <View style={styles.root}>
         <ExpoStatusBar style={statusBarStyle} />
         <PreferenceContext.Provider value={preferenceValue}>
-          <OnboardingScreen
-            onGetStarted={(role: UserRole, options?: OnboardingStartOptions) => {
-              if (typeof options?.passwordConfigured === 'boolean') {
-                setPasswordConfiguredByRole((current) => ({
-                  ...current,
-                  [role]: options.passwordConfigured,
-                }));
-                if (!options.passwordConfigured) {
-                  setPasswordValueByRole((current) => ({ ...current, [role]: '' }));
-                }
-              }
-              if (typeof options?.passwordValue === 'string') {
-                setPasswordValueByRole((current) => ({
-                  ...current,
-                  [role]: options.passwordValue,
-                }));
-              }
-              // Load real user from global store set during OTP verify
-              const realUser = (globalThis as any).__srvLoginUser;
-              if (realUser) {
-                login(realUser, role);
-                if (role === 'electrician') {
-                  setElectricianRewardPoints(realUser.totalPoints ?? 0);
-                  setElectricianRewardScans(realUser.totalScans ?? 0);
-                }
-                delete (globalThis as any).__srvLoginUser;
-              }
+          <GetStartedScreen
+            onComplete={(role: UserRole) => {
               setCurrentRole(role);
               setCurrentScreen('home');
               setShowOnboarding(false);
@@ -508,6 +629,8 @@ function AppContent() {
         </SafeAreaView>
         {isDealer ? (
           <DealerBottomNav currentScreen={currentScreen} onNavigate={handleNavigate} />
+        ) : isUser ? (
+          <UserBottomNav currentScreen={currentScreen} onNavigate={handleNavigate} />
         ) : (
           <ElectricianBottomNav currentScreen={currentScreen} onNavigate={handleNavigate} />
         )}

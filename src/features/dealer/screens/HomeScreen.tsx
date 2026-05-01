@@ -28,6 +28,23 @@ import { useAuth } from '@/shared/context/AuthContext';
 import { useAppData } from '@/shared/context/AppDataContext';
 
 const logoImage = require('../../../../assets/banners/srv-logo.jpeg');
+const guestHeroSlides: CarouselSlide[] = [
+  {
+    image: require('../../../../assets/banners/light.jpg.jpeg'),
+    resizeMode: 'cover',
+    backgroundColor: '#0F172A',
+  },
+  {
+    image: require('../../../../assets/banners/mcb-box.jpg.jpeg'),
+    resizeMode: 'cover',
+    backgroundColor: '#0F172A',
+  },
+  {
+    image: require('../../../../assets/banners/appliances.jpg.jpeg'),
+    resizeMode: 'cover',
+    backgroundColor: '#0F172A',
+  },
+];
 
 const HOME_PRODUCT_ACCENTS: Record<string, readonly [string, string, string]> = {
   fanbox:       ['#FAFBFD', '#E9EEF5', '#D5DEE9'],
@@ -544,6 +561,8 @@ export function HomeScreen({
           </TouchableOpacity>
         </View>
 
+        {authUser ? (
+        <>
         <ProfileFlipCard profile={{
           name: authUser?.name ?? '',
           phone: authUser?.phone ?? '',
@@ -647,14 +666,26 @@ export function HomeScreen({
             </TouchableOpacity>
           </Animated.View>
         </View>
+        </>
+        ) : (
+          <View style={styles.heroGuestBannerWrap}>
+            <BannerCarousel
+              slides={guestHeroSlides}
+              height={heroImageHeight}
+              darkMode={darkMode}
+            />
+          </View>
+        )}
       </LinearGradient>
 
       <View style={styles.body}>
-        <BannerCarousel
-          slides={activeBannerSlides}
-          height={heroImageHeight}
-          darkMode={darkMode}
-        />
+        {authUser ? (
+          <BannerCarousel
+            slides={activeBannerSlides}
+            height={heroImageHeight}
+            darkMode={darkMode}
+          />
+        ) : null}
 
         <View style={styles.quickGrid}>
           {quickActions.map((item) => {
@@ -898,6 +929,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#0F172A',
     borderWidth: 1,
     borderColor: 'rgba(148,163,184,0.24)',
+  },
+  heroGuestBannerWrap: {
+    marginTop: 8,
+    marginBottom: 4,
   },
   bellIconWrap: {
     position: 'relative',

@@ -1,0 +1,234 @@
+import React, { useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { OnboardingScreen, type UserRole } from '@/features/electrician/screens/OnboardingScreen';
+import { AppIcon, C } from '../components/ProfileShared';
+import { usePreferenceContext } from '@/shared/preferences';
+import { createShadow } from '@/shared/theme/shadows';
+
+export function AuthLandingScreen({
+  role,
+  onAuthenticated,
+  onBack,
+}: {
+  role: UserRole;
+  onAuthenticated: (
+    role: UserRole,
+    options?: { passwordConfigured?: boolean; passwordValue?: string }
+  ) => void;
+  onBack?: () => void;
+}) {
+  const { tx, theme } = usePreferenceContext();
+  const [mode, setMode] = useState<'login' | 'signup' | null>(null);
+
+  if (mode) {
+    return (
+      <OnboardingScreen
+        key={`${role}-${mode}`}
+        fixedRole={role}
+        initialMode={mode}
+        initialPhase="auth"
+        onCancel={() => setMode(null)}
+        onGetStarted={onAuthenticated}
+      />
+    );
+  }
+
+  const isDealer = role === 'dealer';
+  const accent = isDealer ? '#2563EB' : '#159A6F';
+  const accentSoft = isDealer ? '#DBEAFE' : '#DDF7EA';
+  const title = isDealer ? tx('Dealer account access') : tx('Electrician account access');
+  const subtitle = isDealer
+    ? tx('Login or create your dealer account to unlock profile tools, network details and business controls.')
+    : tx('Login or create your electrician account to unlock rewards, scan history and your complete profile.');
+  const bulletOne = isDealer ? tx('Business profile and KYC setup') : tx('Rewards, scans and redemption history');
+  const bulletTwo = isDealer ? tx('Dealer network, bonus and orders') : tx('Electrician profile, wallet and level progress');
+
+  return (
+    <ScrollView
+      style={[styles.screen, { backgroundColor: theme.bg }]}
+      contentContainerStyle={styles.content}
+      showsVerticalScrollIndicator={false}
+    >
+      <LinearGradient colors={[theme.heroSurface, theme.surface]} style={styles.heroCard}>
+        <View style={[styles.heroGlow, { backgroundColor: accentSoft }]} />
+        <View style={[styles.iconWrap, { backgroundColor: accentSoft }]}>
+          <AppIcon name={isDealer ? 'building' : 'scan'} size={28} color={accent} />
+        </View>
+        <Text style={[styles.eyebrow, { color: accent }]}>
+          {isDealer ? tx('Profile Locked For Dealer') : tx('Profile Locked For Electrician')}
+        </Text>
+        <Text style={[styles.title, { color: theme.textPrimary }]}>{title}</Text>
+        <Text style={[styles.subtitle, { color: theme.textSecondary }]}>{subtitle}</Text>
+
+        <View style={styles.highlights}>
+          <View style={[styles.highlightCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+            <AppIcon name="lock" size={16} color={accent} />
+            <Text style={[styles.highlightText, { color: theme.textPrimary }]}>{bulletOne}</Text>
+          </View>
+          <View style={[styles.highlightCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+            <AppIcon name={isDealer ? 'bank' : 'redeem'} size={16} color={accent} />
+            <Text style={[styles.highlightText, { color: theme.textPrimary }]}>{bulletTwo}</Text>
+          </View>
+        </View>
+      </LinearGradient>
+
+      <View style={[styles.actionCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+        <Text style={[styles.actionTitle, { color: theme.textPrimary }]}>{tx('Continue with your account')}</Text>
+        <Text style={[styles.actionSub, { color: theme.textMuted }]}>
+          {tx('Choose login if you already have an account, or create one in a few steps.')}
+        </Text>
+
+        <Pressable onPress={() => setMode('login')} style={styles.buttonShell}>
+          <LinearGradient
+            colors={isDealer ? ['#2563EB', '#60A5FA'] : ['#159A6F', '#47C98B']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.primaryButton}
+          >
+            <AppIcon name="chevronRight" size={18} color="#FFFFFF" />
+            <Text style={styles.primaryButtonText}>{tx('Login')}</Text>
+          </LinearGradient>
+        </Pressable>
+
+        <Pressable
+          onPress={() => setMode('signup')}
+          style={[styles.secondaryButton, { backgroundColor: accentSoft, borderColor: accent }]}
+        >
+          <AppIcon name="star" size={18} color={accent} />
+          <Text style={[styles.secondaryButtonText, { color: accent }]}>{tx('Create Account')}</Text>
+        </Pressable>
+
+        {onBack && (
+          <Pressable
+            onPress={onBack}
+            style={[styles.backButton, { borderColor: theme.border }]}
+          >
+            <AppIcon name="arrowLeft" size={18} color={theme.textMuted} />
+            <Text style={[styles.backButtonText, { color: theme.textMuted }]}>{tx('Back')}</Text>
+          </Pressable>
+        )}
+      </View>
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: C.bg },
+  content: { padding: 16, gap: 16, paddingBottom: 120 },
+  heroCard: {
+    borderRadius: 28,
+    padding: 22,
+    overflow: 'hidden',
+    ...createShadow({ color: '#0F172A', offsetY: 12, blur: 24, opacity: 0.08, elevation: 5 }),
+  },
+  heroGlow: {
+    position: 'absolute',
+    width: 180,
+    height: 180,
+    borderRadius: 90,
+    top: -60,
+    right: -30,
+    opacity: 0.9,
+  },
+  iconWrap: {
+    width: 60,
+    height: 60,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  eyebrow: {
+    fontSize: 11,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 8,
+  },
+  title: {
+    fontSize: 27,
+    fontWeight: '900',
+    marginBottom: 10,
+  },
+  subtitle: {
+    fontSize: 14,
+    lineHeight: 21,
+    marginBottom: 18,
+  },
+  highlights: {
+    gap: 10,
+  },
+  highlightCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    borderRadius: 18,
+    borderWidth: 1,
+    padding: 14,
+  },
+  highlightText: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: '700',
+    lineHeight: 18,
+  },
+  actionCard: {
+    borderRadius: 24,
+    borderWidth: 1,
+    padding: 20,
+    gap: 14,
+  },
+  actionTitle: {
+    fontSize: 19,
+    fontWeight: '900',
+  },
+  actionSub: {
+    fontSize: 13,
+    lineHeight: 19,
+  },
+  buttonShell: {
+    borderRadius: 18,
+    overflow: 'hidden',
+  },
+  primaryButton: {
+    height: 54,
+    borderRadius: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  primaryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '900',
+  },
+  secondaryButton: {
+    height: 54,
+    borderRadius: 18,
+    borderWidth: 1.5,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  secondaryButtonText: {
+    fontSize: 15,
+    fontWeight: '900',
+  },
+  backButton: {
+    height: 48,
+    borderRadius: 18,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: 2,
+  },
+  backButtonText: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+});

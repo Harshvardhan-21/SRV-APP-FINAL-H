@@ -327,23 +327,6 @@ const homeCatStyles = StyleSheet.create({
 });
 
 const logoImage = require('../../../../assets/banners/srv-logo.jpeg');
-const guestHeroSlides = [
-  {
-    image: require('../../../../assets/banners/light.jpg.jpeg'),
-    resizeMode: 'cover' as const,
-    backgroundColor: '#0F172A',
-  },
-  {
-    image: require('../../../../assets/banners/mcb-box.jpg.jpeg'),
-    resizeMode: 'cover' as const,
-    backgroundColor: '#0F172A',
-  },
-  {
-    image: require('../../../../assets/banners/appliances.jpg.jpeg'),
-    resizeMode: 'cover' as const,
-    backgroundColor: '#0F172A',
-  },
-];
 
 type BannerSlide = {
   image: { uri: string };
@@ -962,25 +945,15 @@ export function HomeScreen({
           </Animated.View>
         </View>
         </>
-        ) : (
-          <View style={styles.heroGuestBannerWrap}>
-            <BannerCarousel
-              slides={guestHeroSlides}
-              height={heroImageHeight}
-              darkMode={darkMode}
-            />
-          </View>
-        )}
+        ) : null}
       </LinearGradient>
 
       <View style={styles.body}>
-        {authUser ? (
-          <BannerCarousel
-            slides={apiBannerSlides}
-            height={heroImageHeight}
-            darkMode={darkMode}
-          />
-        ) : null}
+        <BannerCarousel
+          slides={apiBannerSlides}
+          height={heroImageHeight}
+          darkMode={darkMode}
+        />
 
         <View style={styles.quickGrid}>
           {quickActions.map((item) => {
@@ -1139,10 +1112,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#0F172A',
     borderColor: 'rgba(148,163,184,0.24)',
     ...createShadow({ color: '#020617', offsetY: 8, blur: 14, opacity: 0.12, elevation: 4 }),
-  },
-  heroGuestBannerWrap: {
-    marginTop: 8,
-    marginBottom: 4,
   },
 
   topIconCore: {

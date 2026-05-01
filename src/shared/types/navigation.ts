@@ -13,4 +13,4 @@ export type Screen =
   | 'bank_details'
   | 'transfer_points'
   | 'dealer_bonus';
-export type UserRole = 'dealer' | 'electrician';
+export type UserRole = 'dealer' | 'electrician' | 'user';

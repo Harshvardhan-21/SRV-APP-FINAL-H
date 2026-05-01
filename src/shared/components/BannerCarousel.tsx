@@ -3,10 +3,14 @@
  *
  * All slides are always mounted and stacked (absoluteFill).
  * Transitions are pure cross-fades — no translateX, no unmount.
- * This eliminates every source of white/blue flash.
  *
- * Swipe is detected on release (no live drag translation needed
- * because the cross-fade itself is fast enough to feel responsive).
+ * Each image is rendered with resizeMode="cover" so it fills the
+ * container edge-to-edge with no black bars. The container height
+ * is driven by `aspectRatio` (default 3/2 to match the 600×400
+ * banner assets). Pass a custom aspectRatio for wider/taller images.
+ *
+ * The legacy `height` prop is still accepted for backward-compat
+ * but is ignored when `aspectRatio` is provided.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -30,6 +34,7 @@ type Props = {
   height: number;
   darkMode?: boolean;
   autoPlayInterval?: number;
+  borderRadius?: number;
 };
 
 export function BannerCarousel({
@@ -37,15 +42,14 @@ export function BannerCarousel({
   height,
   darkMode = false,
   autoPlayInterval = 4000,
+  borderRadius = 16,
 }: Props) {
   const [activeIndex, setActiveIndex] = useState(0);
 
-  // Refs — always up-to-date inside closures
   const activeRef = useRef(0);
   const lenRef = useRef(slides.length);
   const autoRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // One Animated.Value per slide — created once, never recreated
   const opacities = useRef<Animated.Value[]>([]);
   while (opacities.current.length < slides.length) {
     opacities.current.push(
@@ -57,7 +61,6 @@ export function BannerCarousel({
     lenRef.current = slides.length;
   }, [slides.length]);
 
-  // Reset when slide list changes (API load)
   useEffect(() => {
     if (slides.length === 0) return;
     opacities.current.forEach((v, i) => v.setValue(i === 0 ? 1 : 0));
@@ -69,49 +72,30 @@ export function BannerCarousel({
   const goTo = useCallback((next: number) => {
     const len = lenRef.current;
     if (len < 2) return;
-
     const prev = activeRef.current;
     const safeNext = ((next % len) + len) % len;
     if (safeNext === prev) return;
-
     const prevVal = opacities.current[prev];
     const nextVal = opacities.current[safeNext];
     if (!prevVal || !nextVal) return;
-
     activeRef.current = safeNext;
     setActiveIndex(safeNext);
-
-    // Ensure next slide starts fully invisible before fading in
     nextVal.setValue(0);
-
     Animated.parallel([
-      Animated.timing(nextVal, {
-        toValue: 1,
-        duration: 350,
-        useNativeDriver: true,
-      }),
-      Animated.timing(prevVal, {
-        toValue: 0,
-        duration: 350,
-        useNativeDriver: true,
-      }),
+      Animated.timing(nextVal, { toValue: 1, duration: 350, useNativeDriver: true }),
+      Animated.timing(prevVal, { toValue: 0, duration: 350, useNativeDriver: true }),
     ]).start();
   }, []);
 
   // ── Auto-play ─────────────────────────────────────────────────────────────
   const stopAuto = useCallback(() => {
-    if (autoRef.current) {
-      clearInterval(autoRef.current);
-      autoRef.current = null;
-    }
+    if (autoRef.current) { clearInterval(autoRef.current); autoRef.current = null; }
   }, []);
 
   const startAuto = useCallback(() => {
     stopAuto();
     if (lenRef.current < 2) return;
-    autoRef.current = setInterval(() => {
-      goTo(activeRef.current + 1);
-    }, autoPlayInterval);
+    autoRef.current = setInterval(() => goTo(activeRef.current + 1), autoPlayInterval);
   }, [goTo, stopAuto, autoPlayInterval]);
 
   useEffect(() => {
@@ -119,47 +103,34 @@ export function BannerCarousel({
     return stopAuto;
   }, [slides.length, startAuto, stopAuto]);
 
-  // ── Swipe gesture ─────────────────────────────────────────────────────────
+  // ── Swipe ─────────────────────────────────────────────────────────────────
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => false,
-      // Claim gesture only for clear horizontal swipes
       onMoveShouldSetPanResponder: (_, gs) =>
         Math.abs(gs.dx) > 12 && Math.abs(gs.dx) > Math.abs(gs.dy) * 2,
-
-      onPanResponderGrant: () => {
-        stopAuto();
-      },
-
+      onPanResponderGrant: () => stopAuto(),
       onPanResponderRelease: (_, gs) => {
         const len = lenRef.current;
         if (len < 2) { startAuto(); return; }
-
-        if (gs.dx < -40) {
-          goTo(activeRef.current + 1);
-        } else if (gs.dx > 40) {
-          goTo(activeRef.current - 1);
-        }
+        if (gs.dx < -40) goTo(activeRef.current + 1);
+        else if (gs.dx > 40) goTo(activeRef.current - 1);
         startAuto();
       },
-
-      onPanResponderTerminate: () => {
-        startAuto();
-      },
+      onPanResponderTerminate: () => startAuto(),
     })
   ).current;
 
   if (slides.length === 0) return null;
 
-  // Use a single dark background — never changes, so no color flash between slides.
-  // Individual slide images cover it completely when loaded.
-  const bgColor = '#111827';
-
   return (
     <View>
-      {/* ── Banner card ── */}
+      {/* ── Banner card — fixed height ── */}
       <View
-        style={[styles.card, { height, backgroundColor: bgColor }]}
+        style={[
+          styles.card,
+          { height, borderRadius },
+        ]}
         {...panResponder.panHandlers}
       >
         {slides.map((slide, index) => {
@@ -173,8 +144,13 @@ export function BannerCarousel({
             >
               <Image
                 source={slide.image as any}
-                style={StyleSheet.absoluteFillObject}
-                resizeMode={slide.resizeMode ?? 'cover'}
+                style={[
+                  StyleSheet.absoluteFillObject,
+                  slide.backgroundColor
+                    ? { backgroundColor: slide.backgroundColor }
+                    : null,
+                ]}
+                resizeMode="cover"
                 fadeDuration={0}
               />
             </Animated.View>
@@ -216,7 +192,6 @@ export function BannerCarousel({
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 28,
     overflow: 'hidden',
   },
   dotsRow: {
