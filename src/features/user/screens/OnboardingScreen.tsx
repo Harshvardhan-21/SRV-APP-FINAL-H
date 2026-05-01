@@ -75,8 +75,8 @@ const roleMeta = {
 } as const;
 
 const roleImages = {
-  electrician: require('../../../../assets/electrician-role.png'),
-  dealer: require('../../../../assets/dealer-role-custom.png'),
+  electrician: require('../../../../assets/new electrician.png'),
+  dealer: require('../../../../assets/new dealer.jpeg'),
 } as const;
 
 const languageOptions = [
