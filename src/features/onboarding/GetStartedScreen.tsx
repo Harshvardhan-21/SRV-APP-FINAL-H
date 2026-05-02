@@ -1308,7 +1308,7 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
               scrollEnabled={false}
               style={{ flex: 1 }}
               contentContainerStyle={{
-                paddingTop: i === 1 ? 0 : insets.top,
+                paddingTop: insets.top,
                 paddingBottom: i === 0 ? profileSlideBottomPad : roleSlideBottomPad,
                 flexGrow: 1,
               }}
