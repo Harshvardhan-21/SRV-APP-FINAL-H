@@ -522,7 +522,7 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
                   {
                     key: 'dealer' as const,
                     label: tx('Dealer'),
-                    sub: tx('Manage network'),
+                    sub: tx('Power your business'),
                     image: require('../../../assets/new dealer.jpeg'),
                     color: '#7C3AED',
                     bg: '#F5F3FF',
@@ -606,7 +606,13 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
                       >
                         <Image
                           source={role.image}
-                          style={styles.roleCardImage}
+                          style={[
+                            styles.roleCardImage,
+                            role.key === 'user' && {
+                              transform: [{ scale: 1.5 }],
+                              top: 5,
+                            }
+                          ]}
                           resizeMode="cover"
                         />
                         {isActive && (
@@ -671,268 +677,563 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
     );
   };
 
-  const Slide2 = () => (
-    <View style={{ flex: 1 }}>
-      <View style={[styles.bannerHeader, { backgroundColor: '#EFF6FF', height: 140 }]}>
-        <View style={styles.userHeroSection}>
-          <View style={styles.userHeroCircle}>
-            <AppIcon name="star" size={40} color="#2563EB" />
-          </View>
-          <View style={styles.floatingBadge1}>
-            <Text style={styles.floatingEmoji}>🏠</Text>
-          </View>
-          <View style={styles.floatingBadge2}>
-            <Text style={styles.floatingEmoji}>📱</Text>
+  const Slide2 = () => {
+    const badge1Float = useRef(new Animated.Value(0)).current;
+    const badge2Float = useRef(new Animated.Value(0)).current;
+    const circlePulse = useRef(new Animated.Value(1)).current;
+
+    useEffect(() => {
+      if (currentIndex !== 1) return;
+
+      const float1 = Animated.loop(
+        Animated.sequence([
+          Animated.timing(badge1Float, {
+            toValue: -10,
+            duration: 2000,
+            useNativeDriver: supportsNativeAnimatedDriver,
+          }),
+          Animated.timing(badge1Float, {
+            toValue: 0,
+            duration: 2000,
+            useNativeDriver: supportsNativeAnimatedDriver,
+          }),
+        ])
+      );
+
+      const float2 = Animated.loop(
+        Animated.sequence([
+          Animated.timing(badge2Float, {
+            toValue: -8,
+            duration: 2500,
+            useNativeDriver: supportsNativeAnimatedDriver,
+          }),
+          Animated.timing(badge2Float, {
+            toValue: 0,
+            duration: 2500,
+            useNativeDriver: supportsNativeAnimatedDriver,
+          }),
+        ])
+      );
+
+      const pulse = Animated.loop(
+        Animated.sequence([
+          Animated.timing(circlePulse, {
+            toValue: 1.05,
+            duration: 1500,
+            useNativeDriver: supportsNativeAnimatedDriver,
+          }),
+          Animated.timing(circlePulse, {
+            toValue: 1,
+            duration: 1500,
+            useNativeDriver: supportsNativeAnimatedDriver,
+          }),
+        ])
+      );
+
+      float1.start();
+      float2.start();
+      pulse.start();
+
+      return () => {
+        float1.stop();
+        float2.stop();
+        pulse.stop();
+      };
+    }, [currentIndex, badge1Float, badge2Float, circlePulse]);
+
+    return (
+      <View style={{ flex: 1 }}>
+        <View style={[styles.bannerHeader, { backgroundColor: '#EFF6FF', height: 140 }]}>
+          <View style={styles.userHeroSection}>
+            <Animated.View style={{ transform: [{ scale: circlePulse }] }}>
+              <View style={styles.userHeroCircle}>
+                <AppIcon name="star" size={40} color="#2563EB" />
+              </View>
+            </Animated.View>
+            <Animated.View
+              style={[
+                styles.floatingBadge1,
+                { transform: [{ translateY: badge1Float }] },
+              ]}
+            >
+              <Text style={styles.floatingEmoji}>🏠</Text>
+            </Animated.View>
+            <Animated.View
+              style={[
+                styles.floatingBadge2,
+                { transform: [{ translateY: badge2Float }] },
+              ]}
+            >
+              <Text style={styles.floatingEmoji}>📱</Text>
+            </Animated.View>
           </View>
         </View>
-      </View>
 
-      <View style={[styles.cardBody, isCompactScreen && styles.cardBodyCompact]}>
-        <View style={[styles.modernBadge, { backgroundColor: '#2563EB' }]}>
-          <Text style={styles.modernBadgeText}>HOME USER</Text>
-        </View>
-        
-        <Text style={[styles.heroTitleCompact, { color: theme.textPrimary }]}>
-          {tx('Explore Our')}
-        </Text>
-        <Text style={[styles.heroTitleAccentCompact, { color: '#2563EB' }]}>
-          {tx('Product Range')}
-        </Text>
-        <Text style={[styles.heroSubtitleCompact, { color: theme.textSecondary }]}>
-          {tx('Browse 250+ premium electrical products')}
-        </Text>
-
-        <View style={styles.benefitGridCompact}>
-          <View style={[styles.benefitCardCompact, { backgroundColor: '#EFF6FF' }]}>
-            <View style={[styles.benefitIconBoxCompact, { backgroundColor: '#2563EB' }]}>
-              <Text style={styles.benefitIconTextCompact}>🔍</Text>
-            </View>
-            <Text style={[styles.benefitTitleCompact, { color: theme.textPrimary }]}>
-              {tx('Easy Browse')}
-            </Text>
+        <View style={[styles.cardBody, isCompactScreen && styles.cardBodyCompact]}>
+          <View style={[styles.modernBadge, { backgroundColor: '#2563EB' }]}>
+            <Text style={styles.modernBadgeText}>HOME USER</Text>
           </View>
-
-          <View style={[styles.benefitCardCompact, { backgroundColor: '#F0F9FF' }]}>
-            <View style={[styles.benefitIconBoxCompact, { backgroundColor: '#0EA5E9' }]}>
-              <Text style={styles.benefitIconTextCompact}>💡</Text>
-            </View>
-            <Text style={[styles.benefitTitleCompact, { color: theme.textPrimary }]}>
-              {tx('Product Info')}
-            </Text>
-          </View>
-
-          <View style={[styles.benefitCardCompact, { backgroundColor: '#EFF6FF' }]}>
-            <View style={[styles.benefitIconBoxCompact, { backgroundColor: '#3B82F6' }]}>
-              <Text style={styles.benefitIconTextCompact}>⚡</Text>
-            </View>
-            <Text style={[styles.benefitTitleCompact, { color: theme.textPrimary }]}>
-              {tx('No Login')}
-            </Text>
-          </View>
-
-          <View style={[styles.benefitCardCompact, { backgroundColor: '#DBEAFE' }]}>
-            <View style={[styles.benefitIconBoxCompact, { backgroundColor: '#1D4ED8' }]}>
-              <Text style={styles.benefitIconTextCompact}>🎯</Text>
-            </View>
-            <Text style={[styles.benefitTitleCompact, { color: theme.textPrimary }]}>
-              {tx('Categories')}
-            </Text>
-          </View>
-        </View>
-
-        <View style={[styles.highlightBoxCompact, { backgroundColor: '#EFF6FF', borderColor: '#2563EB' }]}>
-          <Text style={[styles.highlightTextCompact, { color: '#2563EB' }]}>
-            ✦ {tx('Perfect for homeowners')} ✦
+          
+          <Text style={[styles.heroTitleCompact, { color: theme.textPrimary }]}>
+            {tx('Explore Our')}
           </Text>
+          <Text style={[styles.heroTitleAccentCompact, { color: '#2563EB' }]}>
+            {tx('Product Range')}
+          </Text>
+          <Text style={[styles.heroSubtitleCompact, { color: theme.textSecondary }]}>
+            {tx('Browse 250+ premium electrical products')}
+          </Text>
+
+          <View style={styles.benefitGridCompact}>
+            <View style={[styles.benefitCardCompact, { backgroundColor: '#EFF6FF' }]}>
+              <View style={[styles.benefitIconBoxCompact, { backgroundColor: '#2563EB' }]}>
+                <Text style={styles.benefitIconTextCompact}>🔍</Text>
+              </View>
+              <Text style={[styles.benefitTitleCompact, { color: theme.textPrimary }]}>
+                {tx('Easy Browse')}
+              </Text>
+            </View>
+
+            <View style={[styles.benefitCardCompact, { backgroundColor: '#F0F9FF' }]}>
+              <View style={[styles.benefitIconBoxCompact, { backgroundColor: '#0EA5E9' }]}>
+                <Text style={styles.benefitIconTextCompact}>💡</Text>
+              </View>
+              <Text style={[styles.benefitTitleCompact, { color: theme.textPrimary }]}>
+                {tx('Product Info')}
+              </Text>
+            </View>
+
+            <View style={[styles.benefitCardCompact, { backgroundColor: '#EFF6FF' }]}>
+              <View style={[styles.benefitIconBoxCompact, { backgroundColor: '#3B82F6' }]}>
+                <Text style={styles.benefitIconTextCompact}>⚡</Text>
+              </View>
+              <Text style={[styles.benefitTitleCompact, { color: theme.textPrimary }]}>
+                {tx('No Login')}
+              </Text>
+            </View>
+
+            <View style={[styles.benefitCardCompact, { backgroundColor: '#DBEAFE' }]}>
+              <View style={[styles.benefitIconBoxCompact, { backgroundColor: '#1D4ED8' }]}>
+                <Text style={styles.benefitIconTextCompact}>🎯</Text>
+              </View>
+              <Text style={[styles.benefitTitleCompact, { color: theme.textPrimary }]}>
+                {tx('Categories')}
+              </Text>
+            </View>
+          </View>
+
+          <View style={[styles.highlightBoxCompact, { backgroundColor: '#EFF6FF', borderColor: '#2563EB' }]}>
+            <Text style={[styles.highlightTextCompact, { color: '#2563EB' }]}>
+              ✦ {tx('Perfect for homeowners')} ✦
+            </Text>
+          </View>
         </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   // --- Slide 3: Dealer ---
   const Slide3 = ({
     gradient,
   }: {
     gradient: { start: string; end: string; icon: 'star' | 'refer' | 'redeem' };
-  }) => (
-    <View style={{ flex: 1 }}>
-      <View style={[styles.bannerHeader, { backgroundColor: '#F5F3FF', height: 140 }]}>
-        <View style={styles.dealerHeroSection}>
-          <View style={[styles.dealerHeroCircle, { backgroundColor: '#FFFFFF' }]}>
-            <AppIcon name="building" size={40} color={gradient.start} />
-          </View>
-          <View style={[styles.floatingBadge1, { backgroundColor: gradient.start }]}>
-            <Text style={styles.floatingEmoji}>🏢</Text>
-          </View>
-          <View style={[styles.floatingBadge2, { backgroundColor: C.gold }]}>
-            <Text style={styles.floatingEmoji}>💼</Text>
+  }) => {
+    const badge1Float = useRef(new Animated.Value(0)).current;
+    const badge2Float = useRef(new Animated.Value(0)).current;
+    const badge1Rotate = useRef(new Animated.Value(0)).current;
+    const circlePulse = useRef(new Animated.Value(1)).current;
+
+    useEffect(() => {
+      if (currentIndex !== 2) return;
+
+      const float1 = Animated.loop(
+        Animated.sequence([
+          Animated.timing(badge1Float, {
+            toValue: -12,
+            duration: 2200,
+            useNativeDriver: supportsNativeAnimatedDriver,
+          }),
+          Animated.timing(badge1Float, {
+            toValue: 0,
+            duration: 2200,
+            useNativeDriver: supportsNativeAnimatedDriver,
+          }),
+        ])
+      );
+
+      const float2 = Animated.loop(
+        Animated.sequence([
+          Animated.timing(badge2Float, {
+            toValue: -9,
+            duration: 2700,
+            useNativeDriver: supportsNativeAnimatedDriver,
+          }),
+          Animated.timing(badge2Float, {
+            toValue: 0,
+            duration: 2700,
+            useNativeDriver: supportsNativeAnimatedDriver,
+          }),
+        ])
+      );
+
+      const rotate = Animated.loop(
+        Animated.timing(badge1Rotate, {
+          toValue: 1,
+          duration: 3000,
+          useNativeDriver: supportsNativeAnimatedDriver,
+        })
+      );
+
+      const pulse = Animated.loop(
+        Animated.sequence([
+          Animated.timing(circlePulse, {
+            toValue: 1.06,
+            duration: 1600,
+            useNativeDriver: supportsNativeAnimatedDriver,
+          }),
+          Animated.timing(circlePulse, {
+            toValue: 1,
+            duration: 1600,
+            useNativeDriver: supportsNativeAnimatedDriver,
+          }),
+        ])
+      );
+
+      float1.start();
+      float2.start();
+      rotate.start();
+      pulse.start();
+
+      return () => {
+        float1.stop();
+        float2.stop();
+        rotate.stop();
+        pulse.stop();
+      };
+    }, [currentIndex, badge1Float, badge2Float, badge1Rotate, circlePulse]);
+
+    const rotateInterpolate = badge1Rotate.interpolate({
+      inputRange: [0, 1],
+      outputRange: ['0deg', '360deg'],
+    });
+
+    return (
+      <View style={{ flex: 1 }}>
+        <View style={[styles.bannerHeader, { backgroundColor: '#F5F3FF', height: 140 }]}>
+          <View style={styles.dealerHeroSection}>
+            <Animated.View style={{ transform: [{ scale: circlePulse }] }}>
+              <View style={[styles.dealerHeroCircle, { backgroundColor: '#FFFFFF' }]}>
+                <AppIcon name="building" size={40} color={gradient.start} />
+              </View>
+            </Animated.View>
+            <Animated.View
+              style={[
+                styles.floatingBadge1,
+                { 
+                  backgroundColor: gradient.start,
+                  transform: [{ translateY: badge1Float }, { rotate: rotateInterpolate }] 
+                },
+              ]}
+            >
+              <Text style={styles.floatingEmoji}>🏢</Text>
+            </Animated.View>
+            <Animated.View
+              style={[
+                styles.floatingBadge2,
+                { 
+                  backgroundColor: C.gold,
+                  transform: [{ translateY: badge2Float }] 
+                },
+              ]}
+            >
+              <Text style={styles.floatingEmoji}>💼</Text>
+            </Animated.View>
           </View>
         </View>
-      </View>
 
-      <View style={[styles.cardBody, isCompactScreen && styles.cardBodyCompact]}>
-        <View style={[styles.modernBadge, { backgroundColor: gradient.start }]}>
-          <Text style={styles.modernBadgeText}>DEALER PARTNER</Text>
-        </View>
-        
-        <Text style={[styles.heroTitleCompact, { color: theme.textPrimary }]}>
-          {tx('Scale Your')}
-        </Text>
-        <Text style={[styles.heroTitleAccentCompact, { color: gradient.start }]}>
-          {tx('Business Network')}
-        </Text>
-        <Text style={[styles.heroSubtitleCompact, { color: theme.textSecondary }]}>
-          {tx('Connect with 20K+ electricians')}
-        </Text>
-
-        <View style={styles.megaStatsRowCompact}>
-          <View style={[styles.megaStatCardCompact, { backgroundColor: '#F5F3FF' }]}>
-            <Text style={[styles.megaStatNumCompact, { color: gradient.start }]}>1000+</Text>
-            <Text style={[styles.megaStatLabelCompact, { color: gradient.start }]}>{tx('Dealers')}</Text>
+        <View style={[styles.cardBody, isCompactScreen && styles.cardBodyCompact]}>
+          <View style={[styles.modernBadge, { backgroundColor: gradient.start }]}>
+            <Text style={styles.modernBadgeText}>DEALER PARTNER</Text>
           </View>
-          <View style={[styles.megaStatCardCompact, { backgroundColor: C.goldLight }]}>
-            <Text style={[styles.megaStatNumCompact, { color: C.gold }]}>₹50L+</Text>
-            <Text style={[styles.megaStatLabelCompact, { color: C.gold }]}>{tx('Rewards')}</Text>
-          </View>
-        </View>
-
-        <View style={styles.powerFeaturesCompact}>
-          <View style={[styles.powerFeatureCardCompact, { backgroundColor: '#F5F3FF' }]}>
-            <View style={[styles.powerFeatureIconCompact, { backgroundColor: gradient.start }]}>
-              <AppIcon name="refer" size={20} color="#FFFFFF" />
-            </View>
-            <Text style={[styles.powerFeatureTitleCompact, { color: theme.textPrimary }]}>
-              {tx('Manage Network')}
-            </Text>
-          </View>
-
-          <View style={[styles.powerFeatureCardCompact, { backgroundColor: C.goldLight }]}>
-            <View style={[styles.powerFeatureIconCompact, { backgroundColor: C.gold }]}>
-              <AppIcon name="offer" size={20} color="#FFFFFF" />
-            </View>
-            <Text style={[styles.powerFeatureTitleCompact, { color: theme.textPrimary }]}>
-              {tx('Earn Rewards')}
-            </Text>
-          </View>
-
-          <View style={[styles.powerFeatureCardCompact, { backgroundColor: C.primaryLight }]}>
-            <View style={[styles.powerFeatureIconCompact, { backgroundColor: C.primary }]}>
-              <AppIcon name="redeem" size={20} color="#FFFFFF" />
-            </View>
-            <Text style={[styles.powerFeatureTitleCompact, { color: theme.textPrimary }]}>
-              {tx('Track Sales')}
-            </Text>
-          </View>
-        </View>
-
-        <View style={[styles.highlightBoxCompact, { backgroundColor: '#F5F3FF', borderColor: gradient.start }]}>
-          <Text style={[styles.highlightTextCompact, { color: gradient.start }]}>
-            ✦ {tx('Join 1000+ dealers')} ✦
+          
+          <Text style={[styles.heroTitleCompact, { color: theme.textPrimary }]}>
+            {tx('Distribute Quality')}
           </Text>
+          <Text style={[styles.heroTitleAccentCompact, { color: gradient.start }]}>
+            {tx('Electrical Solutions')}
+          </Text>
+          <Text style={[styles.heroSubtitleCompact, { color: theme.textSecondary }]}>
+            {tx('Stock 250+ premium products & grow your reach')}
+          </Text>
+
+          <View style={styles.megaStatsRowCompact}>
+            <View style={[styles.megaStatCardCompact, { backgroundColor: '#F5F3FF' }]}>
+              <Text style={[styles.megaStatNumCompact, { color: gradient.start }]}>1000+</Text>
+              <Text style={[styles.megaStatLabelCompact, { color: gradient.start }]}>{tx('Dealers')}</Text>
+            </View>
+            <View style={[styles.megaStatCardCompact, { backgroundColor: C.goldLight }]}>
+              <Text style={[styles.megaStatNumCompact, { color: C.gold }]}>₹50L+</Text>
+              <Text style={[styles.megaStatLabelCompact, { color: C.gold }]}>{tx('Rewards')}</Text>
+            </View>
+          </View>
+
+          <View style={styles.powerFeaturesCompact}>
+            <View style={[styles.powerFeatureCardCompact, { backgroundColor: '#F5F3FF' }]}>
+              <View style={[styles.powerFeatureIconCompact, { backgroundColor: gradient.start }]}>
+                <AppIcon name="refer" size={20} color="#FFFFFF" />
+              </View>
+              <Text style={[styles.powerFeatureTitleCompact, { color: theme.textPrimary }]}>
+                {tx('Premium Range')}
+              </Text>
+            </View>
+
+            <View style={[styles.powerFeatureCardCompact, { backgroundColor: C.goldLight }]}>
+              <View style={[styles.powerFeatureIconCompact, { backgroundColor: C.gold }]}>
+                <AppIcon name="offer" size={20} color="#FFFFFF" />
+              </View>
+              <Text style={[styles.powerFeatureTitleCompact, { color: theme.textPrimary }]}>
+                {tx('Best Margins')}
+              </Text>
+            </View>
+
+            <View style={[styles.powerFeatureCardCompact, { backgroundColor: C.primaryLight }]}>
+              <View style={[styles.powerFeatureIconCompact, { backgroundColor: C.primary }]}>
+                <AppIcon name="redeem" size={20} color="#FFFFFF" />
+              </View>
+              <Text style={[styles.powerFeatureTitleCompact, { color: theme.textPrimary }]}>
+                {tx('Fast Delivery')}
+              </Text>
+            </View>
+          </View>
+
+          <View style={[styles.highlightBoxCompact, { backgroundColor: '#F5F3FF', borderColor: gradient.start }]}>
+            <Text style={[styles.highlightTextCompact, { color: gradient.start }]}>
+              ✦ {tx('Trusted by 1000+ dealers across North India')} ✦
+            </Text>
+          </View>
         </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   // --- Slide 4: Electrician ---
   const Slide4 = ({
     gradient,
   }: {
     gradient: { start: string; end: string; icon: 'star' | 'refer' | 'redeem' };
-  }) => (
-    <View style={{ flex: 1 }}>
-      <View style={[styles.bannerHeader, { backgroundColor: '#ECFDF5', height: 140 }]}>
-        <View style={styles.electricianHeroSection}>
-          <View style={[styles.electricianHeroCircle, { backgroundColor: '#FFFFFF' }]}>
-            <AppIcon name="scan" size={40} color={gradient.start} />
+  }) => {
+    const badge1Float = useRef(new Animated.Value(0)).current;
+    const badge2Float = useRef(new Animated.Value(0)).current;
+    const badge1Scale = useRef(new Animated.Value(1)).current;
+    const badge2Scale = useRef(new Animated.Value(1)).current;
+    const circlePulse = useRef(new Animated.Value(1)).current;
+
+    useEffect(() => {
+      if (currentIndex !== 3) return;
+
+      const float1 = Animated.loop(
+        Animated.sequence([
+          Animated.timing(badge1Float, {
+            toValue: -11,
+            duration: 2100,
+            useNativeDriver: supportsNativeAnimatedDriver,
+          }),
+          Animated.timing(badge1Float, {
+            toValue: 0,
+            duration: 2100,
+            useNativeDriver: supportsNativeAnimatedDriver,
+          }),
+        ])
+      );
+
+      const float2 = Animated.loop(
+        Animated.sequence([
+          Animated.timing(badge2Float, {
+            toValue: -10,
+            duration: 2400,
+            useNativeDriver: supportsNativeAnimatedDriver,
+          }),
+          Animated.timing(badge2Float, {
+            toValue: 0,
+            duration: 2400,
+            useNativeDriver: supportsNativeAnimatedDriver,
+          }),
+        ])
+      );
+
+      const scale1 = Animated.loop(
+        Animated.sequence([
+          Animated.timing(badge1Scale, {
+            toValue: 1.15,
+            duration: 1000,
+            useNativeDriver: supportsNativeAnimatedDriver,
+          }),
+          Animated.timing(badge1Scale, {
+            toValue: 1,
+            duration: 1000,
+            useNativeDriver: supportsNativeAnimatedDriver,
+          }),
+        ])
+      );
+
+      const scale2 = Animated.loop(
+        Animated.sequence([
+          Animated.timing(badge2Scale, {
+            toValue: 1.12,
+            duration: 1200,
+            useNativeDriver: supportsNativeAnimatedDriver,
+          }),
+          Animated.timing(badge2Scale, {
+            toValue: 1,
+            duration: 1200,
+            useNativeDriver: supportsNativeAnimatedDriver,
+          }),
+        ])
+      );
+
+      const pulse = Animated.loop(
+        Animated.sequence([
+          Animated.timing(circlePulse, {
+            toValue: 1.07,
+            duration: 1400,
+            useNativeDriver: supportsNativeAnimatedDriver,
+          }),
+          Animated.timing(circlePulse, {
+            toValue: 1,
+            duration: 1400,
+            useNativeDriver: supportsNativeAnimatedDriver,
+          }),
+        ])
+      );
+
+      float1.start();
+      float2.start();
+      scale1.start();
+      scale2.start();
+      pulse.start();
+
+      return () => {
+        float1.stop();
+        float2.stop();
+        scale1.stop();
+        scale2.stop();
+        pulse.stop();
+      };
+    }, [currentIndex, badge1Float, badge2Float, badge1Scale, badge2Scale, circlePulse]);
+
+    return (
+      <View style={{ flex: 1 }}>
+        <View style={[styles.bannerHeader, { backgroundColor: '#ECFDF5', height: 140 }]}>
+          <View style={styles.electricianHeroSection}>
+            <Animated.View style={{ transform: [{ scale: circlePulse }] }}>
+              <View style={[styles.electricianHeroCircle, { backgroundColor: '#FFFFFF' }]}>
+                <AppIcon name="scan" size={40} color={gradient.start} />
+              </View>
+            </Animated.View>
+            <Animated.View
+              style={[
+                styles.floatingBadge1,
+                { 
+                  backgroundColor: gradient.start,
+                  transform: [{ translateY: badge1Float }, { scale: badge1Scale }] 
+                },
+              ]}
+            >
+              <Text style={styles.floatingEmoji}>⚡</Text>
+            </Animated.View>
+            <Animated.View
+              style={[
+                styles.floatingBadge2,
+                { 
+                  backgroundColor: C.gold,
+                  transform: [{ translateY: badge2Float }, { scale: badge2Scale }] 
+                },
+              ]}
+            >
+              <Text style={styles.floatingEmoji}>💰</Text>
+            </Animated.View>
           </View>
-          <View style={[styles.floatingBadge1, { backgroundColor: gradient.start }]}>
-            <Text style={styles.floatingEmoji}>⚡</Text>
+        </View>
+
+        <View style={[styles.cardBody, isCompactScreen && styles.cardBodyCompact]}>
+          <View style={[styles.modernBadge, { backgroundColor: gradient.start }]}>
+            <Text style={styles.modernBadgeText}>ELECTRICIAN REWARDS</Text>
           </View>
-          <View style={[styles.floatingBadge2, { backgroundColor: C.gold }]}>
-            <Text style={styles.floatingEmoji}>💰</Text>
+          
+          <Text style={[styles.heroTitleCompact, { color: theme.textPrimary }]}>
+            {tx('Scan & Earn')}
+          </Text>
+          <Text style={[styles.heroTitleAccentCompact, { color: gradient.start }]}>
+            {tx('Real Rewards')}
+          </Text>
+          <Text style={[styles.heroSubtitleCompact, { color: theme.textSecondary }]}>
+            {tx('Turn installations into cash')}
+          </Text>
+
+          <View style={styles.rewardShowcaseCompact}>
+            <View style={[styles.rewardCardCompact, { backgroundColor: gradient.start }]}>
+              <Text style={styles.rewardCardIconCompact}>📱</Text>
+              <Text style={styles.rewardCardTitleCompact}>{tx('Scan')}</Text>
+            </View>
+            <View style={styles.rewardArrowCompact}>
+              <Text style={styles.rewardArrowTextCompact}>→</Text>
+            </View>
+            <View style={[styles.rewardCardCompact, { backgroundColor: C.gold }]}>
+              <Text style={styles.rewardCardIconCompact}>⭐</Text>
+              <Text style={styles.rewardCardTitleCompact}>{tx('Earn')}</Text>
+            </View>
+            <View style={styles.rewardArrowCompact}>
+              <Text style={styles.rewardArrowTextCompact}>→</Text>
+            </View>
+            <View style={[styles.rewardCardCompact, { backgroundColor: C.primary }]}>
+              <Text style={styles.rewardCardIconCompact}>💵</Text>
+              <Text style={styles.rewardCardTitleCompact}>{tx('Cash')}</Text>
+            </View>
+          </View>
+
+          <View style={styles.megaStatsRowCompact}>
+            <View style={[styles.megaStatCardCompact, { backgroundColor: '#ECFDF5' }]}>
+              <Text style={[styles.megaStatNumCompact, { color: gradient.start }]}>₹1L+</Text>
+              <Text style={[styles.megaStatLabelCompact, { color: gradient.start }]}>{tx('Paid Out')}</Text>
+            </View>
+            <View style={[styles.megaStatCardCompact, { backgroundColor: C.primaryLight }]}>
+              <Text style={[styles.megaStatNumCompact, { color: C.primary }]}>20K+</Text>
+              <Text style={[styles.megaStatLabelCompact, { color: C.primary }]}>{tx('Members')}</Text>
+            </View>
+          </View>
+
+          <View style={styles.powerFeaturesCompact}>
+            <View style={[styles.powerFeatureCardCompact, { backgroundColor: '#ECFDF5' }]}>
+              <View style={[styles.powerFeatureIconCompact, { backgroundColor: gradient.start }]}>
+                <AppIcon name="scan" size={20} color="#FFFFFF" />
+              </View>
+              <Text style={[styles.powerFeatureTitleCompact, { color: theme.textPrimary }]}>
+                {tx('QR Scanning')}
+              </Text>
+            </View>
+
+            <View style={[styles.powerFeatureCardCompact, { backgroundColor: C.goldLight }]}>
+              <View style={[styles.powerFeatureIconCompact, { backgroundColor: C.gold }]}>
+                <AppIcon name="redeem" size={20} color="#FFFFFF" />
+              </View>
+              <Text style={[styles.powerFeatureTitleCompact, { color: theme.textPrimary }]}>
+                {tx('Direct Cash')}
+              </Text>
+            </View>
+
+            <View style={[styles.powerFeatureCardCompact, { backgroundColor: C.primaryLight }]}>
+              <View style={[styles.powerFeatureIconCompact, { backgroundColor: C.primary }]}>
+                <AppIcon name="star" size={20} color="#FFFFFF" />
+              </View>
+              <Text style={[styles.powerFeatureTitleCompact, { color: theme.textPrimary }]}>
+                {tx('Tier Rewards')}
+              </Text>
+            </View>
           </View>
         </View>
       </View>
-
-      <View style={[styles.cardBody, isCompactScreen && styles.cardBodyCompact]}>
-        <View style={[styles.modernBadge, { backgroundColor: gradient.start }]}>
-          <Text style={styles.modernBadgeText}>ELECTRICIAN REWARDS</Text>
-        </View>
-        
-        <Text style={[styles.heroTitleCompact, { color: theme.textPrimary }]}>
-          {tx('Scan & Earn')}
-        </Text>
-        <Text style={[styles.heroTitleAccentCompact, { color: gradient.start }]}>
-          {tx('Real Rewards')}
-        </Text>
-        <Text style={[styles.heroSubtitleCompact, { color: theme.textSecondary }]}>
-          {tx('Turn installations into cash')}
-        </Text>
-
-        <View style={styles.rewardShowcaseCompact}>
-          <View style={[styles.rewardCardCompact, { backgroundColor: gradient.start }]}>
-            <Text style={styles.rewardCardIconCompact}>📱</Text>
-            <Text style={styles.rewardCardTitleCompact}>{tx('Scan')}</Text>
-          </View>
-          <View style={styles.rewardArrowCompact}>
-            <Text style={styles.rewardArrowTextCompact}>→</Text>
-          </View>
-          <View style={[styles.rewardCardCompact, { backgroundColor: C.gold }]}>
-            <Text style={styles.rewardCardIconCompact}>⭐</Text>
-            <Text style={styles.rewardCardTitleCompact}>{tx('Earn')}</Text>
-          </View>
-          <View style={styles.rewardArrowCompact}>
-            <Text style={styles.rewardArrowTextCompact}>→</Text>
-          </View>
-          <View style={[styles.rewardCardCompact, { backgroundColor: C.primary }]}>
-            <Text style={styles.rewardCardIconCompact}>💵</Text>
-            <Text style={styles.rewardCardTitleCompact}>{tx('Cash')}</Text>
-          </View>
-        </View>
-
-        <View style={styles.megaStatsRowCompact}>
-          <View style={[styles.megaStatCardCompact, { backgroundColor: '#ECFDF5' }]}>
-            <Text style={[styles.megaStatNumCompact, { color: gradient.start }]}>₹1L+</Text>
-            <Text style={[styles.megaStatLabelCompact, { color: gradient.start }]}>{tx('Paid Out')}</Text>
-          </View>
-          <View style={[styles.megaStatCardCompact, { backgroundColor: C.primaryLight }]}>
-            <Text style={[styles.megaStatNumCompact, { color: C.primary }]}>20K+</Text>
-            <Text style={[styles.megaStatLabelCompact, { color: C.primary }]}>{tx('Members')}</Text>
-          </View>
-        </View>
-
-        <View style={styles.powerFeaturesCompact}>
-          <View style={[styles.powerFeatureCardCompact, { backgroundColor: '#ECFDF5' }]}>
-            <View style={[styles.powerFeatureIconCompact, { backgroundColor: gradient.start }]}>
-              <AppIcon name="scan" size={20} color="#FFFFFF" />
-            </View>
-            <Text style={[styles.powerFeatureTitleCompact, { color: theme.textPrimary }]}>
-              {tx('Easy Scanning')}
-            </Text>
-          </View>
-
-          <View style={[styles.powerFeatureCardCompact, { backgroundColor: C.goldLight }]}>
-            <View style={[styles.powerFeatureIconCompact, { backgroundColor: C.gold }]}>
-              <AppIcon name="redeem" size={20} color="#FFFFFF" />
-            </View>
-            <Text style={[styles.powerFeatureTitleCompact, { color: theme.textPrimary }]}>
-              {tx('Instant Vouchers')}
-            </Text>
-          </View>
-
-          <View style={[styles.powerFeatureCardCompact, { backgroundColor: C.primaryLight }]}>
-            <View style={[styles.powerFeatureIconCompact, { backgroundColor: C.primary }]}>
-              <AppIcon name="star" size={20} color="#FFFFFF" />
-            </View>
-            <Text style={[styles.powerFeatureTitleCompact, { color: theme.textPrimary }]}>
-              {tx('Level Up')}
-            </Text>
-          </View>
-        </View>
-      </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: darkMode ? '#0F172A' : '#F8FAFC' }]}>
