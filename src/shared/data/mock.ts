@@ -20,6 +20,11 @@ export const roleContent: Record<
     description: 'Dealer access for business onboarding, orders, and verified partner login.',
     tone: ['#DAB267', '#4F6DAF', '#253658'],
   },
+  user: {
+    title: 'Welcome to SRV',
+    description: 'Browse certified electrical products and connect with dealers and electricians.',
+    tone: ['#60A5FA', '#2563EB', '#1E3A8A'],
+  },
 };
 
 export const featuredProducts = [

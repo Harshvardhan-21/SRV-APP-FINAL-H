@@ -571,7 +571,7 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
 
           <Text style={[styles.welcomeText, { color: C.primary }]}>{tx('Welcome to SRV')}</Text>
           <Text style={[styles.sinceText, { color: theme.textPrimary }]}>
-            {tx('North India Largest')}
+            {tx("North India's Largest Metal Box Manufacturer")}
           </Text>
 
           <View style={styles.roleSelectorWrap}>
@@ -688,6 +688,9 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
                             role.key === 'user' && {
                               transform: [{ scale: 1.5 }],
                               top: 5,
+                            },
+                            role.key === 'dealer' && {
+                              transform: [{ scale: 1.3 }],
                             }
                           ]}
                           resizeMode="cover"
@@ -848,62 +851,66 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
 
         <View style={[styles.cardBody, isCompactScreen && styles.cardBodyCompact]}>
           <View style={[styles.modernBadge, { backgroundColor: '#2563EB' }]}>
-            <Text style={styles.modernBadgeText}>HOME USER</Text>
+            <Text style={styles.modernBadgeText}>FOR OUR SRV USERS</Text>
           </View>
           
           <Text style={[styles.heroTitleCompact, { color: theme.textPrimary }]}>
-            {tx('Explore Our')}
+            {tx('Discover Quality')}
           </Text>
           <Text style={[styles.heroTitleAccentCompact, { color: '#2563EB' }]}>
-            {tx('Product Range')}
+            {tx('Electrical Solutions')}
           </Text>
           <Text style={[styles.heroSubtitleCompact, { color: theme.textSecondary }]}>
-            {tx('Browse 250+ premium electrical products')}
+            {tx('Browse 250+ certified products for your home & business')}
           </Text>
 
           <View style={styles.benefitGridCompact}>
             <View style={[styles.benefitCardCompact, { backgroundColor: '#EFF6FF' }]}>
               <View style={[styles.benefitIconBoxCompact, { backgroundColor: '#2563EB' }]}>
-                <Text style={styles.benefitIconTextCompact}>🔍</Text>
+                <AppIcon name="support" size={20} color="#FFFFFF" />
               </View>
               <Text style={[styles.benefitTitleCompact, { color: theme.textPrimary }]}>
-                {tx('Easy Browse')}
+                {tx('Instant Support')}
               </Text>
             </View>
 
             <View style={[styles.benefitCardCompact, { backgroundColor: '#F0F9FF' }]}>
               <View style={[styles.benefitIconBoxCompact, { backgroundColor: '#0EA5E9' }]}>
-                <Text style={styles.benefitIconTextCompact}>💡</Text>
+                <AppIcon name="check" size={20} color="#FFFFFF" />
               </View>
               <Text style={[styles.benefitTitleCompact, { color: theme.textPrimary }]}>
-                {tx('Product Info')}
+                {tx('Verified Quality')}
               </Text>
             </View>
 
             <View style={[styles.benefitCardCompact, { backgroundColor: '#EFF6FF' }]}>
               <View style={[styles.benefitIconBoxCompact, { backgroundColor: '#3B82F6' }]}>
-                <Text style={styles.benefitIconTextCompact}>⚡</Text>
+                <AppIcon name="refer" size={20} color="#FFFFFF" />
               </View>
               <Text style={[styles.benefitTitleCompact, { color: theme.textPrimary }]}>
-                {tx('No Login')}
+                {tx('Connect with Electrician partner')}
               </Text>
             </View>
 
             <View style={[styles.benefitCardCompact, { backgroundColor: '#DBEAFE' }]}>
               <View style={[styles.benefitIconBoxCompact, { backgroundColor: '#1D4ED8' }]}>
-                <Text style={styles.benefitIconTextCompact}>🎯</Text>
+                <AppIcon name="order" size={20} color="#FFFFFF" />
               </View>
               <Text style={[styles.benefitTitleCompact, { color: theme.textPrimary }]}>
-                {tx('Categories')}
+                {tx('Access Various Products')}
               </Text>
             </View>
           </View>
 
           <View style={[styles.highlightBoxCompact, { backgroundColor: '#EFF6FF', borderColor: '#2563EB' }]}>
             <Text style={[styles.highlightTextCompact, { color: '#2563EB' }]}>
-              ✦ {tx('Perfect for homeowners')} ✦
+              ✦ {tx('Trusted by 50,000+ homes across North India')} ✦
             </Text>
           </View>
+
+          <Text style={[styles.trustText, { color: C.gold, marginTop: 12 }]}>
+            ✦ {tx('25 Years of Trust & Improvement')} ✦
+          </Text>
         </View>
       </View>
     );
@@ -997,70 +1004,138 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
     return (
       <View style={{ flex: 1 }}>
         <View style={[styles.bannerHeader, { backgroundColor: '#F5F3FF', height: 140 }]}>
-          <View style={styles.dealerHeroSection}>
-            <Animated.View style={{ transform: [{ scale: circlePulse }] }}>
-              <View style={[styles.dealerHeroCircle, { backgroundColor: '#FFFFFF' }]}>
-                <AppIcon name="building" size={40} color={gradient.start} />
-              </View>
-            </Animated.View>
-            <Animated.View
-              style={[
-                styles.floatingBadge1,
-                { 
-                  backgroundColor: gradient.start,
-                  transform: [{ translateY: badge1Float }, { rotate: rotateInterpolate }] 
-                },
-              ]}
-            >
-              <Text style={styles.floatingEmoji}>🏢</Text>
-            </Animated.View>
-            <Animated.View
-              style={[
-                styles.floatingBadge2,
-                { 
-                  backgroundColor: C.gold,
-                  transform: [{ translateY: badge2Float }] 
-                },
-              ]}
-            >
-              <Text style={styles.floatingEmoji}>💼</Text>
-            </Animated.View>
-          </View>
+          <Image
+            source={require('../../../assets/dealer banner new.jpeg')}
+            style={[styles.headerBannerImage, { transform: [{ scale: 1.15 }] }]}
+            resizeMode="cover"
+          />
         </View>
 
         <View style={[styles.cardBody, isCompactScreen && styles.cardBodyCompact]}>
           <View style={[styles.modernBadge, { backgroundColor: gradient.start }]}>
-            <Text style={styles.modernBadgeText}>DEALER PARTNER</Text>
+            <Text style={styles.modernBadgeText}>FOR OUR SRV DEALERS</Text>
           </View>
           
-          <Text style={[styles.heroTitleCompact, { color: theme.textPrimary }]}>
-            {tx('Distribute Quality')}
-          </Text>
-          <Text style={[styles.heroTitleAccentCompact, { color: gradient.start }]}>
-            {tx('Electrical Solutions')}
-          </Text>
-          <Text style={[styles.heroSubtitleCompact, { color: theme.textSecondary }]}>
-            {tx('Stock 250+ premium products & grow your reach')}
-          </Text>
+          <View
+            style={[
+              styles.dealerChannelCard,
+              isCompactScreen && styles.dealerChannelCardCompact,
+            ]}
+          >
+            <LinearGradient
+              colors={['#FAF5FF', '#FFFFFF', '#F5F3FF']}
+              locations={[0, 0.45, 1]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={StyleSheet.absoluteFill}
+            />
+            <View pointerEvents="none" style={[styles.dealerChannelCardSheen]} />
+            <View style={styles.dealerChannelCardRow}>
+              <View style={styles.dealerChannelAccentRailWrap}>
+                <LinearGradient
+                  colors={[gradient.start, gradient.end]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 0, y: 1 }}
+                  style={styles.dealerChannelAccentRailGrad}
+                />
+              </View>
+              <View
+                style={[
+                  styles.dealerChannelCopyCol,
+                  isCompactScreen && styles.dealerChannelCopyColCompact,
+                ]}
+              >
+                <View style={[styles.dealerChannelIconRow, isCompactScreen && styles.dealerChannelIconRowCompact]}>
+                  <LinearGradient
+                    colors={[gradient.start, gradient.end]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={[styles.dealerChannelIconGlow, isCompactScreen && styles.dealerChannelIconGlowCompact]}
+                  >
+                    <AppIcon
+                      name="refer"
+                      size={isCompactScreen ? 17 : 19}
+                      color="#FFFFFF"
+                      strokeWidth={1.9}
+                    />
+                  </LinearGradient>
+                </View>
+                <Text
+                  style={[
+                    styles.dealerChannelEyebrow,
+                    isCompactScreen && styles.dealerChannelEyebrowCompact,
+                    { color: gradient.start },
+                  ]}
+                >
+                  {tx('Partnership')}
+                </Text>
+                <Text
+                  style={[
+                    styles.dealerChannelHeadline,
+                    isCompactScreen && styles.dealerChannelHeadlineCompact,
+                    { color: darkMode ? '#F5F3FF' : '#4C1D95' },
+                  ]}
+                >
+                  {tx('Thank You for Being the Channel Partner')}
+                </Text>
+                <View
+                  style={[styles.dealerMsgDividerWrap, isCompactScreen && styles.dealerMsgDividerWrapCompact]}
+                >
+                  <View
+                    style={[
+                      styles.dealerMsgDividerLine,
+                      { backgroundColor: darkMode ? 'rgba(196,181,253,0.35)' : 'rgba(91,33,182,0.2)' },
+                    ]}
+                  />
+                  <Text style={[styles.dealerMsgDividerGem, { color: gradient.start }]}>◇</Text>
+                  <View
+                    style={[
+                      styles.dealerMsgDividerLine,
+                      { backgroundColor: darkMode ? 'rgba(196,181,253,0.35)' : 'rgba(91,33,182,0.2)' },
+                    ]}
+                  />
+                </View>
+                <Text
+                  style={[
+                    styles.dealerChannelBody,
+                    isCompactScreen && styles.dealerChannelBodyCompact,
+                    { color: darkMode ? '#DDD6FE' : '#6B21A8' },
+                  ]}
+                >
+                  {tx(
+                    'Let us build a strong relationship to ensure the distribution of SRV product range to every corner of India.'
+                  )}
+                </Text>
+              </View>
+            </View>
+          </View>
 
           <View style={styles.megaStatsRowCompact}>
-            <View style={[styles.megaStatCardCompact, { backgroundColor: '#F5F3FF' }]}>
-              <Text style={[styles.megaStatNumCompact, { color: gradient.start }]}>1000+</Text>
+            <View style={[styles.megaStatCardCompact, styles.megaStatCardDealerTriple, { backgroundColor: '#F5F3FF' }]}>
+              <Text style={[styles.megaStatNumCompact, styles.megaStatNumTriple, { color: gradient.start }]}>
+                1000+
+              </Text>
               <Text style={[styles.megaStatLabelCompact, { color: gradient.start }]}>{tx('Dealers')}</Text>
             </View>
-            <View style={[styles.megaStatCardCompact, { backgroundColor: C.goldLight }]}>
-              <Text style={[styles.megaStatNumCompact, { color: C.gold }]}>₹50L+</Text>
+            <View style={[styles.megaStatCardCompact, styles.megaStatCardDealerTriple, { backgroundColor: C.goldLight }]}>
+              <Text style={[styles.megaStatNumCompact, styles.megaStatNumTriple, { color: C.gold }]}>₹50L+</Text>
               <Text style={[styles.megaStatLabelCompact, { color: C.gold }]}>{tx('Rewards')}</Text>
+            </View>
+            <View style={[styles.megaStatCardCompact, styles.megaStatCardDealerTriple, { backgroundColor: '#EDE9FE' }]}>
+              <Text style={[styles.megaStatNumCompact, styles.megaStatNumTriple, { color: gradient.start }]}>
+                8+
+              </Text>
+              <Text style={[styles.megaStatLabelCompact, { color: gradient.start }]}>{tx('States')}</Text>
             </View>
           </View>
 
           <View style={styles.powerFeaturesCompact}>
             <View style={[styles.powerFeatureCardCompact, { backgroundColor: '#F5F3FF' }]}>
               <View style={[styles.powerFeatureIconCompact, { backgroundColor: gradient.start }]}>
-                <AppIcon name="refer" size={20} color="#FFFFFF" />
+                <AppIcon name="star" size={20} color="#FFFFFF" />
               </View>
               <Text style={[styles.powerFeatureTitleCompact, { color: theme.textPrimary }]}>
-                {tx('Premium Range')}
+                {tx('Premium Range of Products')}
               </Text>
             </View>
 
@@ -1069,16 +1144,7 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
                 <AppIcon name="offer" size={20} color="#FFFFFF" />
               </View>
               <Text style={[styles.powerFeatureTitleCompact, { color: theme.textPrimary }]}>
-                {tx('Best Margins')}
-              </Text>
-            </View>
-
-            <View style={[styles.powerFeatureCardCompact, { backgroundColor: C.primaryLight }]}>
-              <View style={[styles.powerFeatureIconCompact, { backgroundColor: C.primary }]}>
-                <AppIcon name="redeem" size={20} color="#FFFFFF" />
-              </View>
-              <Text style={[styles.powerFeatureTitleCompact, { color: theme.textPrimary }]}>
-                {tx('Fast Delivery')}
+                {tx('Best Discounts on Products')}
               </Text>
             </View>
           </View>
@@ -1088,6 +1154,10 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
               ✦ {tx('Trusted by 1000+ dealers across North India')} ✦
             </Text>
           </View>
+
+          <Text style={[styles.trustText, { color: C.gold, marginTop: 12 }]}>
+            ✦ {tx('25 Years of Trust & Improvement')} ✦
+          </Text>
         </View>
       </View>
     );
@@ -1234,48 +1304,50 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
 
         <View style={[styles.cardBody, isCompactScreen && styles.cardBodyCompact]}>
           <View style={[styles.modernBadge, { backgroundColor: gradient.start }]}>
-            <Text style={styles.modernBadgeText}>ELECTRICIAN REWARDS</Text>
+            <Text style={styles.modernBadgeText}>FOR OUR SRV ELECTRICIANS</Text>
           </View>
           
           <Text style={[styles.heroTitleCompact, { color: theme.textPrimary }]}>
-            {tx('Scan & Earn')}
+            {tx('Scan Products')}
           </Text>
           <Text style={[styles.heroTitleAccentCompact, { color: gradient.start }]}>
-            {tx('Real Rewards')}
+            {tx('Earn Instant Rewards')}
           </Text>
           <Text style={[styles.heroSubtitleCompact, { color: theme.textSecondary }]}>
-            {tx('Turn installations into cash')}
+            {tx('Get paid for every SRV product you install')}
           </Text>
 
           <View style={styles.rewardShowcaseCompact}>
             <View style={[styles.rewardCardCompact, { backgroundColor: gradient.start }]}>
-              <Text style={styles.rewardCardIconCompact}>📱</Text>
-              <Text style={styles.rewardCardTitleCompact}>{tx('Scan')}</Text>
+              <View style={styles.rewardCardIconWrapCompact}>
+                <AppIcon name="scan" size={24} color="#FFFFFF" strokeWidth={2.1} />
+              </View>
+              <Text style={styles.rewardCardTitleCompact}>{tx('Scan QR')}</Text>
             </View>
             <View style={styles.rewardArrowCompact}>
               <Text style={styles.rewardArrowTextCompact}>→</Text>
             </View>
             <View style={[styles.rewardCardCompact, { backgroundColor: C.gold }]}>
               <Text style={styles.rewardCardIconCompact}>⭐</Text>
-              <Text style={styles.rewardCardTitleCompact}>{tx('Earn')}</Text>
+              <Text style={styles.rewardCardTitleCompact}>{tx('Get Points')}</Text>
             </View>
             <View style={styles.rewardArrowCompact}>
               <Text style={styles.rewardArrowTextCompact}>→</Text>
             </View>
             <View style={[styles.rewardCardCompact, { backgroundColor: C.primary }]}>
-              <Text style={styles.rewardCardIconCompact}>💵</Text>
-              <Text style={styles.rewardCardTitleCompact}>{tx('Cash')}</Text>
+              <Text style={styles.rewardCardIconCompact}>💰</Text>
+              <Text style={styles.rewardCardTitleCompact}>{tx('Redeem')}</Text>
             </View>
           </View>
 
           <View style={styles.megaStatsRowCompact}>
             <View style={[styles.megaStatCardCompact, { backgroundColor: '#ECFDF5' }]}>
-              <Text style={[styles.megaStatNumCompact, { color: gradient.start }]}>₹1L+</Text>
-              <Text style={[styles.megaStatLabelCompact, { color: gradient.start }]}>{tx('Paid Out')}</Text>
+              <Text style={[styles.megaStatNumCompact, { color: gradient.start }]}>₹5L+</Text>
+              <Text style={[styles.megaStatLabelCompact, { color: gradient.start }]}>{tx('Rewards Paid')}</Text>
             </View>
             <View style={[styles.megaStatCardCompact, { backgroundColor: C.primaryLight }]}>
-              <Text style={[styles.megaStatNumCompact, { color: C.primary }]}>20K+</Text>
-              <Text style={[styles.megaStatLabelCompact, { color: C.primary }]}>{tx('Members')}</Text>
+              <Text style={[styles.megaStatNumCompact, { color: C.primary }]}>25K+</Text>
+              <Text style={[styles.megaStatLabelCompact, { color: C.primary }]}>{tx('Active Members')}</Text>
             </View>
           </View>
 
@@ -1285,7 +1357,7 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
                 <AppIcon name="scan" size={20} color="#FFFFFF" />
               </View>
               <Text style={[styles.powerFeatureTitleCompact, { color: theme.textPrimary }]}>
-                {tx('QR Scanning')}
+                {tx('Scan & Earn')}
               </Text>
             </View>
 
@@ -1294,19 +1366,14 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
                 <AppIcon name="redeem" size={20} color="#FFFFFF" />
               </View>
               <Text style={[styles.powerFeatureTitleCompact, { color: theme.textPrimary }]}>
-                {tx('Direct Cash')}
-              </Text>
-            </View>
-
-            <View style={[styles.powerFeatureCardCompact, { backgroundColor: C.primaryLight }]}>
-              <View style={[styles.powerFeatureIconCompact, { backgroundColor: C.primary }]}>
-                <AppIcon name="star" size={20} color="#FFFFFF" />
-              </View>
-              <Text style={[styles.powerFeatureTitleCompact, { color: theme.textPrimary }]}>
-                {tx('Tier Rewards')}
+                {tx('Daily Payouts')}
               </Text>
             </View>
           </View>
+
+          <Text style={[styles.trustText, { color: C.gold, marginTop: 12 }]}>
+            ✦ {tx('25 Years of Trust & Improvement')} ✦
+          </Text>
         </View>
       </View>
     );
@@ -1487,6 +1554,141 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 18,
     marginBottom: 16,
+  },
+  dealerChannelCard: {
+    marginBottom: 10,
+    borderRadius: 16,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(139,92,246,0.2)',
+    ...createShadow({ color: '#5B21B6', offsetY: 2, blur: 8, opacity: 0.08, elevation: 3 }),
+    position: 'relative',
+  },
+  dealerChannelCardCompact: {
+    marginBottom: 8,
+    borderRadius: 14,
+  },
+  dealerChannelCardSheen: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 16,
+    opacity: 0.35,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.65)',
+  },
+  dealerChannelCardRow: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    minHeight: 1,
+    position: 'relative',
+    zIndex: 1,
+  },
+  dealerChannelAccentRailWrap: {
+    width: 4,
+    alignSelf: 'stretch',
+    borderTopLeftRadius: 15,
+    borderBottomLeftRadius: 15,
+    overflow: 'hidden',
+  },
+  dealerChannelAccentRailGrad: {
+    flex: 1,
+    minHeight: 1,
+    width: '100%',
+  },
+  dealerChannelCopyCol: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingRight: 12,
+    paddingLeft: 10,
+    alignItems: 'center',
+  },
+  dealerChannelCopyColCompact: {
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+  },
+  dealerChannelIconRow: {
+    marginBottom: 4,
+  },
+  dealerChannelIconRowCompact: {
+    marginBottom: 3,
+  },
+  dealerChannelIconGlow: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...createShadow({ color: '#5B21B6', offsetY: 2, blur: 6, opacity: 0.18, elevation: 3 }),
+  },
+  dealerChannelIconGlowCompact: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+  },
+  dealerChannelEyebrow: {
+    fontSize: 9,
+    fontWeight: '900',
+    letterSpacing: 1.8,
+    textTransform: 'uppercase',
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  dealerChannelEyebrowCompact: {
+    fontSize: 8,
+    letterSpacing: 1.5,
+    marginBottom: 3,
+  },
+  dealerChannelHeadline: {
+    fontSize: 16,
+    fontWeight: '900',
+    textAlign: 'center',
+    lineHeight: 21,
+    marginBottom: 6,
+    letterSpacing: -0.25,
+    paddingHorizontal: 2,
+  },
+  dealerChannelHeadlineCompact: {
+    fontSize: 14,
+    lineHeight: 19,
+    marginBottom: 5,
+  },
+  dealerMsgDividerWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    maxWidth: 260,
+    marginBottom: 6,
+    gap: 8,
+    paddingHorizontal: 2,
+  },
+  dealerMsgDividerWrapCompact: {
+    maxWidth: 220,
+    marginBottom: 5,
+    gap: 6,
+  },
+  dealerMsgDividerLine: {
+    flex: 1,
+    height: StyleSheet.hairlineWidth || 1,
+    opacity: 0.85,
+  },
+  dealerMsgDividerGem: {
+    fontSize: 11,
+    fontWeight: '700',
+    opacity: 0.85,
+    marginTop: 1,
+  },
+  dealerChannelBody: {
+    fontSize: 12,
+    fontWeight: '600',
+    textAlign: 'center',
+    lineHeight: 18,
+    fontStyle: 'italic',
+    paddingHorizontal: 0,
+    letterSpacing: 0.12,
+  },
+  dealerChannelBodyCompact: {
+    fontSize: 11,
+    lineHeight: 16,
+    letterSpacing: 0.08,
   },
   // User slide hero section
   userHeroSection: {
@@ -1672,6 +1874,14 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: 'center',
   },
+  megaStatCardDealerTriple: {
+    paddingVertical: 12,
+    paddingHorizontal: 6,
+    minWidth: 0,
+  },
+  megaStatNumTriple: {
+    fontSize: 18,
+  },
   megaStatNumCompact: {
     fontSize: 22,
     fontWeight: '900',
@@ -1795,6 +2005,12 @@ const styles = StyleSheet.create({
   rewardCardIconCompact: {
     fontSize: 22,
     marginBottom: 4,
+  },
+  rewardCardIconWrapCompact: {
+    marginBottom: 4,
+    minHeight: 26,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   rewardCardTitleCompact: {
     color: '#FFFFFF',

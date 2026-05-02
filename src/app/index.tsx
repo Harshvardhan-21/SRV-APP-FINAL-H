@@ -25,7 +25,8 @@ import { ProductScreen as UserProductScreen } from '@/features/user/ProductScree
 import { ProfileScreen as UserProfileScreen } from '@/features/user/ProfileScreen';
 import { RewardsScreen as UserRewardsScreen } from '@/features/user/RewardsScreen';
 import { ScanScreen as UserScanScreen } from '@/features/user/ScanScreen';
-import { WalletScreen as UserWalletScreen } from '@/features/user/WalletScreen';import { AuthLandingScreen } from '@/features/profile/screens/AuthLandingScreen';
+import { WalletScreen as UserWalletScreen } from '@/features/user/WalletScreen';
+import { AuthLandingScreen } from '@/features/profile/screens/AuthLandingScreen';
 import {
   WalletBankDetailsScreen,
   WalletDealerBonusScreen,

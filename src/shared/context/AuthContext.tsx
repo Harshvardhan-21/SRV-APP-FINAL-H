@@ -1,16 +1,17 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { AppState } from 'react-native';
 import { authApi, storage, type UserProfile } from '../api';
+import type { UserRole } from '@/shared/types/navigation';
 
 type AuthState = {
   isLoading: boolean;
   isAuthenticated: boolean;
   user: UserProfile | null;
-  role: 'electrician' | 'dealer' | null;
+  role: UserRole | null;
 };
 
 type AuthContextType = AuthState & {
-  login: (user: UserProfile, role: 'electrician' | 'dealer') => void;
+  login: (user: UserProfile, role: UserRole) => void;
   logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   updateUser: (data: Partial<UserProfile>) => void;
@@ -41,7 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             isLoading: false,
             isAuthenticated: true,
             user: profile,
-            role: role as 'electrician' | 'dealer',
+            role: role as UserRole,
           });
         } else {
           setState((s) => ({ ...s, isLoading: false }));
@@ -53,7 +54,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     })();
   }, []);
 
-  const login = useCallback((user: UserProfile, role: 'electrician' | 'dealer') => {
+  const login = useCallback((user: UserProfile, role: UserRole) => {
     setState({ isLoading: false, isAuthenticated: true, user, role });
   }, []);
 
