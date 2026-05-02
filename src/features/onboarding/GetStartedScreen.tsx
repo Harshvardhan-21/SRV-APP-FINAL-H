@@ -427,6 +427,7 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
     scrollX.setValue(0);
     scrollPagerToPage(0, false);
     setCurrentIndex(0);
+    setSelectedAudience(null);
   }, [scrollPagerToPage, scrollX]);
 
   const handleMomentumScrollEnd = (event: any) => {
@@ -484,7 +485,7 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
     // Removed auto-redirect - user will click continue button instead
   }, [currentIndex, selectedAudience]);
 
-  const showContinueButton = currentIndex === 1 || currentIndex === 2 || currentIndex === 3;
+  const showContinueButton = selectedAudience !== null && (currentIndex === 1 || currentIndex === 2 || currentIndex === 3);
 
   // --- Slide 1: Individual animated sparkles from file 1, content from file 2 ---
   const Slide1 = () => {
@@ -1353,6 +1354,7 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
               accessible
               accessibilityRole="button"
               accessibilityLabel="Go back"
+              android_ripple={{ color: 'rgba(0,0,0,0.08)' }}
             >
               <View style={[styles.backBtnContent, { backgroundColor: theme.surface, borderColor: theme.border }]}>
                 <AppIcon name="chevronLeft" size={22} color={theme.textPrimary} strokeWidth={2.2} />
@@ -1368,8 +1370,10 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
               accessibilityRole="button"
               accessibilityLabel="Get started continue"
             >
-              <View style={[styles.nextBtnGradient, { backgroundColor: currentGradient.start }]}>
-                {slideGradients.map((gradient, i) => (
+              <View style={[styles.nextBtnGradient, { backgroundColor: currentIndex >= 1 ? currentGradient.start : slideGradients[1].start }]}>
+                {slideGradients.slice(1).map((gradient, idx) => {
+                  const i = idx + 1; // actual slide index (1, 2, 3)
+                  return (
                   <Animated.View
                     key={`next-gradient-${i}`}
                     style={[
@@ -1390,7 +1394,8 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
                       style={styles.nextBtnGradientFill}
                     />
                   </Animated.View>
-                ))}
+                  );
+                })}
                 <View style={styles.nextBtnContent}>
                   <Text style={styles.nextBtnText}>{tx('Continue')}</Text>
                   <AppIcon name="chevronRight" size={22} color="#fff" />
