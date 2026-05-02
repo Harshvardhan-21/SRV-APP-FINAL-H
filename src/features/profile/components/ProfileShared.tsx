@@ -99,6 +99,7 @@ export type IconName =
   | 'backArrow'
   | 'check'
   | 'lock'
+  | 'chevronLeft'
   | 'chevronRight'
   | 'chevronDown'
   | 'chevronUp'
@@ -671,6 +672,18 @@ export function AppIcon({
             strokeLinecap="round"
           />
           <Circle cx="12" cy="16" r="1.3" fill={color} />
+        </Svg>
+      );
+    case 'chevronLeft':
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+          <Path
+            d="M15 6l-6 6 6 6"
+            stroke={color}
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </Svg>
       );
     case 'chevronRight':

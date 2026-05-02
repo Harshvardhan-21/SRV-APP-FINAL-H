@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Animated,
   Image,
@@ -11,6 +11,7 @@ import {
   PanResponder,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Image as ExpoImage } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppIcon, C } from '@/features/profile/components/ProfileShared';
 import {
@@ -266,12 +267,19 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
   const isMediumScreen = screenWidth > 360 && screenWidth <= 768;
   const isCompactScreen = screenWidth <= 380;
   const bottomSectionPaddingBottom = isSmallScreen ? 18 : isMediumScreen ? 24 : 28;
+  // Per-slide baseline — NOT tied to Back/Continue visibility. Slide 0 must keep a stable
+  // padding when returning from slides 1–3; linking all slides to `showContinueButton`
+  // caused every panel to jump (90→24) when `currentIndex` hit 0 and looked glitchy under the pager.
+  const profileSlideBottomPad = 24;
+  const roleSlideBottomPad = 90;
   const scrollRef = useRef<ScrollView>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAudience, setSelectedAudience] = useState<'user' | 'dealer' | 'electrician' | null>(
     null
   );
   const scrollX = useRef(new Animated.Value(0)).current;
+  /** Integer page width avoids fractional snapping glitches between horizontal pages */
+  const pageWidth = Math.max(1, Math.round(screenWidth));
 
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
@@ -403,16 +411,34 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
     sparkleRotate,
   ]);
 
+  const clampPageIndex = useCallback((i: number) => Math.min(totalSlides - 1, Math.max(0, i)), [totalSlides]);
+
+  const scrollPagerToPage = useCallback(
+    (pageIndex: number, animated: boolean) => {
+      const x = pageIndex * pageWidth;
+      scrollRef.current?.scrollTo({ x, animated });
+    },
+    [pageWidth]
+  );
+
+  const snapBackToChooseProfile = useCallback(() => {
+    // Programmatic animated scroll often skips onMomentumScrollEnd on some platforms —
+    // then currentIndex stays 1–3 while the view is already on page 0 (glitch overlay / wrong bar).
+    scrollX.setValue(0);
+    scrollPagerToPage(0, false);
+    setCurrentIndex(0);
+  }, [scrollPagerToPage, scrollX]);
+
   const handleMomentumScrollEnd = (event: any) => {
-    const offset = event.nativeEvent.contentOffset.x;
-    const index = Math.round(offset / screenWidth);
-    if (index !== currentIndex && index >= 0 && index < totalSlides) {
-      setCurrentIndex(index);
+    const offset = event.nativeEvent.contentOffset?.x ?? 0;
+    const raw = clampPageIndex(Math.round(offset / pageWidth));
+    if (raw !== currentIndex) {
+      setCurrentIndex(raw);
     }
   };
 
   const goToSlide = (index: number) => {
-    scrollRef.current?.scrollTo({ x: index * screenWidth, animated: true });
+    scrollPagerToPage(clampPageIndex(index), true);
   };
 
   const handleRoleSelect = (audience: 'user' | 'dealer' | 'electrician') => {
@@ -1169,137 +1195,16 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
   }: {
     gradient: { start: string; end: string; icon: 'star' | 'refer' | 'redeem' };
   }) => {
-    const badge1Float = useRef(new Animated.Value(0)).current;
-    const badge2Float = useRef(new Animated.Value(0)).current;
-    const badge1Scale = useRef(new Animated.Value(1)).current;
-    const badge2Scale = useRef(new Animated.Value(1)).current;
-    const circlePulse = useRef(new Animated.Value(1)).current;
-
-    useEffect(() => {
-      if (currentIndex !== 3) return;
-
-      const float1 = Animated.loop(
-        Animated.sequence([
-          Animated.timing(badge1Float, {
-            toValue: -11,
-            duration: 2100,
-            useNativeDriver: supportsNativeAnimatedDriver,
-          }),
-          Animated.timing(badge1Float, {
-            toValue: 0,
-            duration: 2100,
-            useNativeDriver: supportsNativeAnimatedDriver,
-          }),
-        ])
-      );
-
-      const float2 = Animated.loop(
-        Animated.sequence([
-          Animated.timing(badge2Float, {
-            toValue: -10,
-            duration: 2400,
-            useNativeDriver: supportsNativeAnimatedDriver,
-          }),
-          Animated.timing(badge2Float, {
-            toValue: 0,
-            duration: 2400,
-            useNativeDriver: supportsNativeAnimatedDriver,
-          }),
-        ])
-      );
-
-      const scale1 = Animated.loop(
-        Animated.sequence([
-          Animated.timing(badge1Scale, {
-            toValue: 1.15,
-            duration: 1000,
-            useNativeDriver: supportsNativeAnimatedDriver,
-          }),
-          Animated.timing(badge1Scale, {
-            toValue: 1,
-            duration: 1000,
-            useNativeDriver: supportsNativeAnimatedDriver,
-          }),
-        ])
-      );
-
-      const scale2 = Animated.loop(
-        Animated.sequence([
-          Animated.timing(badge2Scale, {
-            toValue: 1.12,
-            duration: 1200,
-            useNativeDriver: supportsNativeAnimatedDriver,
-          }),
-          Animated.timing(badge2Scale, {
-            toValue: 1,
-            duration: 1200,
-            useNativeDriver: supportsNativeAnimatedDriver,
-          }),
-        ])
-      );
-
-      const pulse = Animated.loop(
-        Animated.sequence([
-          Animated.timing(circlePulse, {
-            toValue: 1.07,
-            duration: 1400,
-            useNativeDriver: supportsNativeAnimatedDriver,
-          }),
-          Animated.timing(circlePulse, {
-            toValue: 1,
-            duration: 1400,
-            useNativeDriver: supportsNativeAnimatedDriver,
-          }),
-        ])
-      );
-
-      float1.start();
-      float2.start();
-      scale1.start();
-      scale2.start();
-      pulse.start();
-
-      return () => {
-        float1.stop();
-        float2.stop();
-        scale1.stop();
-        scale2.stop();
-        pulse.stop();
-      };
-    }, [currentIndex, badge1Float, badge2Float, badge1Scale, badge2Scale, circlePulse]);
-
     return (
       <View style={{ flex: 1 }}>
-        <View style={[styles.bannerHeader, { backgroundColor: '#ECFDF5', height: 140 }]}>
-          <View style={styles.electricianHeroSection}>
-            <Animated.View style={{ transform: [{ scale: circlePulse }] }}>
-              <View style={[styles.electricianHeroCircle, { backgroundColor: '#FFFFFF' }]}>
-                <AppIcon name="scan" size={40} color={gradient.start} />
-              </View>
-            </Animated.View>
-            <Animated.View
-              style={[
-                styles.floatingBadge1,
-                { 
-                  backgroundColor: gradient.start,
-                  transform: [{ translateY: badge1Float }, { scale: badge1Scale }] 
-                },
-              ]}
-            >
-              <Text style={styles.floatingEmoji}>⚡</Text>
-            </Animated.View>
-            <Animated.View
-              style={[
-                styles.floatingBadge2,
-                { 
-                  backgroundColor: C.gold,
-                  transform: [{ translateY: badge2Float }, { scale: badge2Scale }] 
-                },
-              ]}
-            >
-              <Text style={styles.floatingEmoji}>💰</Text>
-            </Animated.View>
-          </View>
+        <View style={[styles.bannerHeader, { backgroundColor: '#ECFDF5', height: isCompactScreen ? 154 : 160 }]}>
+          <ExpoImage
+            source={require('../../../assets/electrician_banner1.jpg')}
+            style={styles.electricianBannerImageFill}
+            contentFit="cover"
+            contentPosition="top center"
+            accessibilityLabel="SRV electricians onboarding banner"
+          />
         </View>
 
         <View style={[styles.cardBody, isCompactScreen && styles.cardBodyCompact]}>
@@ -1386,13 +1291,14 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
         horizontal
         pagingEnabled
         scrollEnabled={false}
-        snapToInterval={screenWidth}
+        snapToInterval={pageWidth}
         snapToAlignment="start"
         disableIntervalMomentum
         showsHorizontalScrollIndicator={false}
         bounces={false}
         directionalLockEnabled
         overScrollMode="never"
+        removeClippedSubviews={false}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { x: scrollX } } }],
           withWebSafeNativeDriver({})
@@ -1401,21 +1307,25 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
         scrollEventThrottle={16}
         decelerationRate="normal"
         style={styles.slider}
-        contentContainerStyle={{ width: screenWidth * totalSlides }}
+        contentContainerStyle={{ width: pageWidth * totalSlides }}
       >
         {[0, 1, 2, 3].map((i) => (
           <Animated.View
             key={i}
             style={[
               styles.slide,
-              { width: screenWidth, backgroundColor: theme.surface },
+              { width: pageWidth, backgroundColor: theme.surface },
               { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
             ]}
           >
             <ScrollView
               scrollEnabled={false}
               style={{ flex: 1 }}
-              contentContainerStyle={{ paddingTop: insets.top, paddingBottom: showContinueButton ? 90 : 24, flexGrow: 1 }}
+              contentContainerStyle={{
+                paddingTop: insets.top,
+                paddingBottom: i === 0 ? profileSlideBottomPad : roleSlideBottomPad,
+                flexGrow: 1,
+              }}
               showsVerticalScrollIndicator={false}
               bounces={false}
             >
@@ -1438,14 +1348,15 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
           <View style={styles.buttonRow}>
             <Pressable
               style={styles.backBtn}
-              onPress={() => goToSlide(0)}
+              onPress={snapBackToChooseProfile}
               testID="get-started-back"
               accessible
               accessibilityRole="button"
               accessibilityLabel="Go back"
             >
               <View style={[styles.backBtnContent, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-                <Text style={[styles.backBtnText, { color: theme.textPrimary }]}>← {tx('Back')}</Text>
+                <AppIcon name="chevronLeft" size={22} color={theme.textPrimary} strokeWidth={2.2} />
+                <Text style={[styles.backBtnText, { color: theme.textPrimary }]}>{tx('Back')}</Text>
               </View>
             </Pressable>
 
@@ -1465,7 +1376,7 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
                       styles.nextBtnGradientLayer,
                       {
                         opacity: scrollX.interpolate({
-                          inputRange: [(i - 1) * screenWidth, i * screenWidth, (i + 1) * screenWidth],
+                          inputRange: [(i - 1) * pageWidth, i * pageWidth, (i + 1) * pageWidth],
                           outputRange: [0, 1, 0],
                           extrapolate: 'clamp',
                         }),
@@ -1482,7 +1393,7 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
                 ))}
                 <View style={styles.nextBtnContent}>
                   <Text style={styles.nextBtnText}>{tx('Continue')}</Text>
-                  <AppIcon name="chevronRight" size={20} color="#fff" />
+                  <AppIcon name="chevronRight" size={22} color="#fff" />
                 </View>
               </View>
             </Pressable>
@@ -2157,20 +2068,8 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  electricianBannerImage: {
-    width: '112%',
-    height: '118%',
-    marginLeft: '-6%',
-    marginTop: -4,
-    transform: [{ translateY: 8 }, { scale: 1.18 }],
-  },
-  electricianBannerImageCompact: {
-    width: '118%',
-    height: '122%',
-    marginLeft: '-9%',
-    marginTop: -2,
-    transform: [{ translateY: 8 }, { scale: 1.14 }],
-  },
+  // expo-image uses `contentPosition: top`; extra crop consumes bottom of bitmap first.
+  electricianBannerImageFill: StyleSheet.absoluteFillObject,
   roleHeroImageCompact: {
     width: 82,
     height: 82,
@@ -2536,7 +2435,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   backBtn: {
-    flex: 0.35,
+    flex: 1,
     borderRadius: 14,
     overflow: 'hidden',
   },
@@ -2550,11 +2449,11 @@ const styles = StyleSheet.create({
     borderRadius: 14,
   },
   backBtnText: {
-    fontSize: 14,
+    fontSize: 17,
     fontWeight: '800',
   },
   nextBtn: {
-    flex: 0.65,
+    flex: 1,
     borderRadius: 14,
     overflow: 'hidden',
     ...createShadow({ color: '#000', offsetY: 3, blur: 6, opacity: 0.12, elevation: 3 }),
@@ -2581,5 +2480,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
   },
-  nextBtnText: { color: '#fff', fontSize: 14, fontWeight: '800' },
+  nextBtnText: { color: '#fff', fontSize: 16, fontWeight: '800' },
 });
