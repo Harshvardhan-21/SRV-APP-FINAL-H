@@ -35,14 +35,29 @@ export function AuthLandingScreen({
   }
 
   const isDealer = role === 'dealer';
-  const accent = isDealer ? '#2563EB' : '#159A6F';
-  const accentSoft = isDealer ? '#DBEAFE' : '#DDF7EA';
-  const title = isDealer ? tx('Dealer account access') : tx('Electrician account access');
+  const isUser = role === 'user';
+  const accent = isDealer ? '#2563EB' : isUser ? '#7C3AED' : '#DE3B30';
+  const accentSoft = isDealer ? '#DBEAFE' : isUser ? '#EDE9FE' : '#FEE2E2';
+  const title = isDealer
+    ? tx('Dealer account access')
+    : isUser
+      ? tx('Customer account access')
+      : tx('Electrician account access');
   const subtitle = isDealer
     ? tx('Login or create your dealer account to unlock profile tools, network details and business controls.')
-    : tx('Login or create your electrician account to unlock rewards, scan history and your complete profile.');
-  const bulletOne = isDealer ? tx('Business profile and KYC setup') : tx('Rewards, scans and redemption history');
-  const bulletTwo = isDealer ? tx('Dealer network, bonus and orders') : tx('Electrician profile, wallet and level progress');
+    : isUser
+      ? tx('Login or create your customer account to browse products and get exclusive deals.')
+      : tx('Login or create your electrician account to unlock rewards, scan history and your complete profile.');
+  const bulletOne = isDealer
+    ? tx('Business profile and KYC setup')
+    : isUser
+      ? tx('Browse 250+ certified products')
+      : tx('Rewards, scans and redemption history');
+  const bulletTwo = isDealer
+    ? tx('Dealer network, bonus and orders')
+    : isUser
+      ? tx('Exclusive deals and offers')
+      : tx('Electrician profile, wallet and level progress');
 
   return (
     <ScrollView
@@ -53,10 +68,10 @@ export function AuthLandingScreen({
       <LinearGradient colors={[theme.heroSurface, theme.surface]} style={styles.heroCard}>
         <View style={[styles.heroGlow, { backgroundColor: accentSoft }]} />
         <View style={[styles.iconWrap, { backgroundColor: accentSoft }]}>
-          <AppIcon name={isDealer ? 'building' : 'scan'} size={28} color={accent} />
+          <AppIcon name={isDealer ? 'building' : isUser ? 'star' : 'scan'} size={28} color={accent} />
         </View>
         <Text style={[styles.eyebrow, { color: accent }]}>
-          {isDealer ? tx('Profile Locked For Dealer') : tx('Profile Locked For Electrician')}
+          {isDealer ? tx('Profile Locked For Dealer') : isUser ? tx('Profile Locked For Customer') : tx('Profile Locked For Electrician')}
         </Text>
         <Text style={[styles.title, { color: theme.textPrimary }]}>{title}</Text>
         <Text style={[styles.subtitle, { color: theme.textSecondary }]}>{subtitle}</Text>
@@ -81,7 +96,7 @@ export function AuthLandingScreen({
 
         <Pressable onPress={() => setMode('login')} style={styles.buttonShell}>
           <LinearGradient
-            colors={isDealer ? ['#2563EB', '#60A5FA'] : ['#159A6F', '#47C98B']}
+            colors={isDealer ? ['#2563EB', '#60A5FA'] : isUser ? ['#7C3AED', '#A78BFA'] : ['#DE3B30', '#F87171']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.primaryButton}

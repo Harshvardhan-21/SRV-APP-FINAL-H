@@ -1,7 +1,7 @@
 export type Screen =
   | 'home'
   | 'product'
-  | 'scan'
+  | 'categories'
   | 'electricians'
   | 'call_electrician'
   | 'rewards'

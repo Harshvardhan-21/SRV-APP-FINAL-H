@@ -4,10 +4,11 @@ import Svg, { Path, Rect, Circle } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { withWebSafeNativeDriver } from '@/shared/animations/nativeDriver';
 import { usePreferenceContext } from '@/shared/preferences';
-import { colors } from '@/shared/theme/colors';
 import { createShadow } from '@/shared/theme/shadows';
 import type { Screen } from '@/shared/types/navigation';
 import { useResponsive } from '@/shared/hooks';
+
+const PURPLE = '#7C3AED';
 
 type NavControlConfig = {
   id: Screen;
@@ -15,8 +16,6 @@ type NavControlConfig = {
   testID: string;
   accessibilityLabel: string;
 };
-
-// ── Icons ─────────────────────────────────────────────────────────────
 
 function HomeIcon({ color, size = 24 }: { color: string; size?: number }) {
   return (
@@ -26,7 +25,6 @@ function HomeIcon({ color, size = 24 }: { color: string; size?: number }) {
         stroke={color}
         strokeWidth={2}
         strokeLinejoin="round"
-        fill={color === colors.primary ? colors.primary + '22' : 'none'}
       />
       <Path
         d="M9 21V12h6v9"
@@ -88,30 +86,18 @@ function ProfileIcon({ color, size = 24 }: { color: string; size?: number }) {
   );
 }
 
-function ScanQRIcon() {
+function CategoriesIcon() {
   return (
     <Svg width={28} height={28} viewBox="0 0 24 24" fill="none">
-      {/* Top-left finder */}
-      <Rect x="3" y="3" width="7" height="7" rx="1.5" stroke="white" strokeWidth={2} />
-      <Rect x="5.5" y="5.5" width="2" height="2" fill="white" />
-      {/* Top-right finder */}
-      <Rect x="14" y="3" width="7" height="7" rx="1.5" stroke="white" strokeWidth={2} />
-      <Rect x="16.5" y="5.5" width="2" height="2" fill="white" />
-      {/* Bottom-left finder */}
-      <Rect x="3" y="14" width="7" height="7" rx="1.5" stroke="white" strokeWidth={2} />
-      <Rect x="5.5" y="16.5" width="2" height="2" fill="white" />
-      {/* Bottom-right data cells */}
-      <Rect x="14" y="14" width="3" height="3" rx={0.6} fill="white" />
-      <Rect x="18" y="14" width="3" height="3" rx={0.6} fill="white" />
-      <Rect x="14" y="18" width="3" height="3" rx={0.6} fill="white" />
-      <Rect x="18" y="18" width="3" height="3" rx={0.6} fill="white" />
+      <Rect x="3" y="3" width="8" height="8" rx="2" fill="white" />
+      <Rect x="13" y="3" width="8" height="8" rx="2" fill="white" />
+      <Rect x="3" y="13" width="8" height="8" rx="2" fill="white" />
+      <Rect x="13" y="13" width="8" height="8" rx="2" fill="white" />
     </Svg>
   );
 }
 
-// ── Scan Button ───────────────────────────────────────────────────────
-
-function ScanButton({
+function CategoriesButton({
   isActive,
   onPress,
   compact = false,
@@ -137,21 +123,8 @@ function ScanButton({
         Animated.sequence([
           Animated.delay(delay),
           Animated.parallel([
-            Animated.timing(
-              scale,
-              withWebSafeNativeDriver({
-                toValue: 1.4,
-                duration: 900,
-                easing: Easing.out(Easing.ease),
-              })
-            ),
-            Animated.timing(
-              opacity,
-              withWebSafeNativeDriver({
-                toValue: 0,
-                duration: 900,
-              })
-            ),
+            Animated.timing(scale, withWebSafeNativeDriver({ toValue: 1.4, duration: 900, easing: Easing.out(Easing.ease) })),
+            Animated.timing(opacity, withWebSafeNativeDriver({ toValue: 0, duration: 900 })),
           ]),
           Animated.parallel([
             Animated.timing(scale, withWebSafeNativeDriver({ toValue: 1, duration: 0 })),
@@ -174,147 +147,71 @@ function ScanButton({
   };
 
   return (
-    <View style={[scanStyles.wrapper, compact && scanStyles.wrapperCompact]}>
-      <Animated.View
-        style={[
-          scanStyles.ring,
-          compact && scanStyles.ringCompact,
-          {
-            transform: [{ scale: ring1Scale }],
-            opacity: ring1Opacity,
-            top: ringTop,
-            width: ringSize,
-            height: ringSize,
-          },
-        ]}
-      />
-      <Animated.View
-        style={[
-          scanStyles.ring,
-          compact && scanStyles.ringCompact,
-          {
-            transform: [{ scale: ring2Scale }],
-            opacity: ring2Opacity,
-            top: ringTop,
-            width: ringSize,
-            height: ringSize,
-          },
-        ]}
-      />
+    <View style={[catStyles.wrapper, compact && catStyles.wrapperCompact]}>
+      <Animated.View style={[catStyles.ring, compact && catStyles.ringCompact, { transform: [{ scale: ring1Scale }], opacity: ring1Opacity, top: ringTop, width: ringSize, height: ringSize }]} />
+      <Animated.View style={[catStyles.ring, compact && catStyles.ringCompact, { transform: [{ scale: ring2Scale }], opacity: ring2Opacity, top: ringTop, width: ringSize, height: ringSize }]} />
 
       <Pressable
         onPress={handlePress}
-        testID="electrician-bottom-nav-scan"
+        testID="user-bottom-nav-categories"
         accessible
         accessibilityRole="button"
-        accessibilityLabel="Electrician bottom navigation scan"
+        accessibilityLabel="User bottom navigation categories"
         accessibilityState={{ selected: isActive }}
-        style={[
-          scanStyles.pressArea,
-          compact && scanStyles.pressAreaCompact,
-          { marginTop: compact ? -14 : -20 },
-        ]}
+        style={[catStyles.pressArea, compact && catStyles.pressAreaCompact, { marginTop: compact ? -14 : -20 }]}
       >
-        <Animated.View
-          style={[
-            scanStyles.btn,
-            compact && scanStyles.btnCompact,
-            { transform: [{ scale: btnScale }], width: btnSize, height: btnSize },
-          ]}
-        >
-          <ScanQRIcon />
+        <Animated.View style={[catStyles.btn, compact && catStyles.btnCompact, { transform: [{ scale: btnScale }], width: btnSize, height: btnSize }]}>
+          <CategoriesIcon />
         </Animated.View>
       </Pressable>
 
-      <Text
-        style={[
-          scanStyles.label,
-          isActive && scanStyles.labelActive,
-          compact && scanStyles.labelCompact,
-        ]}
-      >
-        {tx('SCAN')}
+      <Text style={[catStyles.label, isActive && catStyles.labelActive, compact && catStyles.labelCompact]}>
+        {tx('Categories')}
       </Text>
     </View>
   );
 }
 
-const scanStyles = StyleSheet.create({
-  wrapper: {
-    alignItems: 'center',
-    width: 72,
-  },
-  wrapperCompact: {
-    width: 60,
-  },
+const catStyles = StyleSheet.create({
+  wrapper: { alignItems: 'center', width: 72 },
+  wrapperCompact: { width: 60 },
   ring: {
     position: 'absolute',
     top: -22,
     width: 60,
     height: 60,
     borderRadius: 18,
-    backgroundColor: colors.primary,
+    backgroundColor: PURPLE,
     zIndex: 0,
   },
-  ringCompact: {
-    borderRadius: 14,
-  },
-  pressArea: {
-    marginTop: -20,
-    marginBottom: 5,
-    zIndex: 1,
-  },
-  pressAreaCompact: {
-    marginBottom: 3,
-  },
+  ringCompact: { borderRadius: 14 },
+  pressArea: { marginTop: -20, marginBottom: 5, zIndex: 1 },
+  pressAreaCompact: { marginBottom: 3 },
   btn: {
     width: 60,
     height: 60,
     borderRadius: 18,
-    backgroundColor: colors.primary,
+    backgroundColor: PURPLE,
     alignItems: 'center',
     justifyContent: 'center',
-    ...createShadow({ color: colors.primary, offsetY: 5, blur: 12, opacity: 0.5, elevation: 12 }),
+    ...createShadow({ color: PURPLE, offsetY: 5, blur: 12, opacity: 0.5, elevation: 12 }),
   },
   btnCompact: {
     borderRadius: 14,
-    ...createShadow({ color: colors.primary, offsetY: 5, blur: 8, opacity: 0.5, elevation: 12 }),
+    ...createShadow({ color: PURPLE, offsetY: 5, blur: 8, opacity: 0.5, elevation: 12 }),
   },
-  label: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: '#9E9189',
-    letterSpacing: 0.5,
-    marginTop: 1,
-  },
-  labelActive: {
-    color: colors.primary,
-  },
-  labelCompact: {
-    fontSize: 8,
-  },
+  label: { fontSize: 10, fontWeight: '800', color: '#9E9189', letterSpacing: 0.5, marginTop: 1 },
+  labelActive: { color: PURPLE },
+  labelCompact: { fontSize: 8 },
 });
 
-// ── Nav Tab ───────────────────────────────────────────────────────────
-
 function NavTab({
-  id,
-  label,
-  active,
-  onPress,
-  testID,
-  accessibilityLabel,
-  compact = false,
+  id, label, active, onPress, testID, accessibilityLabel, compact = false,
 }: {
-  id: Screen;
-  label: string;
-  active: boolean;
-  onPress: () => void;
-  testID: string;
-  accessibilityLabel: string;
-  compact?: boolean;
+  id: Screen; label: string; active: boolean; onPress: () => void;
+  testID: string; accessibilityLabel: string; compact?: boolean;
 }) {
-  const iconColor = active ? colors.primary : '#A89A91';
+  const iconColor = active ? PURPLE : '#A89A91';
   const tabScale = useRef(new Animated.Value(1)).current;
 
   const handlePress = () => {
@@ -328,16 +225,11 @@ function NavTab({
   const renderIcon = () => {
     const iconSize = compact ? 20 : 24;
     switch (id) {
-      case 'home':
-        return <HomeIcon color={iconColor} size={iconSize} />;
-      case 'product':
-        return <ProductIcon color={iconColor} size={iconSize} />;
-      case 'wallet':
-        return <WalletIcon color={iconColor} size={iconSize} />;
-      case 'profile':
-        return <ProfileIcon color={iconColor} size={iconSize} />;
-      default:
-        return null;
+      case 'home': return <HomeIcon color={iconColor} size={iconSize} />;
+      case 'product': return <ProductIcon color={iconColor} size={iconSize} />;
+      case 'wallet': return <WalletIcon color={iconColor} size={iconSize} />;
+      case 'profile': return <ProfileIcon color={iconColor} size={iconSize} />;
+      default: return null;
     }
   };
 
@@ -351,13 +243,7 @@ function NavTab({
       accessibilityState={{ selected: active }}
       style={[styles.tab, compact && styles.tabCompact]}
     >
-      <Animated.View
-        style={[
-          styles.iconWrap,
-          compact && styles.iconWrapCompact,
-          { transform: [{ scale: tabScale }] },
-        ]}
-      >
+      <Animated.View style={[styles.iconWrap, compact && styles.iconWrapCompact, { transform: [{ scale: tabScale }] }]}>
         {renderIcon()}
       </Animated.View>
       <Text style={[styles.label, active && styles.labelActive, compact && styles.labelCompact]}>
@@ -367,36 +253,14 @@ function NavTab({
   );
 }
 
-// ── BottomNav ─────────────────────────────────────────────────────────
-
 const LEFT: NavControlConfig[] = [
-  {
-    id: 'home',
-    label: 'Home',
-    testID: 'electrician-bottom-nav-home',
-    accessibilityLabel: 'Electrician bottom navigation home',
-  },
-  {
-    id: 'product',
-    label: 'Product',
-    testID: 'electrician-bottom-nav-product',
-    accessibilityLabel: 'Electrician bottom navigation product',
-  },
+  { id: 'home', label: 'Home', testID: 'user-bottom-nav-home', accessibilityLabel: 'User bottom navigation home' },
+  { id: 'product', label: 'Product', testID: 'user-bottom-nav-product', accessibilityLabel: 'User bottom navigation product' },
 ];
 
 const RIGHT: NavControlConfig[] = [
-  {
-    id: 'wallet',
-    label: 'Wallet',
-    testID: 'electrician-bottom-nav-wallet',
-    accessibilityLabel: 'Electrician bottom navigation wallet',
-  },
-  {
-    id: 'profile',
-    label: 'Profile',
-    testID: 'electrician-bottom-nav-profile',
-    accessibilityLabel: 'Electrician bottom navigation profile',
-  },
+  { id: 'wallet', label: 'Wallet', testID: 'user-bottom-nav-wallet', accessibilityLabel: 'User bottom navigation wallet' },
+  { id: 'profile', label: 'Profile', testID: 'user-bottom-nav-profile', accessibilityLabel: 'User bottom navigation profile' },
 ];
 
 export function BottomNav({
@@ -409,25 +273,11 @@ export function BottomNav({
   const { darkMode, tx } = usePreferenceContext();
   const insets = useSafeAreaInsets();
   const { wp, isSmallDevice, isShortDevice } = useResponsive();
-  const bottomPad = isShortDevice
-    ? Math.max(insets.bottom, 4)
-    : isSmallDevice
-      ? Math.max(insets.bottom, 6)
-      : Math.max(insets.bottom, 8);
+  const bottomPad = isShortDevice ? Math.max(insets.bottom, 4) : isSmallDevice ? Math.max(insets.bottom, 6) : Math.max(insets.bottom, 8);
   const topPad = isShortDevice ? 6 : 10;
+
   return (
-    <View
-      style={[
-        styles.wrap,
-        darkMode ? styles.wrapDark : null,
-        {
-          paddingBottom: bottomPad,
-          paddingTop: topPad,
-          paddingHorizontal: wp(8),
-          minHeight: isShortDevice ? 52 : 54,
-        },
-      ]}
-    >
+    <View style={[styles.wrap, darkMode ? styles.wrapDark : null, { paddingBottom: bottomPad, paddingTop: topPad, paddingHorizontal: wp(8), minHeight: isShortDevice ? 52 : 54 }]}>
       <View style={styles.side}>
         {LEFT.map((item) => (
           <NavTab
@@ -443,9 +293,9 @@ export function BottomNav({
         ))}
       </View>
 
-      <ScanButton
-        isActive={currentScreen === 'scan'}
-        onPress={() => onNavigate('scan')}
+      <CategoriesButton
+        isActive={currentScreen === 'categories'}
+        onPress={() => onNavigate('categories')}
         compact={isShortDevice}
       />
 
@@ -482,42 +332,12 @@ const styles = StyleSheet.create({
     borderTopColor: '#243043',
     ...createShadow({ color: '#020617', offsetY: -4, blur: 14, opacity: 0.08, elevation: 12 }),
   },
-  side: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  tab: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: 50,
-  },
-  iconWrap: {
-    width: 24,
-    height: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  iconWrapCompact: {
-    width: 20,
-    height: 20,
-  },
-  tabCompact: {
-    minWidth: 44,
-  },
-  label: {
-    fontSize: 9,
-    fontWeight: '600',
-    color: '#A89A91',
-    marginTop: 2,
-  },
-  labelCompact: {
-    fontSize: 8,
-    marginTop: 1,
-  },
-  labelActive: {
-    color: colors.primary,
-    fontWeight: '800',
-  },
+  side: { flex: 1, flexDirection: 'row', justifyContent: 'space-around' },
+  tab: { flex: 1, alignItems: 'center', justifyContent: 'center', minWidth: 50 },
+  tabCompact: { minWidth: 44 },
+  iconWrap: { width: 24, height: 24, alignItems: 'center', justifyContent: 'center' },
+  iconWrapCompact: { width: 20, height: 20 },
+  label: { fontSize: 9, fontWeight: '600', color: '#A89A91', marginTop: 2 },
+  labelCompact: { fontSize: 8, marginTop: 1 },
+  labelActive: { color: PURPLE, fontWeight: '800' },
 });

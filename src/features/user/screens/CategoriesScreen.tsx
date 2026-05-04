@@ -1,5 +1,5 @@
-// Electrician-specific Product/Categories Screen — Red theme
-// To change electrician-specific styles, edit ONLY this file.
+// User-specific Categories Screen — Purple theme
+// To change user-specific styles, edit ONLY this file.
 import { useState } from 'react';
 import {
   Image,
@@ -16,8 +16,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePreferenceContext } from '@/shared/preferences';
 import { createShadow } from '@/shared/theme/shadows';
 
-const PRIMARY       = '#DE3B30';
-const PRIMARY_LIGHT = '#FEE2E2';
+const PRIMARY       = '#7C3AED';
+const PRIMARY_LIGHT = '#EDE9FE';
 
 function SearchIcon({ size = 18, color = '#9CA3AF' }: { size?: number; color?: string }) {
   return (
@@ -44,14 +44,14 @@ const PRODUCTS = [
   { id: '1', name: 'MCB Distribution Box',  category: 'boxes',      image: require('../../../../assets/Product/MCB Distribuation Box.png'), tag: 'ISI Certified', tagColor: '#059669', tagBg: '#D1FAE5', desc: 'For residential & commercial use' },
   { id: '2', name: 'Voltage Stabilizer',    category: 'stabilizer', image: require('../../../../assets/Product/Voltage Stabilizer.png'),    tag: 'Best Seller',   tagColor: '#D97706', tagBg: '#FEF3C7', desc: 'Automatic voltage protection' },
   { id: '3', name: 'PVC Conduit Pipe',      category: 'conduit',    image: require('../../../../assets/Product/PVC Conduit Pipe.png'),       tag: 'ISI Certified', tagColor: '#059669', tagBg: '#D1FAE5', desc: 'Rigid PVC wiring protection' },
-  { id: '4', name: 'Automatic Change Over', category: 'changeover', image: require('../../../../assets/Product/AUTOMATIC CHANGE OVER.png'),  tag: 'Premium',       tagColor: '#DE3B30', tagBg: '#FEE2E2', desc: 'Seamless power switching' },
+  { id: '4', name: 'Automatic Change Over', category: 'changeover', image: require('../../../../assets/Product/AUTOMATIC CHANGE OVER.png'),  tag: 'Premium',       tagColor: '#7C3AED', tagBg: '#EDE9FE', desc: 'Seamless power switching' },
   { id: '5', name: 'Fan Box 4" Range',      category: 'fans',       image: require('../../../../assets/Product/Fan box.png'),                tag: 'Popular',       tagColor: '#0891B2', tagBg: '#CFFAFE', desc: 'Ceiling fan installation box' },
   { id: '6', name: 'Concealed Box',         category: 'concealed',  image: require('../../../../assets/Product/Concelead Box.png'),          tag: 'ISI Certified', tagColor: '#059669', tagBg: '#D1FAE5', desc: 'For modular switch fitting' },
   { id: '7', name: 'Modular Box',           category: 'modular',    image: require('../../../../assets/Product/Modular_Box.png'),            tag: 'New',           tagColor: '#DC2626', tagBg: '#FEE2E2', desc: 'Modern switch installations' },
   { id: '8', name: 'Junction Box',          category: 'junction',   image: require('../../../../assets/Product/Junction_Box.png'),           tag: 'ISI Certified', tagColor: '#059669', tagBg: '#D1FAE5', desc: 'Weatherproof wire connections' },
 ];
 
-export function ProductScreen({ onNavigate }: { onNavigate: (screen: any) => void }) {
+export function CategoriesScreen({ onNavigate }: { onNavigate: (screen: any) => void }) {
   const { darkMode, tx } = usePreferenceContext();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();

@@ -468,9 +468,9 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
 
   const slideGradients = [
     { start: '#E8453C', end: '#FF6B6B', icon: 'star' as const },
-    { start: '#2563EB', end: '#60A5FA', icon: 'star' as const },
-    { start: '#7C3AED', end: '#A78BFA', icon: 'refer' as const },
-    { start: '#059669', end: '#34D399', icon: 'redeem' as const },
+    { start: '#7C3AED', end: '#A78BFA', icon: 'star' as const },
+    { start: '#2563EB', end: '#60A5FA', icon: 'refer' as const },
+    { start: '#DE3B30', end: '#F87171', icon: 'redeem' as const },
   ];
 
   const currentGradient = slideGradients[currentIndex];
@@ -613,33 +613,33 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
                 [
                   {
                     key: 'user' as const,
-                    label: tx('User'),
+                    label: tx('Customer'),
                     sub: tx('Browse products'),
                     image: require('../../../assets/user.jpeg'),
-                    color: '#2563EB',
-                    bg: '#EFF6FF',
-                    activeBg: '#DBEAFE',
-                    border: '#93C5FD',
-                  },
-                  {
-                    key: 'dealer' as const,
-                    label: tx('Dealer'),
-                    sub: tx('Grow your Business'),
-                    image: require('../../../assets/Dealer.png'),
                     color: '#7C3AED',
                     bg: '#F5F3FF',
                     activeBg: '#EDE9FE',
                     border: '#C4B5FD',
                   },
                   {
+                    key: 'dealer' as const,
+                    label: tx('Dealer'),
+                    sub: tx('Grow your Business'),
+                    image: require('../../../assets/Dealer.png'),
+                    color: '#2563EB',
+                    bg: '#EFF6FF',
+                    activeBg: '#DBEAFE',
+                    border: '#93C5FD',
+                  },
+                  {
                     key: 'electrician' as const,
                     label: tx('Electrician'),
                     sub: tx('Scan & earn'),
                     image: require('../../../assets/new electrician.png'),
-                    color: '#059669',
-                    bg: '#ECFDF5',
-                    activeBg: '#D1FAE5',
-                    border: '#6EE7B7',
+                    color: '#DE3B30',
+                    bg: '#FEF2F2',
+                    activeBg: '#FEE2E2',
+                    border: '#FECACA',
                   },
                 ] as const
               ).map((role, idx) => {
@@ -863,14 +863,14 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
         </View>
 
         <View style={[styles.cardBody, isCompactScreen && styles.cardBodyCompact]}>
-          <View style={[styles.modernBadge, { backgroundColor: '#2563EB' }]}>
-            <Text style={styles.modernBadgeText}>FOR OUR SRV USERS</Text>
+          <View style={[styles.modernBadge, { backgroundColor: '#7C3AED' }]}>
+            <Text style={styles.modernBadgeText}>FOR OUR SRV CUSTOMERS</Text>
           </View>
           
           <Text style={[styles.heroTitleCompact, { color: theme.textPrimary }]}>
             {tx('Discover Quality')}
           </Text>
-          <Text style={[styles.heroTitleAccentCompact, { color: '#2563EB' }]}>
+          <Text style={[styles.heroTitleAccentCompact, { color: '#7C3AED' }]}>
             {tx('Electrical Solutions')}
           </Text>
           <Text style={[styles.heroSubtitleCompact, { color: theme.textSecondary }]}>
@@ -878,8 +878,8 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
           </Text>
 
           <View style={styles.benefitGridCompact}>
-            <View style={[styles.benefitCardCompact, { backgroundColor: '#EFF6FF' }]}>
-              <View style={[styles.benefitIconBoxCompact, { backgroundColor: '#2563EB' }]}>
+            <View style={[styles.benefitCardCompact, { backgroundColor: '#F5F3FF' }]}>
+              <View style={[styles.benefitIconBoxCompact, { backgroundColor: '#7C3AED' }]}>
                 <AppIcon name="support" size={20} color="#FFFFFF" />
               </View>
               <Text style={[styles.benefitTitleCompact, { color: theme.textPrimary }]}>
@@ -887,8 +887,8 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
               </Text>
             </View>
 
-            <View style={[styles.benefitCardCompact, { backgroundColor: '#F0F9FF' }]}>
-              <View style={[styles.benefitIconBoxCompact, { backgroundColor: '#0EA5E9' }]}>
+            <View style={[styles.benefitCardCompact, { backgroundColor: '#EDE9FE' }]}>
+              <View style={[styles.benefitIconBoxCompact, { backgroundColor: '#6D28D9' }]}>
                 <AppIcon name="check" size={20} color="#FFFFFF" />
               </View>
               <Text style={[styles.benefitTitleCompact, { color: theme.textPrimary }]}>
@@ -896,8 +896,8 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
               </Text>
             </View>
 
-            <View style={[styles.benefitCardCompact, { backgroundColor: '#EFF6FF' }]}>
-              <View style={[styles.benefitIconBoxCompact, { backgroundColor: '#3B82F6' }]}>
+            <View style={[styles.benefitCardCompact, { backgroundColor: '#F5F3FF' }]}>
+              <View style={[styles.benefitIconBoxCompact, { backgroundColor: '#8B5CF6' }]}>
                 <AppIcon name="gift" size={20} color="#FFFFFF" />
               </View>
               <Text style={[styles.benefitTitleCompact, { color: theme.textPrimary }]}>
@@ -905,8 +905,8 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
               </Text>
             </View>
 
-            <View style={[styles.benefitCardCompact, { backgroundColor: '#DBEAFE' }]}>
-              <View style={[styles.benefitIconBoxCompact, { backgroundColor: '#1D4ED8' }]}>
+            <View style={[styles.benefitCardCompact, { backgroundColor: '#EDE9FE' }]}>
+              <View style={[styles.benefitIconBoxCompact, { backgroundColor: '#5B21B6' }]}>
                 <AppIcon name="order" size={20} color="#FFFFFF" />
               </View>
               <Text style={[styles.benefitTitleCompact, { color: theme.textPrimary }]}>
@@ -915,8 +915,8 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
             </View>
           </View>
 
-          <View style={[styles.highlightBoxCompact, { backgroundColor: '#EFF6FF', borderColor: '#2563EB' }]}>
-            <Text style={[styles.highlightTextCompact, { color: '#2563EB' }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>
+          <View style={[styles.highlightBoxCompact, { backgroundColor: '#F5F3FF', borderColor: '#7C3AED' }]}>
+            <Text style={[styles.highlightTextCompact, { color: '#7C3AED' }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>
               ✦ {tx('Trusted by 50,000+ Customers across North India')} ✦
             </Text>
           </View>
@@ -1184,7 +1184,7 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
   }) => {
     return (
       <View style={{ flex: 1 }}>
-        <View style={[styles.bannerHeader, { backgroundColor: '#ECFDF5', height: isCompactScreen ? 154 : 160 }]}>
+        <View style={[styles.bannerHeader, { backgroundColor: '#FEF2F2', height: isCompactScreen ? 154 : 160 }]}>
           <ExpoImage
             source={require('../../../assets/electrician_banner1.jpg')}
             style={styles.electricianBannerImageFill}
@@ -1233,7 +1233,7 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
           </View>
 
           <View style={styles.megaStatsRowCompact}>
-            <View style={[styles.megaStatCardCompact, { backgroundColor: '#ECFDF5' }]}>
+            <View style={[styles.megaStatCardCompact, { backgroundColor: '#FEF2F2' }]}>
               <Text style={[styles.megaStatNumCompact, { color: gradient.start }]}>₹5L+</Text>
               <Text style={[styles.megaStatLabelCompact, { color: gradient.start }]}>{tx('Rewards Paid')}</Text>
             </View>
@@ -1244,7 +1244,7 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
           </View>
 
           <View style={styles.powerFeaturesCompact}>
-            <View style={[styles.powerFeatureCardCompact, { backgroundColor: '#ECFDF5' }]}>
+            <View style={[styles.powerFeatureCardCompact, { backgroundColor: '#FEF2F2' }]}>
               <View style={[styles.powerFeatureIconCompact, { backgroundColor: gradient.start }]}>
                 <AppIcon name="scan" size={20} color="#FFFFFF" />
               </View>
@@ -1605,7 +1605,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
-    ...createShadow({ color: '#2563EB', offsetY: 4, blur: 20, opacity: 0.3, elevation: 8 }),
+    ...createShadow({ color: '#7C3AED', offsetY: 4, blur: 20, opacity: 0.3, elevation: 8 }),
   },
   // Dealer slide hero section
   dealerHeroSection: {
@@ -1620,7 +1620,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     alignItems: 'center',
     justifyContent: 'center',
-    ...createShadow({ color: '#7C3AED', offsetY: 4, blur: 20, opacity: 0.3, elevation: 8 }),
+    ...createShadow({ color: '#2563EB', offsetY: 4, blur: 20, opacity: 0.3, elevation: 8 }),
   },
   // Electrician slide hero section
   electricianHeroSection: {

@@ -8,7 +8,7 @@ import { ElectriciansScreen as DealerElectriciansScreen } from '@/features/deale
 import { HomeScreen as DealerHomeScreen } from '@/features/dealer/screens/HomeScreen';
 import { MemberTierScreen as DealerMemberTierScreen } from '@/features/dealer/screens/MemberTierScreen';
 import { ProfileScreen as DealerProfileScreen } from '@/features/dealer/ProfileScreen';
-import { ProductScreen as DealerProductScreen } from '@/features/dealer/ProductScreen';
+import { ProductScreen as DealerProductScreen } from '@/features/dealer/screens/ProductScreen';
 import { BottomNav as ElectricianBottomNav } from '@/features/electrician/BottomNav';
 import { ElectricianTierScreen } from '@/features/electrician/ElectricianTierScreen';
 import { HomeScreen as ElectricianHomeScreen } from '@/features/electrician/HomeScreen';
@@ -21,10 +21,9 @@ import { WalletScreen as ElectricianWalletScreen } from '@/features/electrician/
 import { BottomNav as UserBottomNav } from '@/features/user/BottomNav';
 import { HomeScreen as UserHomeScreen } from '@/features/user/screens/HomeScreen';
 import { NotificationScreen as UserNotificationScreen } from '@/features/user/NotificationScreen';
-import { ProductScreen as UserProductScreen } from '@/features/user/ProductScreen';
 import { ProfileScreen as UserProfileScreen } from '@/features/user/ProfileScreen';
 import { RewardsScreen as UserRewardsScreen } from '@/features/user/RewardsScreen';
-import { ScanScreen as UserScanScreen } from '@/features/user/ScanScreen';
+import { CategoriesScreen as UserCategoriesScreen } from '@/features/user/screens/CategoriesScreen';
 import { WalletScreen as UserWalletScreen } from '@/features/user/WalletScreen';
 import { AuthLandingScreen } from '@/features/profile/screens/AuthLandingScreen';
 import {
@@ -264,12 +263,7 @@ function AppContent() {
             />
           );
         case 'product':
-          return (
-            <DealerProductScreen
-              onNavigate={handleNavigate}
-              initialCategory={selectedProductCategory}
-            />
-          );
+          return <DealerProductScreen onNavigate={handleNavigate} />;
         case 'electricians':
           return <DealerElectriciansScreen onNavigate={handleNavigate} />;
         case 'call_electrician':
@@ -387,22 +381,11 @@ function AppContent() {
             />
           );
         case 'product':
-          return (
-            <UserProductScreen
-              onNavigate={handleNavigate}
-              initialCategory={selectedProductCategory}
-            />
-          );
+          return <UserCategoriesScreen onNavigate={handleNavigate} />;
         case 'notification':
           return <UserNotificationScreen onNavigate={handleNavigate} role="electrician" onNotificationsSeen={handleNotificationsSeen} />;
-        case 'scan':
-          return (
-            <UserScanScreen
-              onNavigate={handleNavigate}
-              rewardHistory={electricianRewardHistory}
-              onCommitRewards={handleElectricianRewardCommit}
-            />
-          );
+        case 'categories':
+          return <UserCategoriesScreen onNavigate={handleNavigate} />;
         case 'rewards':
           return <UserRewardsScreen onBack={() => setCurrentScreen('home')} />;
         case 'profile':
@@ -431,7 +414,7 @@ function AppContent() {
             />
           ) : (
             <AuthLandingScreen
-              role="electrician"
+              role="user"
               onAuthenticated={handleAuthenticatedRoleStart}
               onBack={() => {
                 setShowOnboarding(true);
@@ -476,12 +459,7 @@ function AppContent() {
           />
         );
       case 'product':
-        return (
-          <ElectricianProductScreen
-            onNavigate={handleNavigate}
-            initialCategory={selectedProductCategory}
-          />
-        );
+        return <ElectricianProductScreen onNavigate={handleNavigate} />;
       case 'notification':
         return <ElectricianNotificationScreen onNavigate={handleNavigate} role="electrician" onNotificationsSeen={handleNotificationsSeen} />;
       case 'scan':

@@ -745,14 +745,14 @@ export function HomeScreen({
 
   const quickActions = [
     {
-      testID: 'electrician-home-action-scan',
-      accessibilityLabel: 'Electrician home quick action scan',
-      title: tx('Scan & Earn'),
-      sub: tx('Instant points'),
+      testID: 'user-home-action-categories',
+      accessibilityLabel: 'User home quick action categories',
+      title: tx('Categories'),
+      sub: tx('Browse products'),
       icon: ScanIcon,
-      iconColors: ['#E0F2FE', '#BAE6FD'] as const,
-      iconTint: '#0369A1',
-      onPress: () => onNavigate('scan'),
+      iconColors: ['#EDE9FE', '#DDD6FE'] as const,
+      iconTint: '#7C3AED',
+      onPress: () => onNavigate('categories'),
     },
     {
       testID: 'electrician-home-action-wallet',
