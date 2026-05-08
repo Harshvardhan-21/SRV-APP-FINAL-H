@@ -6,17 +6,70 @@ import { storage } from './storage';
 // AUTH
 // ─────────────────────────────────────────────────────────────────────────────
 export const authApi = {
-  sendOtp: (phone: string, role: 'electrician' | 'dealer') =>
+  login: async (data: {
+    phone: string;
+    password: string;
+    role: 'electrician' | 'dealer' | 'user' | 'counterboy';
+  }) => authApi.loginWithPassword(data.phone, data.role, data.password),
+
+  register: async (data: {
+    name: string;
+    phone: string;
+    email?: string;
+    password?: string;
+    role: 'electrician' | 'dealer' | 'user' | 'counterboy';
+  }) => {
+    if (data.role === 'dealer') {
+      return authApi.registerDealer({
+        name: data.name,
+        phone: data.phone,
+        email: data.email,
+        town: '',
+        district: '',
+        state: '',
+        address: '',
+        password: data.password,
+      });
+    }
+    if (data.role === 'counterboy') {
+      return authApi.registerCounterBoy({
+        name: data.name,
+        phone: data.phone,
+        email: data.email,
+        password: data.password,
+      });
+    }
+    if (data.role === 'user') {
+      return authApi.registerUser({
+        name: data.name,
+        phone: data.phone,
+        email: data.email,
+        password: data.password,
+      });
+    }
+    return authApi.registerElectrician({
+      name: data.name,
+      phone: data.phone,
+      email: data.email,
+      city: '',
+      district: '',
+      state: '',
+      dealerPhone: '',
+      password: data.password,
+    });
+  },
+
+  sendOtp: (phone: string, role: 'electrician' | 'dealer' | 'user' | 'counterboy') =>
     api.post<{ success: boolean; message: string; devOtp?: string }>(
       '/mobile/auth/send-otp', { phone, role }
     ),
 
-  sendSignupOtp: (phone: string, role: 'electrician' | 'dealer') =>
+  sendSignupOtp: (phone: string, role: 'electrician' | 'dealer' | 'user' | 'counterboy') =>
     api.post<{ success: boolean; message: string; devOtp?: string }>(
       '/mobile/auth/signup/send-otp', { phone, role }
     ),
 
-  verifyOtp: async (phone: string, role: 'electrician' | 'dealer', otp: string) => {
+  verifyOtp: async (phone: string, role: 'electrician' | 'dealer' | 'user' | 'counterboy', otp: string) => {
     const res = await api.post<{ accessToken: string; refreshToken: string; user: UserProfile }>(
       '/mobile/auth/verify-otp', { phone, role, otp }
     );
@@ -26,7 +79,7 @@ export const authApi = {
     return res;
   },
 
-  verifySignupOtp: (phone: string, role: 'electrician' | 'dealer', otp: string) =>
+  verifySignupOtp: (phone: string, role: 'electrician' | 'dealer' | 'user' | 'counterboy', otp: string) =>
     api.post<{ success: boolean; message: string }>(
       '/mobile/auth/signup/verify-otp',
       { phone, role, otp }
@@ -34,7 +87,7 @@ export const authApi = {
 
   loginWithPassword: async (
     phone: string,
-    role: 'electrician' | 'dealer',
+    role: 'electrician' | 'dealer' | 'user' | 'counterboy',
     password: string
   ) => {
     const res = await api.post<{ accessToken: string; refreshToken: string; user: UserProfile }>(
@@ -92,10 +145,54 @@ export const authApi = {
     return res;
   },
 
-  getProfile: () => api.get<UserProfile>('/mobile/auth/profile', undefined, true),
+  registerUser: async (data: {
+    name: string;
+    phone: string;
+    email?: string;
+    city?: string;
+    state?: string;
+    district?: string;
+    address?: string;
+    pincode?: string;
+    password?: string;
+  }) => {
+    const res = await api.post<{ accessToken: string; refreshToken: string; user: UserProfile }>(
+      '/mobile/auth/signup/user',
+      data
+    );
+    await storage.setTokens(res.accessToken, res.refreshToken);
+    await storage.setUserProfile(res.user);
+    await storage.setUserRole('user');
+    return res;
+  },
+
+  registerCounterBoy: async (data: {
+    name: string;
+    phone: string;
+    email?: string;
+    city?: string;
+    state?: string;
+    district?: string;
+    address?: string;
+    pincode?: string;
+    dealerPhone?: string;
+    password?: string;
+  }) => {
+    const res = await api.post<{ accessToken: string; refreshToken: string; user: UserProfile }>(
+      '/mobile/auth/signup/counterboy',
+      data
+    );
+    await storage.setTokens(res.accessToken, res.refreshToken);
+    await storage.setUserProfile(res.user);
+    await storage.setUserRole('counterboy');
+    return res;
+  },
 
   updateProfile: (data: Partial<UserProfile>) =>
     api.patch<UserProfile>('/mobile/auth/profile', data, true),
+
+  getProfile: () =>
+    api.get<UserProfile>('/mobile/auth/profile', undefined, true),
 
   logout: async (accessTokenOverride?: string | null) => {
     const accessToken = accessTokenOverride ?? await storage.getAccessToken();
@@ -296,6 +393,9 @@ export const ordersApi = {
 // PROFILE
 // ─────────────────────────────────────────────────────────────────────────────
 export const profileApi = {
+  get: () =>
+    api.get<UserProfile>('/mobile/auth/profile', undefined, true),
+
   update: (data: Partial<UserProfile>) =>
     api.patch<UserProfile>('/mobile/auth/profile', data, true),
 
@@ -359,7 +459,7 @@ export type UserProfile = {
   name: string;
   phone: string;
   email?: string;
-  role: 'electrician' | 'dealer';
+  role: 'electrician' | 'dealer' | 'user' | 'counterboy';
   profileImage?: string | null;
   // Electrician fields
   electricianCode?: string;
@@ -510,6 +610,7 @@ export type AppSettings = {
   referralEnabled: boolean;
   playStoreUrl?: string;
   appStoreUrl?: string;
+  catalogPdfUrl?: string | null;
 };
 
 export type ScanResult = {
@@ -674,4 +775,61 @@ export type ActiveFestival = {
   theme: FestivalTheme;
   startDate: string | null;
   endDate: string | null;
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PLAYS
+// ─────────────────────────────────────────────────────────────────────────────
+export const playsApi = {
+  getAll: () =>
+    api.get<{ data: PlayVideo[] }>('/mobile/plays'),
+
+  recordView: (id: string) =>
+    api.post<{ message: string }>(`/mobile/plays/${id}/view`, {}, true),
+
+  getInteractions: (id: string) =>
+    api.get<PlayInteractions>(`/mobile/plays/${id}/interactions`, undefined, true),
+
+  toggleLike: (id: string) =>
+    api.post<PlayInteractions>(`/mobile/plays/${id}/like`, {}, true),
+
+  addComment: (id: string, message: string) =>
+    api.post<PlayInteractions>(`/mobile/plays/${id}/comments`, { message }, true),
+};
+
+export type PlayVideo = {
+  id: string;
+  title: string;
+  description: string;
+  videoUrl: string;
+  thumbnailUrl: string | null;
+  category: string;   // reels | guides | tips
+  displayOrder: number;
+  isActive: boolean;
+  viewCount: number;
+  createdAt: string;
+};
+
+export type PlayCommentReply = {
+  id: string;
+  message: string;
+  authorName?: string;
+  authorRole?: string;
+  createdAt: string;
+};
+
+export type PlayComment = {
+  id: string;
+  message: string;
+  authorName?: string;
+  authorRole?: string;
+  createdAt: string;
+  replies?: PlayCommentReply[];
+};
+
+export type PlayInteractions = {
+  playId: string;
+  likeCount: number;
+  likedByMe: boolean;
+  comments: PlayComment[];
 };

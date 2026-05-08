@@ -112,9 +112,31 @@ type ApiTxItem = {
 };
 
 // ── Role-wise theme tokens ────────────────────────────────────────────
-const ROLE_THEME = {
+const ROLE_THEME: Record<string, {
+  heroGradient: [string, string, string];
+  heroShadow: string;
+  eyebrowColor: string;
+  screenBg: string;
+  cardBorder: string;
+  cardShadow: string;
+  sectionEyebrow: string;
+  sectionIconBg: string;
+  actionTileBg: string;
+  actionTileBorder: string;
+  timelineCardBg: string;
+  timelineCardBorder: string;
+  emptyStateBg: string;
+  emptyStateBorder: string;
+  emptyIconBg: string;
+  emptyTitleColor: string;
+  paginationBtnBg: string;
+  paginationBtnDisabledBg: string;
+  paginationBtnDisabledText: string;
+  paginationInfoBg: string;
+  storeIconWrapBg: string;
+}> = {
   dealer: {
-    heroGradient: ['#7C3A00', '#B45309', '#D97706'] as [string, string, string],
+    heroGradient: ['#7C3A00', '#B45309', '#D97706'],
     heroShadow: '#7C3A00',
     eyebrowColor: '#FDE3B8',
     screenBg: '#FBF5EC',
@@ -137,7 +159,7 @@ const ROLE_THEME = {
     storeIconWrapBg: '#FFF0DA',
   },
   electrician: {
-    heroGradient: ['#1E3A8A', '#2563EB', '#60A5FA'] as [string, string, string],
+    heroGradient: ['#1E3A8A', '#2563EB', '#60A5FA'],
     heroShadow: '#1E3A8A',
     eyebrowColor: '#BFDBFE',
     screenBg: '#EFF4FB',
@@ -160,7 +182,7 @@ const ROLE_THEME = {
     storeIconWrapBg: '#DBEAFE',
   },
   user: {
-    heroGradient: ['#3D4A1A', '#6B7C2D', '#8FA83C'] as [string, string, string],
+    heroGradient: ['#3D4A1A', '#6B7C2D', '#8FA83C'],
     heroShadow: '#3D4A1A',
     eyebrowColor: '#E4EDB8',
     screenBg: '#F5F7EC',
@@ -181,6 +203,29 @@ const ROLE_THEME = {
     paginationBtnDisabledText: '#6B7C2D',
     paginationInfoBg: '#EEF3D0',
     storeIconWrapBg: '#EEF3D0',
+  },
+  counterboy: {
+    heroGradient: ['#7F1D1D', '#B91C1C', '#E8453C'],
+    heroShadow: '#7F1D1D',
+    eyebrowColor: '#FECACA',
+    screenBg: '#FFF5F5',
+    cardBorder: '#FFE4E4',
+    cardShadow: '#E8453C',
+    sectionEyebrow: '#E8453C',
+    sectionIconBg: '#FFF0EE',
+    actionTileBg: '#FFF5F5',
+    actionTileBorder: '#FFE4E4',
+    timelineCardBg: '#FFF5F5',
+    timelineCardBorder: '#FFE4E4',
+    emptyStateBg: '#FFF0EE',
+    emptyStateBorder: '#FFE4E4',
+    emptyIconBg: '#FFCECE',
+    emptyTitleColor: '#B91C1C',
+    paginationBtnBg: '#E8453C',
+    paginationBtnDisabledBg: '#FFE4E4',
+    paginationBtnDisabledText: '#E8453C',
+    paginationInfoBg: '#FFF5F5',
+    storeIconWrapBg: '#FFE4E4',
   },
 };
 

@@ -50,6 +50,7 @@ export function AuthLandingScreen({
   }
 
   const isDealer = role === 'dealer';
+  const isCounterBoy = role === 'counterboy';
   const accent = theme.accent;
   const roleTheme = isDealer
     ? {
@@ -58,6 +59,14 @@ export function AuthLandingScreen({
         p3: '#5B3410',
         soft: '#FEF3C7',
         orb: '#FCD34D',
+      }
+    : isCounterBoy
+    ? {
+        p1: '#E8453C',
+        p2: '#D73228',
+        p3: '#A61B14',
+        soft: '#FFE4E4',
+        orb: '#FFB8B5',
       }
     : {
         p1: '#2563EB',
@@ -68,16 +77,24 @@ export function AuthLandingScreen({
       };
   const title = isDealer
     ? tx('Dealer account access')
+    : isCounterBoy
+    ? tx('Counter boy account access')
     : tx('Electrician account access');
   const subtitle = isDealer
     ? tx('Login or create your dealer account to unlock profile tools, network details and business controls.')
+    : isCounterBoy
+    ? tx('Login or create your counter boy account to unlock billing tools, stock access and your complete profile.')
     : tx('Login or create your electrician account to unlock rewards, scan history and your complete profile.');
-  const heroTitle = isDealer ? tx('Welcome Dealer') : tx('Welcome Electrician');
-  const statThree = isDealer ? tx('Partners') : tx('Members');
+  const heroTitle = isDealer
+    ? tx('Welcome Dealer')
+    : isCounterBoy
+    ? tx('Welcome Counter Boy')
+    : tx('Welcome Electrician');
+  const statThree = isDealer ? tx('Partners') : isCounterBoy ? tx('Counters') : tx('Members');
 
   return (
     <ScrollView
-      style={[styles.screen, { backgroundColor: isDealer ? '#FFF9F0' : '#F4F8FF' }]}
+      style={[styles.screen, { backgroundColor: isDealer ? '#FFF9F0' : isCounterBoy ? '#FFF5F5' : '#F4F8FF' }]}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
@@ -92,6 +109,8 @@ export function AuthLandingScreen({
         <Text style={styles.heroSubtitle}>
           {isDealer
             ? tx('Manage business growth, connected electricians and dealer tools in one place.')
+            : isCounterBoy
+            ? tx('Manage customer billing, stock checks and profile progress with your SRV account.')
             : tx('Track rewards, scans and profile progress with your SRV account.')}
         </Text>
       </LinearGradient>

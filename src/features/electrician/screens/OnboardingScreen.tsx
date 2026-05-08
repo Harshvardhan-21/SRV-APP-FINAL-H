@@ -72,6 +72,8 @@ const C = {
 const roleMeta = {
   electrician: { title: 'Electrician', subtitle: 'Field rewards and quick verification' },
   dealer: { title: 'Dealer', subtitle: 'Business onboarding and account access' },
+  user: { title: 'User', subtitle: 'Customer account access and rewards overview' },
+  counterboy: { title: 'Counter Boy', subtitle: 'Counter operations and account access' },
 } as const;
 
 const languageOptions = [
@@ -769,7 +771,7 @@ export function OnboardingScreen({
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const isCompactPhone = width <= 360 || height <= 760;
-  const authBackgroundColors =
+  const authBackgroundColors: [string, string, string] =
     role === 'dealer'
       ? ['#F6F1EA', '#F2ECE4', '#FBF8F3']
       : ['#F3F6FB', '#EEF3FA', '#FAFCFF'];

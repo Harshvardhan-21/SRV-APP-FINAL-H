@@ -18,8 +18,8 @@ export function GetStartedScreen({ onComplete }: GetStartedScreenProps) {
   const handleBack = () => setSelectedRole(null);
 
   const handleContinue = (role: OnboardingRole) => {
-    // counter-boy is not a valid app role, treat as electrician
-    const appRole: UserRole = role === 'counter-boy' ? 'electrician' : role;
+    // counter-boy maps to counterboy app role
+    const appRole: UserRole = role === 'counter-boy' ? 'counterboy' : role;
     onComplete(appRole);
   };
 

@@ -26,25 +26,9 @@ import { formatCountText, usePreferenceContext } from '@/shared/preferences';
 import type { Screen } from '@/shared/types/navigation';
 import { useAuth } from '@/shared/context/AuthContext';
 import { useAppData } from '@/shared/context/AppDataContext';
+import { useCatalogDownload } from '@/shared/hooks';
 
-const logoImage = require('../../../../assets/banners/srv-logo.jpeg');
-const guestHeroSlides: CarouselSlide[] = [
-  {
-    image: require('../../../../assets/banners/light.jpg.jpeg'),
-    resizeMode: 'cover',
-    backgroundColor: '#0F172A',
-  },
-  {
-    image: require('../../../../assets/banners/mcb-box.jpg.jpeg'),
-    resizeMode: 'cover',
-    backgroundColor: '#0F172A',
-  },
-  {
-    image: require('../../../../assets/banners/appliances.jpg.jpeg'),
-    resizeMode: 'cover',
-    backgroundColor: '#0F172A',
-  },
-];
+const logoImage = require('../../../../assets/srv logo white.jpeg');
 
 const HOME_PRODUCT_ACCENTS: Record<string, readonly [string, string, string]> = {
   fanbox:       ['#FAFBFD', '#E9EEF5', '#D5DEE9'],
@@ -107,6 +91,22 @@ function WalletIcon({ color = '#7A4D14', size = 24 }: { color?: string; size?: n
       <Rect x="3" y="6" width="18" height="13" rx="2.4" stroke={color} strokeWidth={2} />
       <Path d="M15.5 11.5H21V16h-5.5a2.25 2.25 0 010-4.5z" stroke={color} strokeWidth={2} />
       <Circle cx="16.8" cy="13.75" r="1.05" fill={color} />
+    </Svg>
+  );
+}
+
+function DownloadIcon({ color = '#1D4ED8', size = 22 }: { color?: string; size?: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      {/* Book/catalog body */}
+      <Path d="M4 4.5A1.5 1.5 0 015.5 3H19a1 1 0 011 1v14a1 1 0 01-1 1H5.5A1.5 1.5 0 014 17.5v-13z" stroke={color} strokeWidth={1.7} />
+      {/* Spine line */}
+      <Path d="M8 3v16" stroke={color} strokeWidth={1.5} strokeLinecap="round" />
+      {/* Price tag lines */}
+      <Path d="M11 8h6M11 11h6M11 14h4" stroke={color} strokeWidth={1.5} strokeLinecap="round" />
+      {/* Bottom download arrow */}
+      <Path d="M2 20h6M5 17.5v5" stroke={color} strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" />
+      <Path d="M3.5 21.5L5 23l1.5-1.5" stroke={color} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   );
 }
@@ -377,6 +377,7 @@ export function HomeScreen({
   const { darkMode, tx, language } = usePreferenceContext();
   const { user: authUser } = useAuth();
   const { products: ctxProducts, banners: ctxBanners, testimonials: ctxTestimonials, appSettings } = useAppData();
+  const { openCatalog, downloading } = useCatalogDownload();
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const statPulse = useRef(new Animated.Value(1)).current;
@@ -484,25 +485,14 @@ export function HomeScreen({
       },
     },
     {
-      testID: 'dealer-home-action-wallet',
-      accessibilityLabel: 'Dealer home quick action wallet',
-      title: tx('Wallet'),
-      sub: tx('Payout and history'),
-      icon: WalletIcon,
-      iconColors: ['#FFF3DB', '#FFE1B0'] as const,
-      iconTint: '#9A5A0E',
-      onPress: () => {
-        const kyc = authUser?.kycStatus;
-        if (kyc !== 'verified') {
-          Alert.alert(
-            tx('KYC Required'),
-            tx('Please complete your KYC verification to access Wallet. Contact your SRV admin to get verified.'),
-            [{ text: tx('OK') }]
-          );
-          return;
-        }
-        onNavigate('wallet');
-      },
+      testID: 'dealer-home-action-catalog',
+      accessibilityLabel: 'Dealer home quick action download catalog',
+      title: tx('Product Catalog'),
+      sub: tx('Download PDF for latest updated prices'),
+      icon: DownloadIcon,
+      iconColors: ['#DBEAFE', '#BFDBFE'] as const,
+      iconTint: '#1D4ED8',
+      onPress: () => openCatalog(appSettings?.catalogPdfUrl),
     },
     {
       testID: 'dealer-home-action-call-electrician',
@@ -668,13 +658,15 @@ export function HomeScreen({
         </View>
         </>
         ) : (
-          <View style={styles.heroGuestBannerWrap}>
-            <BannerCarousel
-              slides={guestHeroSlides}
-              height={heroImageHeight}
-              darkMode={darkMode}
-            />
-          </View>
+          apiBannerSlides.length > 0 ? (
+            <View style={styles.heroGuestBannerWrap}>
+              <BannerCarousel
+                slides={apiBannerSlides}
+                height={heroImageHeight}
+                darkMode={darkMode}
+              />
+            </View>
+          ) : null
         )}
       </LinearGradient>
 
@@ -690,11 +682,10 @@ export function HomeScreen({
         <View style={styles.quickGrid}>
           {quickActions.map((item) => {
             const Icon = item.icon;
-            const isKycLocked = (item.testID === 'dealer-home-action-electricians' || item.testID === 'dealer-home-action-wallet') && authUser?.kycStatus !== 'verified';
             return (
               <TouchableOpacity
                 key={item.title}
-                style={[styles.quickCard, darkMode ? styles.quickCardDark : null, { width: cardW, opacity: isKycLocked ? 0.75 : 1 }]}
+                style={[styles.quickCard, darkMode ? styles.quickCardDark : null, { width: cardW }]}
                 onPress={item.onPress}
                 activeOpacity={0.9}
                 testID={item.testID}
@@ -709,13 +700,8 @@ export function HomeScreen({
                   {item.title}
                 </Text>
                 <Text style={[styles.quickSub, darkMode ? styles.quickSubDark : null]}>
-                  {isKycLocked ? tx('Complete KYC to unlock') : item.sub}
+                  {item.sub}
                 </Text>
-                {isKycLocked && (
-                  <View style={styles.kycLockBadge}>
-                    <Text style={styles.kycLockText}>🔒 {tx('KYC Required')}</Text>
-                  </View>
-                )}
               </TouchableOpacity>
             );
           })}
@@ -784,7 +770,7 @@ export function HomeScreen({
                 key={product.id}
                 title={product.name}
                 subtitle={product.sub ?? ''}
-                image={product.image ?? ''}
+                image={product.imageUrl ?? product.image ?? ''}
                 width={cardW}
                 accent={
                   HOME_PRODUCT_ACCENTS[product.category] ??
@@ -885,17 +871,18 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
+    backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.16)',
     overflow: 'hidden',
+    ...createShadow({ color: '#0F172A', offsetY: 2, blur: 8, opacity: 0.12, elevation: 3 }),
   },
   logoWrapDark: {
     backgroundColor: 'rgba(15,23,42,0.78)',
     borderWidth: 1,
     borderColor: 'rgba(148,163,184,0.2)',
   },
-  logoImage: { width: 64, height: 64 },
+  logoImage: { width: 48, height: 48 },
   topActionBtn: {
     width: 46,
     height: 46,

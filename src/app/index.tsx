@@ -18,6 +18,12 @@ import { ProfileScreen as ElectricianProfileScreen } from '@/features/electricia
 import { RewardsScreen as ElectricianRewardsScreen } from '@/features/electrician/screens/RewardsScreen';
 import { ScanScreen as ElectricianScanScreen } from '@/features/electrician/screens/ScanScreen';
 import { WalletScreen as ElectricianWalletScreen } from '@/features/electrician/screens/WalletScreen';
+import { BottomNav as CounterBoyBottomNav } from '@/features/counterboy/screens/BottomNav';
+import { HomeScreen as CounterBoyHomeScreen } from '@/features/counterboy/screens/HomeScreen';
+import { ProfileScreen as CounterBoyProfileScreen } from '@/features/counterboy/screens/ProfileScreen';
+import { ProductScreen as CounterBoyProductScreen } from '@/features/counterboy/screens/ProductScreen';
+import { NotificationScreen as CounterBoyNotificationScreen } from '@/features/counterboy/screens/NotificationScreen';
+import { ScanScreen as CounterBoyScanScreen } from '@/features/counterboy/screens/ScanScreen';
 import { BottomNav as UserBottomNav } from '@/features/user/screens/BottomNav';
 import { HomeScreen as UserHomeScreen } from '@/features/user/screens/HomeScreen';
 import { NotificationScreen as UserNotificationScreen } from '@/features/user/screens/NotificationScreen';
@@ -66,16 +72,19 @@ function AppContent() {
     dealer: false,
     electrician: false,
     user: false,
+    counterboy: false,
   });
   const [profilePhotoByRole, setProfilePhotoByRole] = useState<Record<UserRole, string | null>>({
     dealer: null,
     electrician: null,
     user: null,
+    counterboy: null,
   });
   const [passwordValueByRole, setPasswordValueByRole] = useState<Record<UserRole, string>>({
     dealer: '',
     electrician: '',
     user: '',
+    counterboy: '',
   });
   const [electricianRewardPoints, setElectricianRewardPoints] = useState(
     user?.totalPoints ?? 0
@@ -89,6 +98,7 @@ function AppContent() {
 
   const isDealer = currentRole === 'dealer';
   const isUser = currentRole === 'user';
+  const isCounterBoy = currentRole === 'counterboy';
 
   // Once auth loading is done, set initial state
   useEffect(() => {
@@ -487,6 +497,103 @@ function AppContent() {
       }
     }
 
+    if (isCounterBoy) {
+      switch (currentScreen) {
+        case 'home':
+          return (
+            <CounterBoyHomeScreen
+              onNavigate={handleNavigate}
+              onOpenProductCategory={handleOpenProductCategory}
+              profilePhotoUri={profilePhotoByRole.counterboy}
+              hasUnreadNotif={hasUnreadNotif}
+            />
+          );
+        case 'product':
+          return <CounterBoyProductScreen onNavigate={handleNavigate} />;
+        case 'scan':
+          return (
+            <CounterBoyScanScreen
+              onNavigate={handleNavigate}
+              rewardHistory={electricianRewardHistory}
+              onCommitRewards={handleElectricianRewardCommit}
+            />
+          );
+        case 'notification':
+          return <CounterBoyNotificationScreen onNavigate={handleNavigate} role="counterboy" onNotificationsSeen={handleNotificationsSeen} />;
+        case 'wallet':
+          return (
+            <ElectricianWalletScreen
+              role="counterboy"
+              onNavigate={handleNavigate}
+              totalPoints={electricianRewardPoints}
+              totalScans={electricianRewardScans}
+              historyItems={electricianRewardHistory}
+            />
+          );
+        case 'profile':
+          return isAuthenticated ? (
+            <CounterBoyProfileScreen
+              onNavigate={handleNavigate}
+              onSignOut={handleSignOut}
+              hasPasswordConfigured={passwordConfiguredByRole.counterboy}
+              storedPassword={passwordValueByRole.counterboy}
+              onPasswordConfiguredChange={(configured) =>
+                setPasswordConfiguredByRole((current) => ({ ...current, counterboy: configured }))
+              }
+              onPasswordChange={(password) =>
+                setPasswordValueByRole((current) => ({ ...current, counterboy: password }))
+              }
+              language={language}
+              onLanguageChange={setLanguage}
+              darkMode={darkMode}
+              onDarkModeChange={setDarkMode}
+              profilePhotoUri={profilePhotoByRole.counterboy}
+              onProfilePhotoChange={(photoUri) =>
+                setProfilePhotoByRole((current) => ({ ...current, counterboy: photoUri }))
+              }
+              totalPoints={electricianRewardPoints}
+              totalScans={electricianRewardScans}
+            />
+          ) : (
+            <AuthLandingScreen
+              role="counterboy"
+              onAuthenticated={handleAuthenticatedRoleStart}
+              onBack={() => { setShowOnboarding(true); setCurrentScreen('home'); }}
+            />
+          );
+        case 'bank_details':
+          return (
+            <WalletBankDetailsScreen
+              onBack={() => setCurrentScreen('wallet')}
+              language={language}
+              onLanguageChange={setLanguage}
+              darkMode={darkMode}
+              onDarkModeChange={setDarkMode}
+            />
+          );
+        case 'transfer_points':
+          return (
+            <WalletTransferPointsScreen
+              onBack={() => setCurrentScreen('wallet')}
+              onNavigate={handleNavigate}
+              language={language}
+              onLanguageChange={setLanguage}
+              darkMode={darkMode}
+              onDarkModeChange={setDarkMode}
+            />
+          );
+        default:
+          return (
+            <CounterBoyHomeScreen
+              onNavigate={handleNavigate}
+              onOpenProductCategory={handleOpenProductCategory}
+              profilePhotoUri={profilePhotoByRole.counterboy}
+              hasUnreadNotif={hasUnreadNotif}
+            />
+          );
+      }
+    }
+
     switch (currentScreen) {
       case 'home':
         return (
@@ -596,16 +703,20 @@ function AppContent() {
     currentScreen,
     isDealer,
     isUser,
+    isCounterBoy,
     isAuthenticated,
     passwordConfiguredByRole.dealer,
     passwordConfiguredByRole.electrician,
     passwordConfiguredByRole.user,
+    passwordConfiguredByRole.counterboy,
     profilePhotoByRole.dealer,
     profilePhotoByRole.electrician,
     profilePhotoByRole.user,
+    profilePhotoByRole.counterboy,
     passwordValueByRole.dealer,
     passwordValueByRole.electrician,
     passwordValueByRole.user,
+    passwordValueByRole.counterboy,
     electricianRewardHistory,
     electricianRewardPoints,
     electricianRewardScans,
@@ -655,6 +766,8 @@ function AppContent() {
           <DealerBottomNav currentScreen={currentScreen} onNavigate={handleNavigate} />
         ) : isUser ? (
           <UserBottomNav currentScreen={currentScreen} onNavigate={handleNavigate} />
+        ) : isCounterBoy ? (
+          <CounterBoyBottomNav currentScreen={currentScreen} onNavigate={handleNavigate} />
         ) : (
           <ElectricianBottomNav currentScreen={currentScreen} onNavigate={handleNavigate} />
         )}
@@ -675,5 +788,4 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 });
-
 

@@ -36,7 +36,7 @@ export function ProfileScreen({
 }) {
   return (
     <SharedProfileScreen
-      currentRole="user"
+      currentRole="counterboy"
       onNavigate={onNavigate}
       onSignOut={onSignOut}
       hasPasswordConfigured={hasPasswordConfigured}

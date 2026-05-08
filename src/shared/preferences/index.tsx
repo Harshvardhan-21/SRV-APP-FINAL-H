@@ -2022,6 +2022,13 @@ const roleAccents: Record<UserRole, { accent: string; accentSoft: string; accent
     lightBg: '#FAFCF4',
     lightHero: '#F5F7EB',
   },
+  counterboy: {
+    accent: '#E8453C',
+    accentSoft: '#FFE4E4',
+    accentDeep: '#B91C1C',
+    lightBg: '#FFF5F5',
+    lightHero: '#FFF0EE',
+  },
 };
 
 export const getThemePalette = (isDark: boolean, role: UserRole = 'electrician'): ThemePalette => {

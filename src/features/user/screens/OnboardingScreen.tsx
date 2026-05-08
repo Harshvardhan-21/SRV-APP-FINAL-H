@@ -72,6 +72,8 @@ const C = {
 const roleMeta = {
   electrician: { title: 'Electrician', subtitle: 'Field rewards and quick verification' },
   dealer: { title: 'Dealer', subtitle: 'Business onboarding and account access' },
+  user: { title: 'User', subtitle: 'Customer account access and rewards overview' },
+  counterboy: { title: 'Counter Boy', subtitle: 'Counter operations and account access' },
 } as const;
 
 const languageOptions = [

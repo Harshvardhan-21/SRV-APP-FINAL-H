@@ -26,6 +26,7 @@ import { TestimonialShowcase, type TestimonialItem } from '@/shared/components/T
 import { WebsitePromoSection } from '@/shared/components/WebsitePromoSection';
 import { BannerCarousel } from '@/shared/components/BannerCarousel';
 import { ElectricianTierIcon, getElectricianTier } from './ElectricianTierScreen';
+import { useCatalogDownload } from '@/shared/hooks';
 
 // ── Category color system (same as ProductScreen) ─────────────────────
 type CatColorScheme = {
@@ -326,13 +327,7 @@ const homeCatStyles = StyleSheet.create({
   pillText: { fontSize: 10, fontWeight: '700' },
 });
 
-const logoImage = require('../../../../assets/banners/srv-logo.jpeg');
-
-const guestHeroSlides = [
-  { image: require('../../../../assets/banners/light.jpg.jpeg'),    resizeMode: 'cover' as const, backgroundColor: '#0F172A' },
-  { image: require('../../../../assets/banners/mcb-box.jpg.jpeg'),  resizeMode: 'cover' as const, backgroundColor: '#0F172A' },
-  { image: require('../../../../assets/banners/appliances.jpg.jpeg'),resizeMode: 'cover' as const, backgroundColor: '#0F172A' },
-];
+const logoImage = require('../../../../assets/srv logo white.jpeg');
 
 type BannerSlide = {
   image: { uri: string };
@@ -504,6 +499,22 @@ function WalletIcon({ color = '#10254A', size = 22 }: { color?: string; size?: n
   );
 }
 
+function DownloadIcon({ color = '#1D4ED8', size = 22 }: { color?: string; size?: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      {/* Book/catalog body */}
+      <Path d="M4 4.5A1.5 1.5 0 015.5 3H19a1 1 0 011 1v14a1 1 0 01-1 1H5.5A1.5 1.5 0 014 17.5v-13z" stroke={color} strokeWidth={1.7} />
+      {/* Spine line */}
+      <Path d="M8 3v16" stroke={color} strokeWidth={1.5} strokeLinecap="round" />
+      {/* Price tag lines */}
+      <Path d="M11 8h6M11 11h6M11 14h4" stroke={color} strokeWidth={1.5} strokeLinecap="round" />
+      {/* Bottom download arrow */}
+      <Path d="M2 20h6M5 17.5v5" stroke={color} strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" />
+      <Path d="M3.5 21.5L5 23l1.5-1.5" stroke={color} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+  );
+}
+
 function BellIcon({ color = '#10254A', size = 22 }: { color?: string; size?: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
@@ -611,6 +622,7 @@ export function HomeScreen({
     appSettings,
   } = useAppData();
   const { user: authUser } = useAuth();
+  const { openCatalog, downloading } = useCatalogDownload();
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const [slide, setSlide] = useState(0);
@@ -628,7 +640,7 @@ export function HomeScreen({
         id: item.id,
         name: item.name,
         description: item.sub ?? '',
-        img: item.image || CAT_IMAGES[item.category] || CAT_IMAGES.fanbox,
+        img: item.imageUrl || item.image || CAT_IMAGES[item.category] || CAT_IMAGES.fanbox,
         category: item.category,
         price: item.price ? `Rs ${item.price}` : '',
         points: item.points,
@@ -696,7 +708,7 @@ export function HomeScreen({
     }
   }, [ctxTestimonials]);
 
-  // Map banners from context — ONLY use API data, no local fallback
+  // Map banners from context — set immediately, prefetch in background
   useEffect(() => {
     const filtered = ctxBanners.filter(
       (b) => b.isActive !== false && (b as any).status !== 'inactive' && b.imageUrl,
@@ -706,11 +718,11 @@ export function HomeScreen({
       resizeMode: 'cover' as const,
       backgroundColor: b.bgColor ?? '#192F67',
     }));
-    // Prefetch all banner images so they're in cache before carousel renders
+    // Set slides immediately so banner shows right away
+    setApiBannerSlides(mapped as any);
+    // Prefetch in background for smoother experience
     const uris = mapped.map((b) => b.image.uri);
-    Promise.all(uris.map((uri) => Image.prefetch(uri).catch(() => null))).finally(() => {
-      setApiBannerSlides(mapped as any);
-    });
+    uris.forEach((uri) => Image.prefetch(uri).catch(() => null));
   }, [ctxBanners]);
 
   const activeBannerSlides = apiBannerSlides;
@@ -761,14 +773,14 @@ export function HomeScreen({
       onPress: () => onNavigate('categories'),
     },
     {
-      testID: 'electrician-home-action-wallet',
-      accessibilityLabel: 'Electrician home quick action wallet',
-      title: tx('Wallet'),
-      sub: tx('Balance & history'),
-      icon: WalletIcon,
-      iconColors: ['#FEF3C7', '#FDE68A'] as const,
-      iconTint: '#B45309',
-      onPress: () => onNavigate('wallet'),
+      testID: 'user-home-action-catalog',
+      accessibilityLabel: 'User home quick action download catalog',
+      title: tx('Product Catalog'),
+      sub: tx('Download PDF for latest updated prices'),
+      icon: DownloadIcon,
+      iconColors: ['#DBEAFE', '#BFDBFE'] as const,
+      iconTint: '#1D4ED8',
+      onPress: () => openCatalog(appSettings?.catalogPdfUrl),
     },
     {
       testID: 'electrician-home-action-rewards',
@@ -952,18 +964,20 @@ export function HomeScreen({
         </View>
         </>
         ) : (
-          <View style={styles.heroGuestBannerWrap}>
-            <BannerCarousel
-              slides={guestHeroSlides}
-              height={heroImageHeight}
-              darkMode={darkMode}
-            />
-          </View>
+          apiBannerSlides.length > 0 ? (
+            <View style={styles.heroGuestBannerWrap}>
+              <BannerCarousel
+                slides={apiBannerSlides}
+                height={heroImageHeight}
+                darkMode={darkMode}
+              />
+            </View>
+          ) : null
         )}
       </LinearGradient>
 
       <View style={styles.body}>
-        {authUser ? (
+        {authUser && apiBannerSlides.length > 0 ? (
           <BannerCarousel
             slides={apiBannerSlides}
             height={heroImageHeight}
@@ -1105,18 +1119,17 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
+    backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.14)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.16)',
     overflow: 'hidden',
+    ...createShadow({ color: '#0F172A', offsetY: 2, blur: 8, opacity: 0.12, elevation: 3 }),
   },
   logoWrapDark: {
     backgroundColor: 'rgba(15,23,42,0.78)',
     borderColor: 'rgba(148,163,184,0.2)',
   },
-  logoImage: { width: 64, height: 64 },
+  logoImage: { width: 48, height: 48 },
   topActions: { flexDirection: 'row', gap: 8 },
   topActionBtn: {
     width: 46,

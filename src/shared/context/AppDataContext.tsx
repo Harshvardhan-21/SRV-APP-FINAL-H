@@ -39,7 +39,7 @@ import {
   type UserProfile,
   type UserQrCode,
   type WalletData,
-} from '../api';
+} from '../api/services';
 import { storage } from '../api/storage';
 import { useAuth } from './AuthContext';
 
@@ -200,7 +200,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     if (!isAuthenticated) return;
 
     const [prof, wal, scans, notifs, reds] = await Promise.all([
-      authApi.getProfile().catch(() => null),
+      profileApi.get().catch(() => null),
       walletApi.get().catch(() => null),
       scanApi.getHistory().catch(() => null),
       notificationsApi.getAll(role ?? undefined, user?.id).catch(() => ({ data: [] as AppNotification[] })),

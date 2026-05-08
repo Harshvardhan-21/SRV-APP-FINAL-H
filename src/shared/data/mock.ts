@@ -25,6 +25,11 @@ export const roleContent: Record<
     description: 'Browse certified electrical products and connect with dealers and electricians.',
     tone: ['#60A5FA', '#2563EB', '#1E3A8A'],
   },
+  counterboy: {
+    title: 'Welcome to SRV',
+    description: 'Counter boy access for billing support, scanning, and day-to-day store operations.',
+    tone: ['#F87171', '#E8453C', '#991B1B'],
+  },
 };
 
 export const featuredProducts = [

@@ -18,7 +18,7 @@ import { withWebSafeNativeDriver } from '@/shared/animations/nativeDriver';
 import { usePreferenceContext } from '@/shared/preferences';
 import { createShadow } from '@/shared/theme/shadows';
 
-const logoImage = require('../../../assets/banners/srv-logo.jpeg');
+const logoImage = require('../../../assets/srv logo white.jpeg');
 
 interface Profile {
   name?: string;
@@ -36,7 +36,7 @@ interface Profile {
 
 interface Props {
   profile?: Profile;
-  role?: 'dealer' | 'electrician';
+  role?: 'dealer' | 'electrician' | 'counterboy' | 'user';
   photoUri?: string | null;
   apiPhotoUri?: string | null;
 }
@@ -136,7 +136,8 @@ export default function ProfileFlipCard({ profile, role = 'electrician', photoUr
     .toUpperCase()
     .slice(0, 2);
 
-  const code = role === 'dealer' ? profile?.dealer_code : profile?.electrician_code;
+  const isDealer = role === 'dealer';
+  const code = isDealer ? profile?.dealer_code : profile?.electrician_code;
   const qrValue = code || profile?.phone || 'SRV';
   const qrUrl =
     'https://quickchart.io/qr?text=' +
@@ -202,7 +203,7 @@ export default function ProfileFlipCard({ profile, role = 'electrician', photoUr
 
   const fallbackText = tx('Not available');
   const dealerName =
-    role === 'dealer' ? profile?.name || fallbackText : profile?.dealer_name || fallbackText;
+    isDealer ? profile?.name || fallbackText : profile?.dealer_name || fallbackText;
   const formatTranslatedLocation = (parts: (string | undefined)[]) =>
     parts
       .filter(Boolean)
@@ -210,10 +211,10 @@ export default function ProfileFlipCard({ profile, role = 'electrician', photoUr
       .join(', ');
 
   const dealerLocation =
-    role === 'dealer'
+    isDealer
       ? formatTranslatedLocation([profile?.town, profile?.state]) || fallbackText
       : formatTranslatedLocation([profile?.dealer_town, profile?.state]) || fallbackText;
-  const dealerPhoneValue = role === 'dealer' ? profile?.phone : profile?.dealer_phone;
+  const dealerPhoneValue = isDealer ? profile?.phone : profile?.dealer_phone;
   const dealerPhone = dealerPhoneValue ? '+91 ' + dealerPhoneValue : fallbackText;
   const dealerAddress = profile?.address
     ? profile.address
@@ -222,12 +223,12 @@ export default function ProfileFlipCard({ profile, role = 'electrician', photoUr
         .replace(/\bIndia\b/g, tx('India'))
     : fallbackText;
   const frontLocation =
-    role === 'dealer'
+    isDealer
       ? dealerLocation
       : formatTranslatedLocation([profile?.town, profile?.state]) || fallbackText;
-  const codeLabel = role === 'dealer' ? tx('Dealer Code') : tx('Electrician Code');
-  const backThirdLabel = role === 'dealer' ? tx('Address') : tx('Phone Number');
-  const backThirdValue = role === 'dealer' ? dealerAddress : dealerPhone;
+  const codeLabel = isDealer ? tx('Dealer Code') : tx('Electrician Code');
+  const backThirdLabel = isDealer ? tx('Address') : tx('Phone Number');
+  const backThirdValue = isDealer ? dealerAddress : dealerPhone;
   const exportName =
     (profile?.name || dealerName || fallbackText)
       .toLowerCase()
@@ -687,5 +688,3 @@ const styles = StyleSheet.create({
     width: '100%',
   },
 });
-
-

@@ -17,6 +17,7 @@ const THEMES = {
   user:        { p1: '#6B7C2D', p2: '#4D5F1F', soft: '#EEF4D7', orb: '#B7CC74' },
   dealer:      { p1: '#1D4ED8', p2: '#1E3A8A', soft: '#DBEAFE', orb: '#93C5FD' },
   electrician: { p1: '#DE3B30', p2: '#991B1B', soft: '#FEE2E2', orb: '#FCA5A5' },
+  counterboy:  { p1: '#E8453C', p2: '#B91C1C', soft: '#FFE4E4', orb: '#FCA5A5' },
 };
 
 
@@ -105,7 +106,7 @@ export function UserAuthScreen({
 }: {
   onAuthenticated: (role: any, options?: { passwordConfigured?: boolean; passwordValue?: string }) => void;
   onBack?: () => void;
-  role?: 'user' | 'dealer' | 'electrician';
+  role?: 'user' | 'dealer' | 'electrician' | 'counterboy';
 }) {
   const { tx, darkMode } = usePreferenceContext();
   const insets = useSafeAreaInsets();

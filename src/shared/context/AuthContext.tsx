@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { AppState } from 'react-native';
-import { authApi, storage, type UserProfile } from '../api';
+import { authApi, profileApi, type UserProfile } from '../api/services';
+import { storage } from '../api/storage';
 import type { UserRole } from '@/shared/types/navigation';
 
 type AuthState = {
@@ -69,7 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const token = await storage.getAccessToken();
       if (!token) return;
-      const profile = await authApi.getProfile();
+      const profile = await profileApi.get();
       await storage.setUserProfile(profile);
       setState((s) => ({ ...s, user: profile }));
     } catch (err: any) {

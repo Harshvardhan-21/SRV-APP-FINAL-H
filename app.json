@@ -19,14 +19,18 @@
           "locationWhenInUsePermission": "Allow SRV Electricals to access your location so we can fill your current address during signup."
         }
       ],
-      "expo-mail-composer"
+      "expo-mail-composer",
+      "expo-web-browser",
+      "expo-video"
     ],
     "experiments": {
       "typedRoutes": true
     },
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "splash": {
       "resizeMode": "contain",
       "backgroundColor": "#F5F0E8"

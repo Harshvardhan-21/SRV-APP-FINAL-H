@@ -1,14 +1,10 @@
 import { CategoriesScreen } from '@/features/user/screens/CategoriesScreen';
 import type { Screen } from '@/shared/types/navigation';
 
-type ProductTheme = 'electrician' | 'dealer';
-
 export function ProductScreen({
   onNavigate,
-  theme = 'electrician',
 }: {
   onNavigate: (screen: Screen) => void;
-  theme?: ProductTheme;
 }) {
-  return <CategoriesScreen onNavigate={onNavigate} theme={theme} actionMode="scan" />;
+  return <CategoriesScreen onNavigate={onNavigate} theme="counterboy" actionMode="scan" />;
 }
