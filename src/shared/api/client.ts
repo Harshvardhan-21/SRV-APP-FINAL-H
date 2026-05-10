@@ -50,52 +50,67 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   }
 
   const url = buildUrl(path, params);
+  console.log(`🌐 API ${method} ${url}`);
 
-  const response = await fetchWithTimeout(url, {
-    method,
-    headers,
-    ...(body ? { body: JSON.stringify(body) } : {}),
-  });
+  try {
+    const response = await fetchWithTimeout(url, {
+      method,
+      headers,
+      ...(body ? { body: JSON.stringify(body) } : {}),
+    });
 
-  // Token expired — try refresh
-  if (response.status === 401 && auth) {
-    const refreshToken = await storage.getRefreshToken();
-    if (refreshToken) {
-      try {
-        const refreshRes = await fetchWithTimeout(`${API_BASE_URL}/mobile/auth/refresh`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ refreshToken }),
-        });
-        if (refreshRes.ok) {
-          const { accessToken } = await refreshRes.json();
-          await storage.setTokens(accessToken, refreshToken);
-          headers['Authorization'] = `Bearer ${accessToken}`;
-          const retryRes = await fetchWithTimeout(url, {
-            method,
-            headers,
-            ...(body ? { body: JSON.stringify(body) } : {}),
+    console.log(`✅ API ${method} ${path} - Status: ${response.status}`);
+
+    // Token expired — try refresh
+    if (response.status === 401 && auth) {
+      console.log('🔄 Token expired, attempting refresh...');
+      const refreshToken = await storage.getRefreshToken();
+      if (refreshToken) {
+        try {
+          const refreshRes = await fetchWithTimeout(`${API_BASE_URL}/mobile/auth/refresh`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refreshToken }),
           });
-          if (!retryRes.ok) {
-            const err = await retryRes.json().catch(() => ({}));
-            throw new Error((err as any).message || `Request failed: ${retryRes.status}`);
+          if (refreshRes.ok) {
+            const { accessToken } = await refreshRes.json();
+            await storage.setTokens(accessToken, refreshToken);
+            headers['Authorization'] = `Bearer ${accessToken}`;
+            console.log('✅ Token refreshed successfully');
+            const retryRes = await fetchWithTimeout(url, {
+              method,
+              headers,
+              ...(body ? { body: JSON.stringify(body) } : {}),
+            });
+            if (!retryRes.ok) {
+              const err = await retryRes.json().catch(() => ({}));
+              console.error(`❌ Retry failed: ${retryRes.status}`, err);
+              throw new Error((err as any).message || `Request failed: ${retryRes.status}`);
+            }
+            return retryRes.json() as Promise<T>;
           }
-          return retryRes.json() as Promise<T>;
+        } catch (refreshError) {
+          console.error('❌ Token refresh failed:', refreshError);
+          await storage.clearAll();
+          throw new Error('SESSION_EXPIRED');
         }
-      } catch {
-        await storage.clearAll();
-        throw new Error('SESSION_EXPIRED');
       }
+      throw new Error('SESSION_EXPIRED');
     }
-    throw new Error('SESSION_EXPIRED');
-  }
 
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({}));
-    throw new Error((err as any).message || `Request failed: ${response.status}`);
-  }
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      console.error(`❌ API ${method} ${path} failed:`, response.status, err);
+      throw new Error((err as any).message || `Request failed: ${response.status}`);
+    }
 
-  return response.json() as Promise<T>;
+    const data = await response.json();
+    console.log(`📦 API ${method} ${path} response:`, typeof data === 'object' && data !== null ? Object.keys(data) : 'primitive');
+    return data as T;
+  } catch (error: any) {
+    console.error(`❌ API ${method} ${path} error:`, error.message);
+    throw error;
+  }
 }
 
 export const api = {

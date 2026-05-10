@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { LinearGradient } from 'expo-linear-gradient';
 import {
   Alert,
   ActivityIndicator,
@@ -81,13 +82,18 @@ export function TransferPointsPage({
     <View style={{ flex: 1, backgroundColor: theme.bg }}>
       <PageHeader title={t('transferPoint')} onBack={onBack} />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={[styles.posterCard, { backgroundColor: '#F4F8FF', borderColor: '#D8E5FF' }]}>
+        <LinearGradient
+          colors={theme.textPrimary === '#F8FAFC' ? theme.heroGradientDark : theme.heroGradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={[styles.posterCard, { borderColor: theme.border }]}
+        >
           <Image source={transferImage} style={styles.heroImage} resizeMode="contain" />
-        </View>
+        </LinearGradient>
 
         {/* Balance pill */}
         <View style={[styles.balanceCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-          <AppIcon name="star" size={18} color={C.gold} />
+          <AppIcon name="star" size={18} color={theme.accent} />
           <Text style={[styles.balanceLabel, { color: theme.textMuted }]}>{tx('Available Points')}</Text>
           <Text style={[styles.balanceValue, { color: theme.textPrimary }]}>{availablePoints.toLocaleString('en-IN')}</Text>
         </View>
@@ -105,7 +111,7 @@ export function TransferPointsPage({
               keyboardType="phone-pad"
               maxLength={10}
             />
-            <TouchableOpacity style={styles.searchBtn} onPress={handleSearch} activeOpacity={0.85} disabled={searching}>
+            <TouchableOpacity style={[styles.searchBtn, { backgroundColor: theme.accent }]} onPress={handleSearch} activeOpacity={0.85} disabled={searching}>
               {searching ? <ActivityIndicator color="#fff" size="small" /> : <AppIcon name="search" size={20} color="#fff" />}
             </TouchableOpacity>
           </View>
@@ -137,7 +143,7 @@ export function TransferPointsPage({
               keyboardType="number-pad"
             />
             <TouchableOpacity
-              style={[styles.transferBtn, { opacity: transferring ? 0.7 : 1 }]}
+              style={[styles.transferBtn, { backgroundColor: theme.accent, opacity: transferring ? 0.7 : 1 }]}
               onPress={handleTransfer}
               activeOpacity={0.85}
               disabled={transferring}
@@ -150,21 +156,26 @@ export function TransferPointsPage({
           </View>
         )}
 
-        <View style={[styles.scannerCard, { backgroundColor: C.blue }]}>
+        <LinearGradient
+          colors={theme.textPrimary === '#F8FAFC' ? theme.heroGradientDark : theme.heroGradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.scannerCard}
+        >
           <View style={styles.scannerHeader}>
             <View style={styles.scannerIconWrap}>
               <AppIcon name="scan" size={28} color="#fff" />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.scannerTitleWhite}>{tx('Scan & Transfer')}</Text>
-              <Text style={styles.scannerSubWhite}>{tx('Scan any SRV product QR to transfer points to dealers instantly.')}</Text>
+              <Text style={[styles.scannerTitleWhite, { color: theme.textPrimary }]}>{tx('Scan & Transfer')}</Text>
+              <Text style={[styles.scannerSubWhite, { color: theme.textSecondary }]}>{tx('Scan any SRV product QR to transfer points to dealers instantly.')}</Text>
             </View>
           </View>
           <TouchableOpacity style={styles.scanQrBtnWhite} onPress={() => onNavigate('scan')} activeOpacity={0.85}>
-            <Text style={styles.scanQrBtnText}>{tx('Open Scanner')}</Text>
-            <AppIcon name="chevronRight" size={20} color={C.blue} />
+            <Text style={[styles.scanQrBtnText, { color: theme.accent }]}>{tx('Open Scanner')}</Text>
+            <AppIcon name="chevronRight" size={20} color={theme.accent} />
           </TouchableOpacity>
-        </View>
+        </LinearGradient>
       </ScrollView>
     </View>
   );
@@ -181,16 +192,16 @@ const styles = StyleSheet.create({
   searchCard: { borderRadius: 24, borderWidth: 1, padding: 16, gap: 12 },
   searchRow: { flexDirection: 'row', gap: 10, alignItems: 'center' },
   searchInput: { flex: 1, height: 52, borderRadius: 16, borderWidth: 1, paddingHorizontal: 16, fontSize: 14, fontWeight: '600' },
-  searchBtn: { width: 52, height: 52, borderRadius: 16, backgroundColor: C.blue, alignItems: 'center', justifyContent: 'center' },
+  searchBtn: { width: 52, height: 52, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
   resultBox: { flexDirection: 'row', alignItems: 'center', gap: 10, borderRadius: 16, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 12 },
   resultText: { fontSize: 14, fontWeight: '700', flex: 1 },
-  transferBtn: { height: 52, borderRadius: 16, backgroundColor: C.primary, alignItems: 'center', justifyContent: 'center' },
+  transferBtn: { height: 52, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
   transferBtnText: { color: '#fff', fontSize: 15, fontWeight: '800' },
   scannerCard: { borderRadius: 24, padding: 20, gap: 16 },
   scannerHeader: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   scannerIconWrap: { width: 56, height: 56, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
-  scannerTitleWhite: { fontSize: 18, fontWeight: '900', color: '#fff' },
-  scannerSubWhite: { fontSize: 13, color: 'rgba(255,255,255,0.85)', marginTop: 4, lineHeight: 18 },
+  scannerTitleWhite: { fontSize: 18, fontWeight: '900' },
+  scannerSubWhite: { fontSize: 13, marginTop: 4, lineHeight: 18 },
   scanQrBtnWhite: { backgroundColor: '#fff', borderRadius: 18, paddingHorizontal: 20, paddingVertical: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
-  scanQrBtnText: { color: C.blue, fontSize: 15, fontWeight: '800' },
+  scanQrBtnText: { fontSize: 15, fontWeight: '800' },
 });

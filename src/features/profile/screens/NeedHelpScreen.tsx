@@ -301,7 +301,7 @@ export function NeedHelpPage({ onBack }: { onBack: () => void }) {
               style={styles.actionBtn}
             >
               <View style={[styles.actionIconWrap, styles.mailIconWrap]}>
-                <AppIcon name="mail" size={18} color="#E8453C" />
+                <AppIcon name="mail" size={18} color={C.primary} />
               </View>
               <View style={styles.actionCopy}>
                 <Text style={styles.actionTitle}>{tx('Send to Mail')}</Text>

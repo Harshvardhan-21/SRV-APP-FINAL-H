@@ -297,7 +297,7 @@ export function ElectriciansScreen({ onNavigate }: { onNavigate?: (screen: Scree
         showsVerticalScrollIndicator={false}
       >
         <LinearGradient
-          colors={['#7C3A00', '#B45309', '#D97706']}
+          colors={['#A16207', '#B45309', '#D97706']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.heroCard}
@@ -591,7 +591,7 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     padding: 20,
     overflow: 'hidden',
-    ...createShadow({ color: '#7C3A00', offsetY: 10, blur: 20, opacity: 0.25, elevation: 8 }),
+    ...createShadow({ color: '#A16207', offsetY: 10, blur: 20, opacity: 0.2, elevation: 8 }),
   },
   heroGlowOne: {
     position: 'absolute',
@@ -646,7 +646,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
-  heroButtonText: { color: '#7C3A00', fontSize: 13, fontWeight: '800' },
+  heroButtonText: { color: '#A16207', fontSize: 13, fontWeight: '800' },
   statsRow: { flexDirection: 'row', gap: 10 },
   statCard: {
     flex: 1,
@@ -699,11 +699,11 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 18,
-    backgroundColor: '#FFF1D9',
+    backgroundColor: '#FEF7ED',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  memberAvatarText: { color: '#8A5A12', fontSize: 20, fontWeight: '900' },
+  memberAvatarText: { color: '#B45309', fontSize: 20, fontWeight: '900' },
   memberName: { color: '#18283E', fontSize: 16, fontWeight: '800' },
   memberPhone: { marginTop: 2, color: '#7488A1', fontSize: 12.5 },
   statusPill: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6 },
@@ -722,8 +722,8 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     backgroundColor: '#F5F8FC',
   },
-  metaText: { color: '#7B5A2F', fontSize: 12, fontWeight: '700' },
-  metaPoints: { color: '#8A5A12', fontSize: 12, fontWeight: '800' },
+  metaText: { color: '#A16207', fontSize: 12, fontWeight: '700' },
+  metaPoints: { color: '#B45309', fontSize: 12, fontWeight: '800' },
   memberCity: { marginTop: 12, color: '#263A56', fontSize: 13, fontWeight: '700' },
   memberJoined: { marginTop: 4, color: '#8597AC', fontSize: 12 },
   modalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(12,26,49,0.38)' },
@@ -924,7 +924,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#8A5A12',
+    backgroundColor: '#B45309',
   },
   primaryButtonDisabled: {
     backgroundColor: '#E9D7B8',

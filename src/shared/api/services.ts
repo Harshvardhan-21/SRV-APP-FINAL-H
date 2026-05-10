@@ -482,6 +482,8 @@ export type UserProfile = {
   dealerPhone?: string;
   dealerTown?: string;
   dealerCode?: string;
+  counterboyCode?: string;
+  userCode?: string;
   // Dealer fields
   town?: string;
   electricianCount?: number;

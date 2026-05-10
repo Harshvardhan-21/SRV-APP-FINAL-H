@@ -9,6 +9,7 @@ import type { Screen } from '@/shared/types/navigation';
 import { useResponsive } from '@/shared/hooks';
 
 const PURPLE = '#6B7C2D';
+const PURPLE_DARK = '#4A5520';
 
 type NavControlConfig = {
   id: Screen;
@@ -214,7 +215,7 @@ const catStyles = StyleSheet.create({
     ...createShadow({ color: PURPLE, offsetY: 5, blur: 8, opacity: 0.5, elevation: 12 }),
   },
   label: { fontSize: 10, fontWeight: '800', color: '#9E9189', letterSpacing: 0.5, marginTop: 1 },
-  labelActive: { color: PURPLE },
+  labelActive: { color: PURPLE_DARK },
   labelCompact: { fontSize: 8 },
 });
 
@@ -352,6 +353,6 @@ const styles = StyleSheet.create({
   iconWrapCompact: { width: 20, height: 20 },
   label: { fontSize: 9, fontWeight: '600', color: '#A89A91', marginTop: 2 },
   labelCompact: { fontSize: 8, marginTop: 1 },
-  labelActive: { color: PURPLE, fontWeight: '800' },
+  labelActive: { color: PURPLE_DARK, fontWeight: '800' },
 });
 

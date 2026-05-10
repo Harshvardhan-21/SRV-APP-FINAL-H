@@ -45,8 +45,8 @@ type LoginMethod = 'otp' | 'password' | null;
 
 const C = {
   bg: '#EEF3F8',
-  heroA: '#EAF3FF',
-  heroB: '#DDEEFF',
+  heroA: '#EEF3F8',
+  heroB: '#EAF3FF',
   heroC: '#F6EEFF',
   white: '#FFFFFF',
   line: '#E6ECF5',
@@ -65,8 +65,8 @@ const C = {
   warningSoft: '#FEF3C7',
   warmA: '#F97316',
   warmB: '#EF4444',
-  accentA: '#0EA5E9',
-  accentB: '#8B5CF6',
+  accentA: '#173E80',
+  accentB: '#355C95',
 };
 
 const roleMeta = {
@@ -773,8 +773,8 @@ export function OnboardingScreen({
   const isCompactPhone = width <= 360 || height <= 760;
   const authBackgroundColors: [string, string, string] =
     role === 'dealer'
-      ? ['#F6F1EA', '#F2ECE4', '#FBF8F3']
-      : ['#F3F6FB', '#EEF3FA', '#FAFCFF'];
+      ? ['#FFF9ED', '#FEF3C7', '#FDE7B0']
+      : ['#EEF3F8', '#EAF3FF', '#F6EEFF'];
 
   useEffect(() => {
     const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
@@ -1231,6 +1231,13 @@ export function OnboardingScreen({
           return loginPhone.length === 10 && loginStep === 'password' && loginPass.length >= 8;
         return false;
       }
+      if (role === 'counterboy') {
+        if (dealerLoginMethod === 'otp')
+          return loginPhone.length === 10 && loginOtp.length === 4 && loginOtpVerified;
+        if (dealerLoginMethod === 'password')
+          return loginPhone.length === 10 && loginStep === 'password' && loginPass.length >= 8;
+        return false;
+      }
       return loginPhone.length === 10 && loginOtp.length === 4 && loginPass.length >= 8;
     }
     if (role === 'dealer') {
@@ -1306,6 +1313,18 @@ export function OnboardingScreen({
           setError('loginPass');
         }
         if (!dealerLoginMethod) return setError('loginMode', 'Please choose a login option.');
+      } else if (role === 'counterboy') {
+        if (dealerLoginMethod === 'otp') {
+          if (!loginOtpVerified)
+            return setError('loginOtp', 'Please verify the OTP before logging in.');
+          setError('loginOtp');
+        }
+        if (dealerLoginMethod === 'password') {
+          if (loginPass.length < 8)
+            return setError('loginPass', 'Password must be at least 8 characters long.');
+          setError('loginPass');
+        }
+        if (!dealerLoginMethod) return setError('loginMode', 'Please choose a login option.');
       }
     }
     if (mode === 'signup' && role === 'dealer') {
@@ -1338,7 +1357,7 @@ export function OnboardingScreen({
       const passwordConfigured =
         mode === 'signup'
           ? signupPass.length >= 8
-          : role === 'dealer'
+          : role === 'dealer' || role === 'counterboy'
             ? true
             : electricianLoginMethod === 'password'
               ? true
@@ -1361,7 +1380,7 @@ export function OnboardingScreen({
       if (mode === 'login') {
         if (
           (role === 'electrician' && electricianLoginMethod === 'password') ||
-          (role === 'dealer' && dealerLoginMethod === 'password')
+          ((role === 'dealer' || role === 'counterboy') && dealerLoginMethod === 'password')
         ) {
           const res = await authApi.loginWithPassword(loginPhone, role, loginPass);
           finishLogin(res.user);
@@ -1408,7 +1427,7 @@ export function OnboardingScreen({
       if (mode === 'login') {
         if (
           (role === 'electrician' && electricianLoginMethod === 'password') ||
-          (role === 'dealer' && dealerLoginMethod === 'password')
+          ((role === 'dealer' || role === 'counterboy') && dealerLoginMethod === 'password')
         ) {
           setError('loginPass', message);
         } else {
@@ -1432,7 +1451,7 @@ export function OnboardingScreen({
       return setError('loginPhone', 'Please enter a valid 10-digit mobile number.');
     setError('loginPhone');
 
-    const doSendOtp = (userRole: 'electrician' | 'dealer') => {
+    const doSendOtp = (userRole: 'electrician' | 'dealer' | 'counterboy') => {
       setLoading(true);
       authApi.sendOtp(loginPhone, userRole)
         .then((res) => {
@@ -1471,6 +1490,19 @@ export function OnboardingScreen({
       setLoginOtpVerified(false);
       if (dealerLoginMethod === 'otp') {
         doSendOtp('dealer');
+      } else {
+        setLoginStep('password');
+      }
+      return;
+    }
+    if (role === 'counterboy') {
+      if (!dealerLoginMethod) return setError('loginMode', 'Please choose a login option.');
+      setError('loginMode');
+      setLoginOtp('');
+      setLoginPass('');
+      setLoginOtpVerified(false);
+      if (dealerLoginMethod === 'otp') {
+        doSendOtp('counterboy');
       } else {
         setLoginStep('password');
       }
@@ -3267,25 +3299,25 @@ const s = StyleSheet.create({
   roleSubtitleActive: { color: C.muted2 },
   tabs: {
     flexDirection: 'row',
-    backgroundColor: '#EEF2F7',
+    backgroundColor: '#EAF1FB',
     borderRadius: 18,
     padding: 4,
     marginTop: 18,
     marginBottom: 18,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: '#D7E7FF',
   },
   tab: { flex: 1, height: 42, alignItems: 'center', justifyContent: 'center', borderRadius: 14 },
   tabElectricianActive: {
-    backgroundColor: '#E8EEF9',
+    backgroundColor: '#EEF3FA',
     borderWidth: 1,
     borderColor: '#B8CAE8',
     ...createShadow({ color: '#355C95', offsetY: 4, blur: 10, opacity: 0.1, elevation: 2 }),
   },
   tabDealerActive: {
-    backgroundColor: '#F5ECE0',
+    backgroundColor: '#EEF3FA',
     borderWidth: 1,
-    borderColor: '#D8BEA1',
+    borderColor: '#B8CAE8',
     ...createShadow({ color: '#8A5A2F', offsetY: 4, blur: 10, opacity: 0.1, elevation: 2 }),
   },
   tabText: { color: C.muted, fontSize: 14, fontWeight: '700' },
@@ -3296,13 +3328,13 @@ const s = StyleSheet.create({
     minHeight: 48,
     borderRadius: 16,
     borderWidth: 1.2,
-    borderColor: '#D8E2EE',
-    backgroundColor: '#FFFFFF',
+    borderColor: '#E4D7CA',
+    backgroundColor: '#FFFDF9',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 10,
   },
-  loginChoiceCardActive: { borderColor: '#355C95', backgroundColor: '#EEF3FA' },
+  loginChoiceCardActive: { borderColor: '#355C95', backgroundColor: '#F0F4FA' },
   loginChoiceText: { color: C.text, fontSize: 12, fontWeight: '800', textAlign: 'center' },
   loginChoiceTextActive: { color: '#355C95' },
   form: { gap: 12 },
@@ -3313,19 +3345,19 @@ const s = StyleSheet.create({
     borderWidth: 1.4,
   },
   authCardElectrician: {
-    backgroundColor: 'rgba(255,255,255,0.92)',
-    borderColor: '#D7E1F0',
+    backgroundColor: 'rgba(255,252,248,0.97)',
+    borderColor: '#DCD7D0',
     ...createShadow({ color: '#355C95', offsetY: 12, blur: 20, opacity: 0.1, elevation: 5 }),
   },
   authCardDealer: {
-    backgroundColor: 'rgba(255,255,255,0.94)',
-    borderColor: '#E3D7C8',
-    ...createShadow({ color: '#8A5A2F', offsetY: 12, blur: 20, opacity: 0.1, elevation: 5 }),
+    backgroundColor: 'rgba(255,255,255,0.97)',
+    borderColor: '#D7E1F0',
+    ...createShadow({ color: '#355C95', offsetY: 12, blur: 20, opacity: 0.1, elevation: 5 }),
   },
   formIntroCard: {
     borderRadius: 20,
     padding: 14,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F7FBFF',
     borderWidth: 1.2,
     borderColor: '#D8E7FB',
     gap: 6,
@@ -3342,10 +3374,10 @@ const s = StyleSheet.create({
     borderRadius: 999,
     paddingHorizontal: 10,
     paddingVertical: 5,
-    backgroundColor: '#E3EEFF',
+    backgroundColor: '#EEF3FA',
   },
   formStepChipText: {
-    color: '#2C6BE7',
+    color: '#355C95',
     fontSize: 11,
     fontWeight: '800',
     letterSpacing: 0.4,

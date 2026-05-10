@@ -22,7 +22,12 @@ import type { Screen } from '@/shared/types/navigation';
 import { formatCountText, usePreferenceContext } from '@/shared/preferences';
 import ProfileFlipCard from '@/shared/components/ProfileFlipCard';
 import { createShadow } from '@/shared/theme/shadows';
-import { TestimonialShowcase, type TestimonialItem } from '@/shared/components/TestimonialShowcase';
+import {
+  TESTIMONIAL_FALLBACK_COPY,
+  getTestimonialTheme,
+  TestimonialShowcase,
+  type TestimonialItem,
+} from '@/shared/components/TestimonialShowcase';
 import { WebsitePromoSection } from '@/shared/components/WebsitePromoSection';
 import { BannerCarousel } from '@/shared/components/BannerCarousel';
 import { ElectricianTierIcon, getElectricianTier } from './ElectricianTierScreen';
@@ -693,19 +698,36 @@ export function HomeScreen({
   // Map testimonials from context
   useEffect(() => {
     if (ctxTestimonials.length > 0) {
-      setTestimonials(ctxTestimonials.map((t) => ({
-        initials: t.initials ?? t.personName.slice(0, 2).toUpperCase(),
-        name: t.personName,
-        location: t.location ?? '',
-        tier: t.tier ?? '',
-        yearsWithUs: `Connected for ${t.yearsConnected} year${t.yearsConnected !== 1 ? 's' : ''}`,
-        quote: t.quote,
-        highlight: t.highlight ?? '',
-        colors: (t.gradientColors?.slice(0, 3) ?? ['#EEF2FF','#D9D6FE','#C4B5FD']) as [string,string,string],
-        ring: t.ringColor ?? '#7C3AED',
-        glow: t.gradientColors?.[0] ?? '#DDD6FE',
-      })));
+      setTestimonials(
+        ctxTestimonials.map((t, index) => {
+          const themed = getTestimonialTheme(index);
+          const fallback = TESTIMONIAL_FALLBACK_COPY[index % TESTIMONIAL_FALLBACK_COPY.length];
+          return {
+            initials: t.initials ?? t.personName.slice(0, 2).toUpperCase() ?? fallback.initials,
+            name: t.personName || fallback.name,
+            location: t.location || fallback.location,
+            tier: t.tier || fallback.tier,
+            yearsWithUs:
+              t.yearsConnected != null
+                ? `Connected for ${t.yearsConnected} year${t.yearsConnected !== 1 ? 's' : ''}`
+                : fallback.yearsWithUs,
+            quote: t.quote?.trim() || fallback.quote,
+            highlight: t.highlight?.trim() || fallback.highlight,
+            colors: themed.colors,
+            ring: themed.ring,
+            glow: themed.glow,
+          };
+        })
+      );
+      return;
     }
+
+    setTestimonials(
+      TESTIMONIAL_FALLBACK_COPY.map((item, index) => {
+        const themed = getTestimonialTheme(index);
+        return { ...item, colors: themed.colors, ring: themed.ring, glow: themed.glow };
+      })
+    );
   }, [ctxTestimonials]);
 
   // Map banners from context — ONLY use API data, no local fallback
@@ -811,7 +833,7 @@ export function HomeScreen({
       showsVerticalScrollIndicator={false}
     >
       <LinearGradient
-        colors={darkMode ? ['#0B1220', '#101A2F', '#18263E'] : ['#EAF3FF', '#DCEBFF', '#F5F9FF']}
+        colors={darkMode ? ['#0B1220', '#101A2F', '#18263E'] : ['#EAF3FF', '#DDEEFF', '#F6EEFF']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={[styles.heroShell, { marginTop: -insets.top, paddingTop: 26 + insets.top }]}

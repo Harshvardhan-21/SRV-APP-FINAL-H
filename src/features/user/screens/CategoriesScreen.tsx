@@ -9,6 +9,7 @@ import {
   View,
   useWindowDimensions,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppData } from '@/shared/context/AppDataContext';
@@ -27,42 +28,57 @@ const THEMES: Record<CatalogTheme, {
   sectionBg: string;
   cardBorder: string;
   muted: string;
+  headerGradient: [string, string, string];
+  imageGradient: [string, string, string];
+  sidebarSoft: string;
 }> = {
   user: {
-    primary: '#6B7C2D',
-    primaryLight: '#EEF4D7',
-    screenBg: '#F2F2F2',
-    searchBg: '#FFFFFF',
-    sectionBg: '#EEF4D7',
-    cardBorder: '#DDE7C7',
-    muted: '#6B7280',
+    primary: '#173E80',
+    primaryLight: '#D6E5FA',
+    screenBg: '#DDE7F3',
+    searchBg: 'rgba(255,255,255,0.9)',
+    sectionBg: '#E8F0FB',
+    cardBorder: '#BDD0E7',
+    muted: '#55697F',
+    headerGradient: ['#183B78', '#355C95', '#7087A8'],
+    imageGradient: ['#F7FAFE', '#E3ECF8', '#D1DEEE'],
+    sidebarSoft: '#DFEAF8',
   },
   electrician: {
-    primary: '#2563EB',
-    primaryLight: '#DBEAFE',
-    screenBg: '#EEF4FF',
-    searchBg: '#F8FBFF',
-    sectionBg: '#E0ECFF',
-    cardBorder: '#C7DBFF',
-    muted: '#64748B',
+    primary: '#173E80',
+    primaryLight: '#D6E5FA',
+    screenBg: '#DDE7F3',
+    searchBg: 'rgba(255,255,255,0.9)',
+    sectionBg: '#E8F0FB',
+    cardBorder: '#BDD0E7',
+    muted: '#55697F',
+    headerGradient: ['#183B78', '#355C95', '#7087A8'],
+    imageGradient: ['#F7FAFE', '#E3ECF8', '#D1DEEE'],
+    sidebarSoft: '#DFEAF8',
   },
   dealer: {
-    primary: '#A16207',
-    primaryLight: '#FEF3C7',
-    screenBg: '#FFF8EC',
-    searchBg: '#FFFDF7',
-    sectionBg: '#FCE7B2',
-    cardBorder: '#F2D28A',
-    muted: '#78716C',
+    primary: '#B45309',
+    primaryLight: '#FEF7ED',
+    screenBg: '#FFFCF7',
+    searchBg: 'rgba(255,252,245,0.96)',
+    sectionBg: '#FEF7ED',
+    cardBorder: '#F3E8D3',
+    muted: '#A16207',
+    headerGradient: ['#B45309', '#D97706', '#E6A855'],
+    imageGradient: ['#FFFDF7', '#FEF7ED', '#F3E8D3'],
+    sidebarSoft: '#FEF7ED',
   },
   counterboy: {
-    primary: '#E8453C',
-    primaryLight: '#FFE4E4',
-    screenBg: '#FFF5F5',
-    searchBg: '#FFFFFF',
-    sectionBg: '#FFE4E4',
-    cardBorder: '#FFD4D4',
-    muted: '#9B6060',
+    primary: '#173E80',
+    primaryLight: '#D6E5FA',
+    screenBg: '#DDE7F3',
+    searchBg: 'rgba(255,255,255,0.9)',
+    sectionBg: '#E8F0FB',
+    cardBorder: '#BDD0E7',
+    muted: '#55697F',
+    headerGradient: ['#183B78', '#355C95', '#7087A8'],
+    imageGradient: ['#F7FAFE', '#E3ECF8', '#D1DEEE'],
+    sidebarSoft: '#DFEAF8',
   },
 };
 
@@ -309,7 +325,12 @@ const ProductCard = memo(function ProductCard({
       <View style={[styles.tag, { backgroundColor: product.tagBg }]}>
         <Text style={[styles.tagText, { color: product.tagColor }]}>{product.badge}</Text>
       </View>
-      <View style={[styles.imgWrap, { backgroundColor: cardBg }]}>
+      <LinearGradient
+        colors={palette.imageGradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.imgWrap}
+      >
         <Image
           source={{ uri: product.imageUrl }}
           style={styles.img}
@@ -317,7 +338,7 @@ const ProductCard = memo(function ProductCard({
           // fadeDuration keeps image swap smooth
           fadeDuration={200}
         />
-      </View>
+      </LinearGradient>
       <View style={styles.cardInfo}>
         <Text style={[styles.cardName, { color: textPrimary }]} numberOfLines={2}>{product.name}</Text>
         <Text style={[styles.cardDesc, { color: textMuted }]} numberOfLines={2}>{product.desc || 'SRV product'}</Text>
@@ -358,7 +379,7 @@ const SidebarItem = memo(function SidebarItem({
       style={[
         styles.sidebarItem,
         { borderBottomColor: borderColor },
-        isActive && { backgroundColor: darkMode ? `${palette.primary}30` : `${palette.primary}12` },
+        isActive && { backgroundColor: darkMode ? `${palette.primary}30` : palette.sidebarSoft },
       ]}
     >
       {isActive && <View style={[styles.activeBar, { backgroundColor: palette.primary }]} />}
@@ -442,8 +463,8 @@ export function CategoriesScreen({
   const SIDEBAR_W = 96;
   const cardWidth = (width - SIDEBAR_W - 30) / 2;
   const bg = darkMode ? '#0F172A' : palette.screenBg;
-  const sidebarBg = darkMode ? '#1E293B' : '#FFFFFF';
-  const cardBg = darkMode ? '#1E293B' : '#FFFFFF';
+  const sidebarBg = darkMode ? '#1E293B' : '#F4F8FD';
+  const cardBg = darkMode ? '#1E293B' : '#FBFDFF';
   const borderColor = darkMode ? '#2D3748' : palette.cardBorder;
   const textPrimary = darkMode ? '#F1F5F9' : '#1A1A1A';
   const textMuted = darkMode ? '#94A3B8' : palette.muted;
@@ -529,15 +550,17 @@ export function CategoriesScreen({
   return (
     <View style={[styles.screen, { backgroundColor: bg }]}>
       {/* Header */}
-      <View
+      <LinearGradient
         style={[
           styles.header,
           {
             paddingTop: insets.top + 8,
-            backgroundColor: palette.primary,
             ...createShadow({ color: palette.primary, offsetY: 3, blur: 10, opacity: 0.3, elevation: 6 }),
           },
         ]}
+        colors={darkMode ? ['#0F172A', '#162132', '#1E293B'] : palette.headerGradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
       >
         <Text style={styles.headerTitle}>{tx('All Categories')}</Text>
         <View style={[styles.searchRow, { backgroundColor: palette.searchBg }]}>
@@ -550,7 +573,7 @@ export function CategoriesScreen({
             onChangeText={setSearchQuery}
           />
         </View>
-      </View>
+      </LinearGradient>
 
       <View style={styles.body}>
         {/* Sidebar — virtualized FlatList */}
@@ -596,17 +619,17 @@ export function CategoriesScreen({
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  header: { paddingHorizontal: 14, paddingBottom: 12 },
-  headerTitle: { fontSize: 20, fontWeight: '900', color: '#FFFFFF', marginBottom: 8 },
+  header: { paddingHorizontal: 14, paddingBottom: 14, borderBottomLeftRadius: 24, borderBottomRightRadius: 24 },
+  headerTitle: { fontSize: 22, fontWeight: '900', color: '#FFFFFF', marginBottom: 10, letterSpacing: 0.2 },
   searchRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 9,
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 11,
     gap: 8,
   },
-  searchInput: { flex: 1, fontSize: 13, color: '#1E293B', padding: 0 },
+  searchInput: { flex: 1, fontSize: 13, color: '#1E293B', padding: 0, fontWeight: '500' },
   body: { flex: 1, flexDirection: 'row' },
   sidebar: { borderRightWidth: 1 },
   sidebarItem: {
@@ -615,23 +638,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderBottomWidth: 1,
     position: 'relative',
-    minHeight: 92,
+    minHeight: 98,
     justifyContent: 'center',
     gap: 4,
   },
-  activeBar: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, borderTopRightRadius: 3, borderBottomRightRadius: 3 },
+  activeBar: { position: 'absolute', left: 0, top: 8, bottom: 8, width: 4, borderTopRightRadius: 4, borderBottomRightRadius: 4 },
   sidebarImageWrap: {
-    width: 42,
-    height: 42,
-    borderRadius: 12,
-    backgroundColor: '#F8FAFC',
+    width: 46,
+    height: 46,
+    borderRadius: 14,
+    backgroundColor: '#ECF3FB',
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
   },
   sidebarImageWrapDark: { backgroundColor: '#162132' },
-  sidebarImage: { width: 34, height: 34 },
-  sidebarLabel: { fontSize: 10, fontWeight: '600', textAlign: 'center', lineHeight: 13 },
+  sidebarImage: { width: 36, height: 36 },
+  sidebarLabel: { fontSize: 10, fontWeight: '700', textAlign: 'center', lineHeight: 13 },
   sidebarCount: { fontSize: 10, fontWeight: '700' },
   productsArea: { flex: 1 },
   productsContent: { padding: 10, gap: 8 },
@@ -639,39 +662,39 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginBottom: 12,
-    paddingBottom: 10,
+    marginBottom: 14,
+    paddingBottom: 12,
     borderBottomWidth: 1,
-    paddingHorizontal: 10,
-    paddingTop: 10,
-    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingTop: 12,
+    borderRadius: 18,
   },
-  sectionTitle: { fontSize: 14, fontWeight: '900' },
-  sectionCount: { fontSize: 11, marginTop: 1 },
+  sectionTitle: { fontSize: 15, fontWeight: '900' },
+  sectionCount: { fontSize: 11, marginTop: 2, fontWeight: '600' },
   // Row holds 2 cards side by side
-  row: { flexDirection: 'row', gap: 8 },
+  row: { flexDirection: 'row', gap: 10 },
   card: {
-    borderRadius: 12,
+    borderRadius: 18,
     borderWidth: 1,
     overflow: 'hidden',
-    ...createShadow({ color: '#000', offsetY: 1, blur: 6, opacity: 0.07, elevation: 2 }),
+    ...createShadow({ color: '#2A4365', offsetY: 6, blur: 16, opacity: 0.1, elevation: 4 }),
   },
-  tag: { alignSelf: 'flex-start', margin: 7, marginBottom: 0, paddingHorizontal: 7, paddingVertical: 3, borderRadius: 5 },
+  tag: { alignSelf: 'flex-start', margin: 9, marginBottom: 0, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999 },
   tagText: { fontSize: 9, fontWeight: '800' },
   imgWrap: {
-    height: 100,
+    height: 112,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 8,
+    padding: 10,
     marginHorizontal: 8,
-    borderRadius: 12,
+    borderRadius: 14,
   },
   img: { width: '100%', height: '100%' },
-  cardInfo: { paddingHorizontal: 8, paddingBottom: 6 },
-  cardName: { fontSize: 12, fontWeight: '700', lineHeight: 16, marginBottom: 2 },
+  cardInfo: { paddingHorizontal: 10, paddingBottom: 8, paddingTop: 2 },
+  cardName: { fontSize: 12, fontWeight: '800', lineHeight: 16, marginBottom: 3 },
   cardDesc: { fontSize: 10, lineHeight: 14 },
-  actionBtn: { marginHorizontal: 8, marginBottom: 10, paddingVertical: 7, borderRadius: 8, alignItems: 'center' },
-  actionBtnText: { fontSize: 11, fontWeight: '800' },
+  actionBtn: { marginHorizontal: 10, marginBottom: 12, paddingVertical: 9, borderRadius: 12, alignItems: 'center' },
+  actionBtnText: { fontSize: 11, fontWeight: '900', letterSpacing: 0.2 },
   empty: { alignItems: 'center', paddingVertical: 60 },
   emptyEmoji: { fontSize: 40, marginBottom: 10 },
   emptyText: { fontSize: 14, fontWeight: '600' },

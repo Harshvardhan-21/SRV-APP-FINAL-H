@@ -22,7 +22,12 @@ import type { Screen } from '@/shared/types/navigation';
 import { formatCountText, usePreferenceContext } from '@/shared/preferences';
 import ProfileFlipCard from '@/shared/components/ProfileFlipCard';
 import { createShadow } from '@/shared/theme/shadows';
-import { TestimonialShowcase, type TestimonialItem } from '@/shared/components/TestimonialShowcase';
+import {
+  TESTIMONIAL_FALLBACK_COPY,
+  getTestimonialTheme,
+  TestimonialShowcase,
+  type TestimonialItem,
+} from '@/shared/components/TestimonialShowcase';
 import { WebsitePromoSection } from '@/shared/components/WebsitePromoSection';
 import { BannerCarousel } from '@/shared/components/BannerCarousel';
 import { ElectricianTierIcon, getElectricianTier } from './ElectricianTierScreen';
@@ -207,6 +212,19 @@ const CAT_IMAGES: Record<string, string> = {
 function getCatImage(id: string, apiImageUrl?: string | null): string {
   return apiImageUrl || CAT_IMAGES[id] || CAT_IMAGES.fanbox;
 }
+
+const CUSTOMER_THEME = {
+  heroLight: ['#F7FBEA', '#EEF5D3', '#DCE9A4'] as const,
+  heroDark: ['#17210F', '#233115', '#31471B'] as const,
+  heroGlowOne: 'rgba(151,175,67,0.24)',
+  heroGlowTwo: 'rgba(214,229,166,0.32)',
+  heroGlowThree: 'rgba(107,124,45,0.18)',
+  statLight: ['#F8FBEF', '#EDF5D8', '#DCE9A4'] as const,
+  quickBrowse: ['#F1F7DE', '#DDEBB0'] as const,
+  quickBrowseTint: '#5D6E26',
+  quickRewards: ['#F7F2D8', '#EADFA1'] as const,
+  quickRewardsTint: '#8A6A12',
+};
 
 // ── Animated Category Image (float + breathe — same as ProductScreen) ─
 function AnimatedCatImage({ uri, size }: { uri: string; size: number }) {
@@ -693,19 +711,36 @@ export function HomeScreen({
   // Map testimonials from context
   useEffect(() => {
     if (ctxTestimonials.length > 0) {
-      setTestimonials(ctxTestimonials.map((t) => ({
-        initials: t.initials ?? t.personName.slice(0, 2).toUpperCase(),
-        name: t.personName,
-        location: t.location ?? '',
-        tier: t.tier ?? '',
-        yearsWithUs: `Connected for ${t.yearsConnected} year${t.yearsConnected !== 1 ? 's' : ''}`,
-        quote: t.quote,
-        highlight: t.highlight ?? '',
-        colors: (t.gradientColors?.slice(0, 3) ?? ['#EEF2FF','#D9D6FE','#C4B5FD']) as [string,string,string],
-        ring: t.ringColor ?? '#7C3AED',
-        glow: t.gradientColors?.[0] ?? '#DDD6FE',
-      })));
+      setTestimonials(
+        ctxTestimonials.map((t, index) => {
+          const themed = getTestimonialTheme(index);
+          const fallback = TESTIMONIAL_FALLBACK_COPY[index % TESTIMONIAL_FALLBACK_COPY.length];
+          return {
+            initials: t.initials ?? t.personName.slice(0, 2).toUpperCase() ?? fallback.initials,
+            name: t.personName || fallback.name,
+            location: t.location || fallback.location,
+            tier: t.tier || fallback.tier,
+            yearsWithUs:
+              t.yearsConnected != null
+                ? `Connected for ${t.yearsConnected} year${t.yearsConnected !== 1 ? 's' : ''}`
+                : fallback.yearsWithUs,
+            quote: t.quote?.trim() || fallback.quote,
+            highlight: t.highlight?.trim() || fallback.highlight,
+            colors: themed.colors,
+            ring: themed.ring,
+            glow: themed.glow,
+          };
+        })
+      );
+      return;
     }
+
+    setTestimonials(
+      TESTIMONIAL_FALLBACK_COPY.map((item, index) => {
+        const themed = getTestimonialTheme(index);
+        return { ...item, colors: themed.colors, ring: themed.ring, glow: themed.glow };
+      })
+    );
   }, [ctxTestimonials]);
 
   // Map banners from context — set immediately, prefetch in background
@@ -768,8 +803,8 @@ export function HomeScreen({
       title: tx('Categories'),
       sub: tx('Browse products'),
       icon: ScanIcon,
-      iconColors: ['#EDE9FE', '#DDD6FE'] as const,
-      iconTint: '#7C3AED',
+      iconColors: CUSTOMER_THEME.quickBrowse,
+      iconTint: CUSTOMER_THEME.quickBrowseTint,
       onPress: () => onNavigate('categories'),
     },
     {
@@ -778,8 +813,8 @@ export function HomeScreen({
       title: tx('Product Catalog'),
       sub: tx('Download PDF for latest updated prices'),
       icon: DownloadIcon,
-      iconColors: ['#DBEAFE', '#BFDBFE'] as const,
-      iconTint: '#1D4ED8',
+      iconColors: ['#FEF3C7', '#FDE68A'] as const,
+      iconTint: '#B45309',
       onPress: () => openCatalog(appSettings?.catalogPdfUrl),
     },
     {
@@ -788,8 +823,8 @@ export function HomeScreen({
       title: tx('Gift Store'),
       sub: tx('Redeem rewards'),
       icon: GiftIcon,
-      iconColors: ['#F3E8FF', '#DDD6FE'] as const,
-      iconTint: '#7C3AED',
+      iconColors: CUSTOMER_THEME.quickRewards,
+      iconTint: CUSTOMER_THEME.quickRewardsTint,
       onPress: () => onNavigate('rewards'),
     },
     {
@@ -811,7 +846,7 @@ export function HomeScreen({
       showsVerticalScrollIndicator={false}
     >
       <LinearGradient
-        colors={darkMode ? ['#0B1220', '#101A2F', '#18263E'] : ['#F4F8EE', '#E7F0D4', '#F8FBF1']}
+        colors={darkMode ? CUSTOMER_THEME.heroDark : CUSTOMER_THEME.heroLight}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={[styles.heroShell, { marginTop: -insets.top, paddingTop: 26 + insets.top }]}
@@ -885,7 +920,7 @@ export function HomeScreen({
             >
               <LinearGradient
                 colors={
-                  darkMode ? ['#0F172A', '#132238', '#1E293B'] : ['#E0F2FE', '#DBEAFE', '#EDE9FE']
+                  darkMode ? CUSTOMER_THEME.heroDark : CUSTOMER_THEME.statLight
                 }
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
@@ -1066,7 +1101,7 @@ export function HomeScreen({
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F4F8EE' },
+  container: { flex: 1, backgroundColor: '#EEF3F8' },
   containerDark: { backgroundColor: '#08111F' },
   heroShell: {
     paddingTop: 26,
@@ -1086,7 +1121,7 @@ const styles = StyleSheet.create({
     width: 220,
     height: 220,
     borderRadius: 110,
-    backgroundColor: 'rgba(107,124,45,0.18)',
+    backgroundColor: CUSTOMER_THEME.heroGlowOne,
     top: -60,
     right: -35,
   },
@@ -1095,7 +1130,7 @@ const styles = StyleSheet.create({
     width: 160,
     height: 160,
     borderRadius: 80,
-    backgroundColor: 'rgba(166,180,86,0.16)',
+    backgroundColor: CUSTOMER_THEME.heroGlowTwo,
     bottom: 18,
     left: -28,
   },
@@ -1104,7 +1139,7 @@ const styles = StyleSheet.create({
     width: 180,
     height: 180,
     borderRadius: 90,
-    backgroundColor: 'rgba(107,124,45,0.12)',
+    backgroundColor: CUSTOMER_THEME.heroGlowThree,
     top: 72,
     left: '34%',
   },

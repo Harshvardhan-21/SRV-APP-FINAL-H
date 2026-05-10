@@ -26,6 +26,91 @@ export type TestimonialItem = {
   glow: string;
 };
 
+const TESTIMONIAL_THEME_PRESETS = [
+  {
+    colors: ['#EEF2FF', '#D9D6FE', '#C4B5FD'] as const,
+    ring: '#7C3AED',
+    glow: '#DDD6FE',
+  },
+  {
+    colors: ['#ECFEFF', '#CFFAFE', '#A5F3FC'] as const,
+    ring: '#0F766E',
+    glow: '#CCFBF1',
+  },
+  {
+    colors: ['#F7FEE7', '#DCFCE7', '#BEF264'] as const,
+    ring: '#65A30D',
+    glow: '#ECFCCB',
+  },
+  {
+    colors: ['#FFF7E6', '#FDE6B4', '#F6C96E'] as const,
+    ring: '#D97706',
+    glow: '#FFE7BA',
+  },
+  {
+    colors: ['#FFF1EC', '#FFD8CC', '#F6B9A4'] as const,
+    ring: '#C2410C',
+    glow: '#FFD8CC',
+  },
+] as const;
+
+export function getTestimonialTheme(index: number) {
+  return TESTIMONIAL_THEME_PRESETS[index % TESTIMONIAL_THEME_PRESETS.length];
+}
+
+export const TESTIMONIAL_FALLBACK_COPY = [
+  {
+    initials: 'GS',
+    name: 'Gurpreet Singh',
+    location: 'Amritsar',
+    tier: 'Diamond',
+    yearsWithUs: 'Connected for 4 years',
+    quote:
+      'Whether it is a big installation or a quick site visit, SRV feels dependable both in product quality and app flow.',
+    highlight: 'Reliable performance on real job sites',
+  },
+  {
+    initials: 'AV',
+    name: 'Amit Verma',
+    location: 'Panchkula',
+    tier: 'Platinum',
+    yearsWithUs: 'Connected for 3 years',
+    quote:
+      'Points get added fast after scanning, and reward tracking is much cleaner than before.',
+    highlight: 'Fast scan flow with clear rewards',
+  },
+  {
+    initials: 'HK',
+    name: 'Harpal Kaur',
+    location: 'Jalandhar',
+    tier: 'Platinum',
+    yearsWithUs: 'Connected for 2 years',
+    quote:
+      'Dealer support feels available whenever needed, and the whole experience stays smooth while working in the field.',
+    highlight: 'Built for day-to-day field work',
+  },
+  {
+    initials: 'RS',
+    name: 'Ravi Sharma',
+    location: 'Mohali',
+    tier: 'Gold',
+    yearsWithUs: 'Connected for 3 years',
+    quote:
+      'Transparent rewards, simple redemption, and timely support make the app practical for regular use.',
+    highlight: 'Transparent rewards and timely payments',
+  },
+  {
+    initials: 'NK',
+    name: 'Naveen Kumar',
+    location: 'Ludhiana',
+    tier: 'Silver',
+    yearsWithUs: 'Connected for 1 year',
+    quote:
+      'The learning curve feels easy, and the app makes it simple to stay active from the very beginning.',
+    highlight: 'Good start and easy learning curve',
+  },
+] as const;
+
 function StarRow({ color }: { color: string }) {
   return <Text style={[styles.stars, { color }]}>*****</Text>;
 }

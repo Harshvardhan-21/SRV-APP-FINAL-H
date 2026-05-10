@@ -382,6 +382,7 @@ function AppContent() {
               onLanguageChange={setLanguage}
               darkMode={darkMode}
               onDarkModeChange={setDarkMode}
+              currentRole="dealer"
             />
           );
         case 'dealer_bonus':
@@ -392,6 +393,7 @@ function AppContent() {
               onLanguageChange={setLanguage}
               darkMode={darkMode}
               onDarkModeChange={setDarkMode}
+              currentRole="dealer"
             />
           );
         case 'transfer_points':
@@ -403,6 +405,7 @@ function AppContent() {
               onLanguageChange={setLanguage}
               darkMode={darkMode}
               onDarkModeChange={setDarkMode}
+              currentRole="dealer"
             />
           );
         default:
@@ -522,10 +525,11 @@ function AppContent() {
           return <CounterBoyProductScreen onNavigate={handleNavigate} />;
         case 'scan':
           return (
-            <CounterBoyScanScreen
+            <CounterBoyHomeScreen
               onNavigate={handleNavigate}
-              rewardHistory={electricianRewardHistory}
-              onCommitRewards={handleElectricianRewardCommit}
+              onOpenProductCategory={handleOpenProductCategory}
+              profilePhotoUri={profilePhotoByRole.counterboy}
+              hasUnreadNotif={hasUnreadNotif}
             />
           );
         case 'notification':
@@ -579,6 +583,7 @@ function AppContent() {
               onLanguageChange={setLanguage}
               darkMode={darkMode}
               onDarkModeChange={setDarkMode}
+              currentRole="counterboy"
             />
           );
         case 'transfer_points':
@@ -590,6 +595,7 @@ function AppContent() {
               onLanguageChange={setLanguage}
               darkMode={darkMode}
               onDarkModeChange={setDarkMode}
+              currentRole="counterboy"
             />
           );
         default:
@@ -684,6 +690,7 @@ function AppContent() {
             onLanguageChange={setLanguage}
             darkMode={darkMode}
             onDarkModeChange={setDarkMode}
+            currentRole="electrician"
           />
         );
       case 'transfer_points':
@@ -695,6 +702,7 @@ function AppContent() {
             onLanguageChange={setLanguage}
             darkMode={darkMode}
             onDarkModeChange={setDarkMode}
+            currentRole="electrician"
           />
         );
       default:

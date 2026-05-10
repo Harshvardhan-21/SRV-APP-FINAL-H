@@ -1,5 +1,6 @@
 import * as ImagePicker from 'expo-image-picker';
 import * as LegacyFileSystem from 'expo-file-system/legacy';
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
@@ -100,7 +101,10 @@ export function ProfileScreen({
 }) {
   // Real user from auth context
   const { user: authUser, updateUser, refreshProfile } = useAuth();
-  const { uploadProfilePhoto, removeProfilePhoto: removeRemoteProfilePhoto } = useAppData();
+  const {
+    uploadProfilePhoto,
+    removeProfilePhoto: removeRemoteProfilePhoto,
+  } = useAppData();
 
   // Refresh from backend when profile screen opens
   useEffect(() => {
@@ -176,8 +180,28 @@ export function ProfileScreen({
     setLanguage: onLanguageChange,
     darkMode,
     setDarkMode: onDarkModeChange,
+    currentRole,
   });
-  const { t, tx, theme } = preferenceValue;
+  const profileTheme = useMemo(
+    () => ({
+      ...preferenceValue.theme,
+      bg: darkMode ? '#0B1220' : preferenceValue.theme.bg,
+      surface: darkMode ? '#111827' : '#FFFFFF',
+      soft: darkMode ? '#1F2937' : preferenceValue.theme.soft,
+      border: darkMode ? '#243043' : '#EAEAF2',
+      textPrimary: darkMode ? '#F8FAFC' : '#0F1120',
+      textSecondary: darkMode ? '#D0D9E8' : '#4A4B5C',
+      textMuted: darkMode ? '#94A3B8' : '#9898A8',
+      heroSurface: darkMode ? '#111827' : preferenceValue.theme.heroSurface,
+      heroStrip: darkMode ? '#0F172A' : preferenceValue.theme.heroStrip,
+    }),
+    [darkMode, preferenceValue.theme]
+  );
+  const scopedPreferenceValue = useMemo(
+    () => ({ ...preferenceValue, theme: profileTheme }),
+    [preferenceValue, profileTheme]
+  );
+  const { t, tx, theme } = scopedPreferenceValue;
   const menuItems = useMemo(
     () => (currentRole === 'dealer' ? dealerMenuItems : electricianMenuItems),
     [currentRole]
@@ -511,21 +535,28 @@ export function ProfileScreen({
 
   if (subPage) {
     return (
-      <PreferenceContext.Provider value={preferenceValue}>
+      <PreferenceContext.Provider value={scopedPreferenceValue}>
         {subpages[subPage]}
       </PreferenceContext.Provider>
     );
   }
 
-  const roleColor = currentRole === 'dealer' ? C.blue : C.success;
-  const roleSoft = currentRole === 'dealer' ? C.blueLight : C.successLight;
+  const roleColor = theme.accent;
+  const roleSoft = theme.accentSoft;
   const hasCompletedKyc = Boolean(
     getTaxIdentityValue(profile).trim() && getTaxHolderValue(profile).trim()
   );
   const visibleDetailRows = currentRole === 'dealer' ? detailRows : electricianDetailRows;
+  const isCounterboyProfile = false;
+  const accentAction = theme.accent;
+  const accentActionSoft = theme.accentSoft;
+  const accentAlt = theme.accentDeep;
+  const counterboySurface = theme.surface;
+  const counterboyGlowPrimary = theme.heroGlowPrimary;
+  const counterboyGlowSecondary = theme.heroGlowSecondary;
 
   return (
-    <PreferenceContext.Provider value={preferenceValue}>
+    <PreferenceContext.Provider value={scopedPreferenceValue}>
       <>
         <ScrollView
           style={[styles.screen, { backgroundColor: theme.bg }]}
@@ -542,26 +573,38 @@ export function ProfileScreen({
               ]}
               activeOpacity={0.75}
             >
-              <AppIcon name="edit" size={16} color={C.primary} />
+              <AppIcon name="edit" size={16} color={accentAction} />
               <Text style={[styles.editHeaderText, { color: theme.textPrimary }]}>{t('edit')}</Text>
             </TouchableOpacity>
           </View>
 
-          <View
+          <LinearGradient
             style={[
               styles.heroCard,
-              { backgroundColor: theme.heroSurface, borderColor: theme.border },
+              { borderColor: theme.border },
             ]}
+            colors={darkMode ? theme.heroGradientDark : theme.heroGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
           >
-            <View style={styles.blobTL} />
-            <View style={styles.blobBR} />
+            <View style={[styles.blobTL, { backgroundColor: counterboyGlowPrimary }]} />
+            <View style={[styles.blobBR, { backgroundColor: counterboyGlowSecondary }]} />
             <View style={styles.heroTop}>
               <TouchableOpacity
                 onPress={openPhotoPicker}
                 activeOpacity={0.85}
                 style={styles.avatarWrap}
               >
-                <View style={styles.avatarRing}>
+                <View
+                  style={[
+                    styles.avatarRing,
+                    {
+                      borderColor: darkMode
+                        ? 'rgba(248,250,252,0.18)'
+                        : 'rgba(255,255,255,0.78)',
+                    },
+                  ]}
+                >
                   {(profilePhotoUri ?? authUser?.profileImage) ? (
                     <Image source={{ uri: (profilePhotoUri ?? authUser?.profileImage)! }} style={styles.avatarImg} />
                   ) : (
@@ -602,13 +645,17 @@ export function ProfileScreen({
                   </View>
                   <View style={[styles.tag, { backgroundColor: roleSoft }]}>
                     <Text style={[styles.tagTxt, { color: roleColor }]}>
-                      {currentRole === 'electrician' ? profile.electricianCode : profile.dealerCode}
+                      {currentRole === 'electrician'
+                        ? profile.electricianCode
+                        : currentRole === 'counterboy'
+                          ? authUser?.counterboyCode ?? 'Counter Boy'
+                          : profile.dealerCode}
                     </Text>
                   </View>
                 </View>
               </View>
             </View>
-          </View>
+          </LinearGradient>
 
           {currentRole !== 'dealer' ? (
             <View style={styles.statsRow}>
@@ -642,7 +689,10 @@ export function ProfileScreen({
                   key={item.label}
                   style={[
                     styles.statBox,
-                    { backgroundColor: theme.surface, borderColor: theme.border },
+                    {
+                      backgroundColor: counterboySurface,
+                      borderColor: theme.border,
+                    },
                   ]}
                   onPress={item.onPress}
                   activeOpacity={0.8}
@@ -669,11 +719,25 @@ export function ProfileScreen({
               </Text>
               <TouchableOpacity
                 onPress={() => setShowFullProfile((current) => !current)}
-                style={styles.visibilityBtn}
+                style={[
+                  styles.visibilityBtn,
+                  isCounterboyProfile ? { backgroundColor: accentActionSoft } : null,
+                ]}
                 activeOpacity={0.75}
               >
-                <AppIcon name={showFullProfile ? 'eyeOff' : 'eye'} size={16} color={C.blue} />
-                <Text style={styles.visibilityText}>{showFullProfile ? t('hide') : t('show')}</Text>
+                <AppIcon
+                  name={showFullProfile ? 'eyeOff' : 'eye'}
+                  size={16}
+                  color={isCounterboyProfile ? accentAction : C.blue}
+                />
+                <Text
+                  style={[
+                    styles.visibilityText,
+                    isCounterboyProfile ? { color: accentAction } : null,
+                  ]}
+                >
+                  {showFullProfile ? t('hide') : t('show')}
+                </Text>
               </TouchableOpacity>
             </View>
             {currentRole === 'dealer' && !hasCompletedKyc ? (
@@ -797,7 +861,14 @@ export function ProfileScreen({
                   activeOpacity={0.75}
                 >
                   <View style={[styles.menuIcon, { backgroundColor: item.bg }]}>
-                    {item.badge ? <View style={styles.notifDot} /> : null}
+                    {item.badge ? (
+                      <View
+                        style={[
+                          styles.notifDot,
+                          isCounterboyProfile ? { backgroundColor: accentAction } : null,
+                        ]}
+                      />
+                    ) : null}
                     <AppIcon name={item.icon} size={20} color={item.color} />
                   </View>
                   <Text style={[styles.menuLabel, { color: theme.textPrimary }]}>
@@ -821,15 +892,30 @@ export function ProfileScreen({
           <TouchableOpacity
             style={[
               styles.signOutBtn,
-              { backgroundColor: theme.surface, borderColor: darkMode ? theme.border : '#FFD6D4' },
+              {
+                backgroundColor: counterboySurface,
+                borderColor: theme.border,
+              },
             ]}
             onPress={() => setShowSignOut(true)}
             activeOpacity={0.8}
           >
-            <View style={styles.signOutIconWrap}>
-              <AppIcon name="signOut" size={18} color={C.primary} />
+            <View
+              style={[
+                styles.signOutIconWrap,
+                isCounterboyProfile ? { backgroundColor: accentActionSoft } : null,
+              ]}
+            >
+              <AppIcon name="signOut" size={18} color={accentAction} />
             </View>
-            <Text style={styles.signOutTxt}>{t('signOut')}</Text>
+            <Text
+              style={[
+                styles.signOutTxt,
+                isCounterboyProfile ? { color: accentAction } : null,
+              ]}
+            >
+              {t('signOut')}
+            </Text>
           </TouchableOpacity>
           <View style={{ height: 40 }} />
         </ScrollView>
@@ -880,7 +966,7 @@ export function ProfileScreen({
                       <AppIcon
                         name={option.icon}
                         size={22}
-                        color={option.label === 'Remove Photo' ? C.primary : C.blue}
+                        color={option.label === 'Remove Photo' ? accentAction : accentAlt}
                       />
                     </View>
                     <View style={{ flex: 1, marginLeft: 4 }}>
@@ -926,7 +1012,13 @@ export function ProfileScreen({
                     {tx('Cancel')}
                   </Text>
                 </Pressable>
-                <Pressable onPress={confirmDraftPhoto} style={styles.signOutActionBtn}>
+                <Pressable
+                  onPress={confirmDraftPhoto}
+                  style={[
+                    styles.signOutActionBtn,
+                    isCounterboyProfile ? { backgroundColor: accentAction } : null,
+                  ]}
+                >
                   <Text style={styles.signOutActionTxt}>{tx('Done')}</Text>
                 </Pressable>
               </View>
@@ -1132,7 +1224,7 @@ export function ProfileScreen({
           <View style={styles.overlay}>
             <View style={[styles.confirmCard, { backgroundColor: theme.surface }]}>
               <View style={styles.confirmIconBg}>
-                <AppIcon name="signOut" size={28} color={C.primary} />
+                <AppIcon name="signOut" size={28} color={accentAction} />
               </View>
               <Text
                 style={[styles.confirmTitle, { color: theme.textPrimary }]}
@@ -1153,7 +1245,10 @@ export function ProfileScreen({
                   </Text>
                 </Pressable>
                 <Pressable
-                  style={styles.signOutActionBtn}
+                  style={[
+                    styles.signOutActionBtn,
+                    isCounterboyProfile ? { backgroundColor: accentAction } : null,
+                  ]}
                   onPress={() => {
                     setShowSignOut(false);
                     onSignOut();
@@ -1193,7 +1288,6 @@ const styles = StyleSheet.create({
     width: 130,
     height: 130,
     borderRadius: 65,
-    backgroundColor: 'rgba(232,69,60,0.1)',
   },
   blobBR: {
     position: 'absolute',
@@ -1202,7 +1296,6 @@ const styles = StyleSheet.create({
     width: 110,
     height: 110,
     borderRadius: 55,
-    backgroundColor: 'rgba(37,99,235,0.08)',
   },
   heroTop: { flexDirection: 'row', alignItems: 'center', gap: 16, padding: 22, paddingBottom: 16 },
   avatarWrap: { position: 'relative', paddingBottom: 4, paddingRight: 4 },

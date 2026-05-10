@@ -51,29 +51,47 @@ export function AuthLandingScreen({
 
   const isDealer = role === 'dealer';
   const isCounterBoy = role === 'counterboy';
-  const accent = theme.accent;
+  const accent = isDealer ? '#B45309' : isCounterBoy ? '#E8453C' : '#173E80';
   const roleTheme = isDealer
     ? {
-        p1: '#D97706',
-        p2: '#92400E',
-        p3: '#5B3410',
-        soft: '#FEF3C7',
-        orb: '#FCD34D',
+        p1: '#B45309',
+        p2: '#D97706',
+        p3: '#E6A855',
+        soft: '#FEF7ED',
+        orb: '#F3E8D3',
+        shell: '#FFFCF7',
+        cardBorder: '#F3E8D3',
+        secondaryBg: '#FEF7ED',
+        secondaryBorder: '#F3E8D3',
+        statsBorder: '#F3E8D3',
+        backFade: '#F7FBFF',
       }
     : isCounterBoy
     ? {
         p1: '#E8453C',
-        p2: '#D73228',
-        p3: '#A61B14',
-        soft: '#FFE4E4',
-        orb: '#FFB8B5',
+        p2: '#FF6B6B',
+        p3: '#F59E9A',
+        soft: '#FFF1F2',
+        orb: '#FECACA',
+        shell: '#FFF6F6',
+        cardBorder: '#FECACA',
+        secondaryBg: '#FFF5F5',
+        secondaryBorder: '#FECACA',
+        statsBorder: '#FECACA',
+        backFade: '#FFEDEE',
       }
     : {
-        p1: '#2563EB',
-        p2: '#1D4ED8',
-        p3: '#1E3A8A',
-        soft: '#DBEAFE',
-        orb: '#93C5FD',
+        p1: '#173E80',
+        p2: '#355C95',
+        p3: '#6F879F',
+        soft: '#EAF3FF',
+        orb: '#BFDBFE',
+        shell: '#EEF3F8',
+        cardBorder: '#D7E7FF',
+        secondaryBg: '#F7FBFF',
+        secondaryBorder: '#BFD6F5',
+        statsBorder: '#DCE8F8',
+        backFade: '#F7FBFF',
       };
   const title = isDealer
     ? tx('Dealer account access')
@@ -94,7 +112,7 @@ export function AuthLandingScreen({
 
   return (
     <ScrollView
-      style={[styles.screen, { backgroundColor: isDealer ? '#FFF9F0' : isCounterBoy ? '#FFF5F5' : '#F4F8FF' }]}
+      style={[styles.screen, { backgroundColor: roleTheme.shell }]}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
@@ -104,18 +122,28 @@ export function AuthLandingScreen({
         <View style={styles.logoWrap}>
           <Image source={{ uri: SRV_LOGO_URI }} style={styles.logoImg} resizeMode="contain" />
         </View>
-        <Text style={styles.heroTag}>SRV ELECTRICALS</Text>
-        <Text style={styles.heroTitle}>{heroTitle}</Text>
-        <Text style={styles.heroSubtitle}>
-          {isDealer
-            ? tx('Manage business growth, connected electricians and dealer tools in one place.')
-            : isCounterBoy
-            ? tx('Manage customer billing, stock checks and profile progress with your SRV account.')
-            : tx('Track rewards, scans and profile progress with your SRV account.')}
-        </Text>
+        <View style={styles.heroTextBlock}>
+          <Text style={styles.heroTag}>SRV ELECTRICALS</Text>
+          <Text style={styles.heroTitle}>{heroTitle}</Text>
+          <Text style={styles.heroSubtitle}>
+            {isDealer
+              ? tx('Manage business growth, connected electricians and dealer tools in one place.')
+              : isCounterBoy
+              ? tx('Manage customer billing, stock checks and profile progress with your SRV account.')
+              : tx('Track rewards, scans and profile progress with your SRV account.')}
+          </Text>
+        </View>
       </LinearGradient>
 
-      <View style={[styles.actionCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+      <View
+        style={[
+          styles.actionCard,
+          {
+            backgroundColor: '#FFFFFF',
+            borderColor: roleTheme.cardBorder,
+          },
+        ]}
+      >
         <View style={[styles.rolePill, { backgroundColor: roleTheme.soft }]}>
           <AppIcon name={isDealer ? 'building' : 'scan'} size={16} color={accent} />
           <Text style={[styles.rolePillText, { color: accent }]}>{title}</Text>
@@ -137,12 +165,18 @@ export function AuthLandingScreen({
 
         <Pressable
           onPress={() => setMode('signup')}
-          style={[styles.secondaryButton, { backgroundColor: roleTheme.soft, borderColor: accent }]}
+          style={[
+            styles.secondaryButton,
+            {
+              backgroundColor: roleTheme.secondaryBg,
+              borderColor: roleTheme.secondaryBorder,
+            },
+          ]}
         >
           <Text style={[styles.secondaryButtonText, { color: accent }]}>{tx('Create New Account')}</Text>
         </Pressable>
 
-        <View style={[styles.statsRow, { borderTopColor: theme.border }]}>
+        <View style={[styles.statsRow, { borderTopColor: roleTheme.statsBorder }]}>
           {[
             ['25+', tx('Years')],
             ['250+', tx('Products')],
@@ -161,7 +195,7 @@ export function AuthLandingScreen({
             style={styles.backButtonShell}
           >
             <LinearGradient
-              colors={[roleTheme.soft, isDealer ? '#FFF7E8' : '#EEF5FF']}
+              colors={[roleTheme.soft, roleTheme.backFade]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={[styles.backButton, { borderColor: `${accent}40` }]}
@@ -227,18 +261,28 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.62)',
     letterSpacing: 3,
     marginBottom: 6,
+    textAlign: 'center',
+  },
+  heroTextBlock: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   heroTitle: {
     fontSize: 30,
     fontWeight: '900',
     color: '#FFFFFF',
     marginBottom: 6,
+    textAlign: 'center',
+    width: '100%',
   },
   heroSubtitle: {
     fontSize: 13,
     lineHeight: 20,
     color: 'rgba(255,255,255,0.78)',
     textAlign: 'center',
+    width: '100%',
+    maxWidth: 280,
   },
   actionCard: {
     borderRadius: 22,
@@ -246,6 +290,8 @@ const styles = StyleSheet.create({
     padding: 20,
     gap: 12,
     ...createShadow({ color: '#000', offsetY: 4, blur: 10, opacity: 0.06, elevation: 3 }),
+    backgroundColor: '#FFFCF8',
+    borderColor: '#E7D9CB',
   },
   rolePill: {
     alignSelf: 'flex-start',
@@ -300,9 +346,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     paddingTop: 14,
     borderTopWidth: 1,
-    marginTop: 4,
+    marginTop: 6,
   },
-  statItem: { alignItems: 'center', gap: 2 },
+  statItem: { alignItems: 'center', gap: 2, backgroundColor: '#FEF7ED', paddingVertical: 10, paddingHorizontal: 12, borderRadius: 16, minWidth: 84 },
   statValue: { fontSize: 17, fontWeight: '900' },
   statLabel: { fontSize: 11, fontWeight: '600' },
   backButtonShell: {
@@ -334,8 +380,5 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
 });
-
-
-
 
 

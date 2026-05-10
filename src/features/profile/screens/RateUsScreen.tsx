@@ -93,7 +93,9 @@ export function RateUsPage({ onBack }: { onBack: () => void }) {
         {submitted ? (
           <LinearGradient
             colors={
-              theme.textPrimary === '#F8FAFC' ? ['#162033', '#0F172A'] : ['#F7FFF8', '#E8FFF1']
+              theme.textPrimary === '#F8FAFC'
+                ? [theme.heroGradientDark[0], theme.heroGradientDark[1]]
+                : [theme.heroGradient[0], theme.heroGradient[1]]
             }
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
@@ -128,8 +130,8 @@ export function RateUsPage({ onBack }: { onBack: () => void }) {
             <LinearGradient
               colors={
                 theme.textPrimary === '#F8FAFC'
-                  ? ['#221730', '#101827', '#13263E']
-                  : ['#FFF3EF', '#FFE0D2', '#FFD6BE']
+                  ? theme.heroGradientDark
+                  : theme.heroGradient
               }
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
@@ -138,7 +140,7 @@ export function RateUsPage({ onBack }: { onBack: () => void }) {
               <View style={styles.heroGlowPrimary} />
               <View style={styles.heroGlowSecondary} />
               <View style={styles.heroIconWrap}>
-                <AppIcon name="star" size={24} color={C.gold} />
+                <AppIcon name="star" size={24} color={theme.accent} />
               </View>
               <Text style={[styles.heroEyebrow, { color: theme.textMuted }]}>{tx('Rate Us')}</Text>
               <Text style={[styles.rateTitle, { color: theme.textPrimary }]}>
@@ -183,15 +185,15 @@ export function RateUsPage({ onBack }: { onBack: () => void }) {
                     style={[
                       styles.starBtn,
                       {
-                        backgroundColor: star <= rating ? '#FFF7DB' : theme.bg,
-                        borderColor: star <= rating ? '#FCD34D' : theme.border,
+                        backgroundColor: star <= rating ? theme.accentSoft : theme.bg,
+                        borderColor: star <= rating ? theme.accent : theme.border,
                       },
                     ]}
                   >
                     <AppIcon
                       name="star"
                       size={30}
-                      color={star <= rating ? '#F59E0B' : theme.border}
+                      color={star <= rating ? theme.accent : theme.border}
                     />
                   </TouchableOpacity>
                 ))}
@@ -249,7 +251,7 @@ export function RateUsPage({ onBack }: { onBack: () => void }) {
       <TouchableOpacity
               style={[
                 styles.rateSubmitBtn,
-                { backgroundColor: rating > 0 ? C.primary : theme.border },
+                { backgroundColor: rating > 0 ? theme.accent : theme.border },
               ]}
               onPress={handleSubmit}
               disabled={rating === 0 || submitting}

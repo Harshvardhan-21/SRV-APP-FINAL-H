@@ -14,10 +14,10 @@ import { authApi } from '@/shared/api';
 
 // Role-based color themes
 const THEMES = {
-  user:        { p1: '#6B7C2D', p2: '#4D5F1F', soft: '#EEF4D7', orb: '#B7CC74' },
-  dealer:      { p1: '#1D4ED8', p2: '#1E3A8A', soft: '#DBEAFE', orb: '#93C5FD' },
-  electrician: { p1: '#DE3B30', p2: '#991B1B', soft: '#FEE2E2', orb: '#FCA5A5' },
-  counterboy:  { p1: '#E8453C', p2: '#B91C1C', soft: '#FFE4E4', orb: '#FCA5A5' },
+  user:        { p1: '#6B7C2D', p2: '#97AF43', soft: '#F3F8E3', orb: '#D8E7A8' },
+  dealer:      { p1: '#D97706', p2: '#F59E0B', soft: '#FEF3C7', orb: '#FDE68A' },
+  electrician: { p1: '#173E80', p2: '#355C95', soft: '#EAF3FF', orb: '#BFDBFE' },
+  counterboy:  { p1: '#E8453C', p2: '#FF6B6B', soft: '#FFF3F3', orb: '#FECACA' },
 };
 
 
@@ -142,9 +142,9 @@ export function UserAuthScreen({
   const sEmailRef = useRef<TextInput>(null);
   const sPwdRef   = useRef<TextInput>(null);
 
-  const bg   = darkMode ? '#0F172A' : '#F6F8EE';
+  const bg   = darkMode ? '#0F172A' : '#EEF3F8';
   const card = darkMode ? '#1E293B' : '#FFFFFF';
-  const bdr  = darkMode ? '#334155' : '#E5E7EB';
+  const bdr  = darkMode ? '#334155' : '#D7E7FF';
   const tp   = darkMode ? '#F1F5F9' : '#111827';
   const tm   = darkMode ? '#94A3B8' : '#6B7280';
 
@@ -175,7 +175,7 @@ export function UserAuthScreen({
   if (mode === 'landing') {
     return (
       <View style={[S.screen, { backgroundColor: bg }]}>
-        <LinearGradient colors={[P1, P2, '#364815']} style={[S.hero, { paddingTop: insets.top + 12 }]}>
+          <LinearGradient colors={[P1, P2, '#B9CC6C']} style={[S.hero, { paddingTop: insets.top + 12 }]}>
           <Orbs color={theme.orb} />
           <Animated.View style={[S.heroContent, { transform: [{ translateY: slideY }], opacity: fadeO }]}>
             <View style={S.logoWrap}>
@@ -198,11 +198,11 @@ export function UserAuthScreen({
             </LinearGradient>
           </Pressable>
 
-          <Pressable onPress={() => setMode('signup')} style={[S.btnOutline, { borderColor: P1 }]} android_ripple={{ color: `${P1}15` }}>
+          <Pressable onPress={() => setMode('signup')} style={[S.btnOutline, { borderColor: '#D6E5A6', backgroundColor: '#FBFDF2' }]} android_ripple={{ color: `${P1}15` }}>
             <Text style={[S.btnOutlineText, { color: P1 }]}>{tx('Create New Account')}</Text>
           </Pressable>
 
-          <View style={[S.statsRow, { borderTopColor: bdr }]}>
+          <View style={[S.statsRow, { borderTopColor: '#E3EDC1' }]}>
             {[['25+', tx('Years')], ['250+', tx('Products')], ['50K+', tx('Customers')]].map(([n, l], i) => (
               <View key={i} style={S.statItem}>
                 <Text style={[S.statN, { color: P1 }]}>{n}</Text>
@@ -216,7 +216,7 @@ export function UserAuthScreen({
         {onBack && (
           <Pressable onPress={onBack} style={S.backToOnboarding} android_ripple={{ color: `${P1}15` }}>
             <LinearGradient
-              colors={[SOFT, '#F6F8EE']}
+              colors={[SOFT, '#FBFDF2']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={[S.backToOnboardingInner, { borderColor: `${P1}40` }]}
@@ -316,8 +316,10 @@ const S = StyleSheet.create({
   // Hero (landing)
   hero: {
     paddingHorizontal: 20,
-    paddingBottom: 24,
+    paddingBottom: 30,
     overflow: 'hidden',
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
   },
   backRow: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
@@ -349,21 +351,27 @@ const S = StyleSheet.create({
     padding: 20,
     gap: 10,
     elevation: 5,
+    shadowColor: '#734E2A',
+    shadowOpacity: 0.08,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
   },
   landTitle: { fontSize: 20, fontWeight: '900' },
   landSub: { fontSize: 13, lineHeight: 18, marginBottom: 4 },
-  statsRow: { flexDirection: 'row', justifyContent: 'space-around', paddingTop: 14, borderTopWidth: 1, marginTop: 4 },
-  statItem: { alignItems: 'center', gap: 2 },
+  statsRow: { flexDirection: 'row', justifyContent: 'space-around', paddingTop: 14, borderTopWidth: 1, marginTop: 6 },
+  statItem: { alignItems: 'center', gap: 2, backgroundColor: '#FFF7EF', paddingVertical: 10, paddingHorizontal: 12, borderRadius: 16, minWidth: 84 },
   statN: { fontSize: 17, fontWeight: '900' },
   statL: { fontSize: 11, fontWeight: '600' },
 
   // Form header
   formHeader: {
     paddingHorizontal: 16,
-    paddingBottom: 16,
+    paddingBottom: 18,
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 6,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
   },
   formHeaderLogoWrap: {
     width: 56, height: 56, borderRadius: 16,
@@ -377,13 +385,17 @@ const S = StyleSheet.create({
   formHeaderSub: { fontSize: 12, color: 'rgba(255,255,255,0.75)', textAlign: 'center', marginTop: 2 },
 
   // Form body
-  formBody: { padding: 16, paddingTop: 20, gap: 14 },
+  formBody: { padding: 16, paddingTop: 22, gap: 14 },
   formWelcome: { gap: 4, alignItems: 'center' },
   formWelcomeTitle: { fontSize: 22, fontWeight: '900', textAlign: 'center' },
   formWelcomeSub: { fontSize: 13, lineHeight: 18, textAlign: 'center' },
   formCard: {
     borderRadius: 20, borderWidth: 1, padding: 18, gap: 14,
     elevation: 3,
+    shadowColor: '#734E2A',
+    shadowOpacity: 0.07,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
   },
 
   // Input
@@ -413,7 +425,7 @@ const S = StyleSheet.create({
   },
   btnOutlineText: { fontSize: 15, fontWeight: '900' },
   switchRow: { alignItems: 'center', paddingVertical: 8 },
-  switchText: { fontSize: 13 },
+  switchText: { fontSize: 13, color: '#7D6B5D' },
 
   // Back to onboarding â€” landing bottom
   backToOnboarding: {

@@ -400,7 +400,11 @@ export default function ProfileFlipCard({ profile, role = 'electrician', photoUr
           >
             <LinearGradient
               colors={
-                darkMode ? ['#0F172A', '#16233B', '#1E3A5F'] : ['#587AC7', '#4768B7', '#38549B']
+                darkMode 
+                  ? ['#0F172A', '#16233B', '#1E3A5F'] 
+                  : isDealer 
+                    ? ['#FEF7ED', '#F3E8D3', '#E6D5B7']
+                    : ['#587AC7', '#4768B7', '#38549B']
               }
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
@@ -462,7 +466,11 @@ export default function ProfileFlipCard({ profile, role = 'electrician', photoUr
           >
             <LinearGradient
               colors={
-                darkMode ? ['#111827', '#172033', '#243B53'] : ['#6284C9', '#4B6DB4', '#35518C']
+                darkMode 
+                  ? ['#111827', '#172033', '#243B53'] 
+                  : isDealer 
+                    ? ['#F3E8D3', '#E6D5B7', '#D4C5A0']
+                    : ['#6284C9', '#4B6DB4', '#35518C']
               }
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}

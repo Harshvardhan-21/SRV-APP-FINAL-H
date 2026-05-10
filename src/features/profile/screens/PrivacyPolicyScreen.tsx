@@ -204,7 +204,7 @@ export function PrivacyPolicyPage({ onBack }: { onBack: () => void }) {
         showsVerticalScrollIndicator={false}
       >
         <LinearGradient
-          colors={darkenAware(theme, ['#FFF4F3', '#FFE6DB'], ['#1A2234', '#111827'])}
+          colors={darkenAware(theme, theme.heroGradient.slice(0, 2) as [string, string], theme.heroGradientDark.slice(0, 2) as [string, string])}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={[styles.heroCard, { borderColor: theme.border }]}
@@ -213,7 +213,7 @@ export function PrivacyPolicyPage({ onBack }: { onBack: () => void }) {
           <View style={styles.heroGlowTwo} />
           <View style={styles.heroTopRow}>
             <View style={styles.heroBadge}>
-              <AppIcon name="lock" size={18} color={C.primary} />
+              <AppIcon name="lock" size={18} color={theme.accent} />
             </View>
             <View style={styles.heroMeta}>
               <Text style={[styles.heroEyebrow, { color: theme.textMuted }]}>
@@ -250,8 +250,8 @@ export function PrivacyPolicyPage({ onBack }: { onBack: () => void }) {
           ]}
         >
           <View style={styles.policyDateInner}>
-            <View style={[styles.policyDateIcon, { backgroundColor: C.primaryLight }]}>
-              <AppIcon name="history" size={16} color={C.primary} />
+            <View style={[styles.policyDateIcon, { backgroundColor: theme.accentSoft }]}>
+              <AppIcon name="history" size={16} color={theme.accent} />
             </View>
             <View>
               <Text style={[styles.policyDateLabel, { color: theme.textMuted }]}>
@@ -266,7 +266,7 @@ export function PrivacyPolicyPage({ onBack }: { onBack: () => void }) {
           <LinearGradient
             key={index}
             colors={
-              theme.textPrimary === '#F8FAFC' ? ['#111827', '#182235'] : ['#FFFFFF', '#FFF7F4']
+              theme.textPrimary === '#F8FAFC' ? ['#111827', '#182235'] : ['#FFFFFF', '#F7FAFC']
             }
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
@@ -275,7 +275,7 @@ export function PrivacyPolicyPage({ onBack }: { onBack: () => void }) {
             <View style={styles.policySectionGlow} />
             <View style={styles.policySectionHeader}>
               <View style={[styles.policySectionNumberWrap, { borderColor: theme.border }]}>
-                <View style={[styles.policySectionNumber, { backgroundColor: C.primaryLight }]}>
+                  <View style={[styles.policySectionNumber, { backgroundColor: theme.accentSoft }]}>
                   <Text style={styles.policySectionNumberText}>{index + 1}</Text>
                 </View>
               </View>
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
     width: 130,
     height: 130,
     borderRadius: 65,
-    backgroundColor: 'rgba(232,69,60,0.12)',
+    backgroundColor: 'rgba(232,69,60,0.14)',
     top: -38,
     right: -26,
   },
@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
     width: 110,
     height: 110,
     borderRadius: 55,
-    backgroundColor: 'rgba(37,99,235,0.10)',
+    backgroundColor: 'rgba(37,99,235,0.12)',
     bottom: -28,
     left: -24,
   },
@@ -387,7 +387,7 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: 'rgba(232,69,60,0.07)',
+    backgroundColor: 'rgba(37,99,235,0.08)',
     top: -46,
     right: -30,
   },

@@ -18,7 +18,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 import { withWebSafeNativeDriver } from '@/shared/animations/nativeDriver';
 import ProfileFlipCard from '@/shared/components/ProfileFlipCard';
-import { TestimonialShowcase, type TestimonialItem } from '@/shared/components/TestimonialShowcase';
+import {
+  TESTIMONIAL_FALLBACK_COPY,
+  getTestimonialTheme,
+  TestimonialShowcase,
+  type TestimonialItem,
+} from '@/shared/components/TestimonialShowcase';
 import { WebsitePromoSection } from '@/shared/components/WebsitePromoSection';
 import { BannerCarousel, type BannerSlide as CarouselSlide } from '@/shared/components/BannerCarousel';
 import { createShadow } from '@/shared/theme/shadows';
@@ -31,16 +36,16 @@ import { useCatalogDownload } from '@/shared/hooks';
 const logoImage = require('../../../../assets/srv logo white.jpeg');
 
 const HOME_PRODUCT_ACCENTS: Record<string, readonly [string, string, string]> = {
-  fanbox:       ['#FAFBFD', '#E9EEF5', '#D5DEE9'],
-  concealedbox: ['#F8FBFD', '#E4EFF6', '#CCDDE9'],
-  modular:      ['#FDFCFF', '#EDE9F8', '#DDD6F0'],
-  mcb:          ['#F8FBFF', '#E0EEFF', '#C7DDFF'],
-  busbar:       ['#FFFEF8', '#FEF3C7', '#FDE68A'],
-  exhaust:      ['#F8FFF9', '#DCFCE7', '#BBF7D0'],
-  led:          ['#FFFEF5', '#FEF9C3', '#FEF08A'],
-  changeover:   ['#FDFCFF', '#EDE9FE', '#DDD6FE'],
-  mainswitch:   ['#FFF8F9', '#FFE4E6', '#FECDD3'],
-  louver:       ['#F8FFFD', '#CCFBF1', '#99F6E4'],
+  fanbox:       ['#FEF7ED', '#F3E8D3', '#E6D5B7'],
+  concealedbox: ['#FEF7ED', '#F3E8D3', '#E6D5B7'],
+  modular:      ['#FEF7ED', '#F3E8D3', '#E6D5B7'],
+  mcb:          ['#FEF7ED', '#F3E8D3', '#E6D5B7'],
+  busbar:       ['#FEF7ED', '#F3E8D3', '#E6D5B7'],
+  exhaust:      ['#FEF7ED', '#F3E8D3', '#E6D5B7'],
+  led:          ['#FEF7ED', '#F3E8D3', '#E6D5B7'],
+  changeover:   ['#FEF7ED', '#F3E8D3', '#E6D5B7'],
+  mainswitch:   ['#FEF7ED', '#F3E8D3', '#E6D5B7'],
+  louver:       ['#FEF7ED', '#F3E8D3', '#E6D5B7'],
 };
 
 function BellIcon({ color = '#10254A', size = 22 }: { color?: string; size?: number }) {
@@ -340,9 +345,9 @@ function getTier(count: number) {
     return {
       tier: 'Gold',
       nextAt: 301,
-      gradient: ['#FFF4D8', '#FFE6A8', '#FFD375'] as [string, string, string],
+      gradient: ['#FEF7ED', '#F3E8D3', '#E6D5B7'] as [string, string, string],
       accent: '#B45309',
-      chip: '#FFF8E6',
+      chip: '#FEF7ED',
     };
   }
   if (count <= 500) {
@@ -432,21 +437,31 @@ export function HomeScreen({
   }, [selectedFilter, ctxProducts]);
   const dealerTestimonials = useMemo<TestimonialItem[]>(() => {
     if (ctxTestimonials.length === 0) {
-      return [];
+      return TESTIMONIAL_FALLBACK_COPY.map((item, index) => {
+        const themed = getTestimonialTheme(index);
+        return { ...item, colors: themed.colors, ring: themed.ring, glow: themed.glow };
+      });
     }
     if (ctxTestimonials.length > 0) {
-      return ctxTestimonials.map((t) => ({
-        initials: t.initials ?? t.personName.slice(0, 2).toUpperCase(),
-        name: t.personName,
-        location: t.location ?? '',
-        tier: t.tier ?? '',
-        yearsWithUs: `Connected for ${t.yearsConnected} year${t.yearsConnected !== 1 ? 's' : ''}`,
-        quote: t.quote,
-        highlight: t.highlight ?? '',
-        colors: (t.gradientColors?.slice(0, 3) ?? ['#FFF7E6', '#FDE6B4', '#F6C96E']) as [string, string, string],
-        ring: t.ringColor ?? '#D97706',
-        glow: t.gradientColors?.[0] ?? '#FFE7BA',
-      }));
+      return ctxTestimonials.map((t, index) => {
+        const themed = getTestimonialTheme(index);
+        const fallback = TESTIMONIAL_FALLBACK_COPY[index % TESTIMONIAL_FALLBACK_COPY.length];
+        return {
+          initials: t.initials ?? t.personName.slice(0, 2).toUpperCase() ?? fallback.initials,
+          name: t.personName || fallback.name,
+          location: t.location || fallback.location,
+          tier: t.tier || fallback.tier,
+          yearsWithUs:
+            t.yearsConnected != null
+              ? `Connected for ${t.yearsConnected} year${t.yearsConnected !== 1 ? 's' : ''}`
+              : fallback.yearsWithUs,
+          quote: t.quote?.trim() || fallback.quote,
+          highlight: t.highlight?.trim() || fallback.highlight,
+          colors: themed.colors,
+          ring: themed.ring,
+          glow: themed.glow,
+        };
+      });
     }
     return [];
   }, [language, ctxTestimonials]);
@@ -469,8 +484,8 @@ export function HomeScreen({
       title: tx('Associate Electrician'),
       sub: formatCountText(language, connectedCount, 'connected', 'जुड़े हुए', 'ਜੁੜੇ ਹੋਏ'),
       icon: UserPlusIcon,
-      iconColors: ['#E8F1FF', '#CFE0FF'] as const,
-      iconTint: '#0F4BA8',
+      iconColors: ['#FEF7ED', '#F3E8D3'] as const,
+      iconTint: '#B45309',
       onPress: () => {
         const kyc = authUser?.kycStatus;
         if (kyc !== 'verified') {
@@ -490,8 +505,8 @@ export function HomeScreen({
       title: tx('Product Catalog'),
       sub: tx('Download PDF for latest updated prices'),
       icon: DownloadIcon,
-      iconColors: ['#DBEAFE', '#BFDBFE'] as const,
-      iconTint: '#1D4ED8',
+      iconColors: ['#FEF7ED', '#F3E8D3'] as const,
+      iconTint: '#B45309',
       onPress: () => openCatalog(appSettings?.catalogPdfUrl),
     },
     {
@@ -500,8 +515,8 @@ export function HomeScreen({
       title: tx('Call Electrician'),
       sub: tx('Reach your network'),
       icon: PhoneIcon,
-      iconColors: ['#FFF0EA', '#FFD2C4'] as const,
-      iconTint: '#B14B16',
+      iconColors: ['#FEF7ED', '#F3E8D3'] as const,
+      iconTint: '#A16207',
       onPress: () => onNavigate('call_electrician'),
     },
     {
@@ -510,8 +525,8 @@ export function HomeScreen({
       title: tx('WhatsApp'),
       sub: tx('Business support'),
       icon: WhatsAppIcon,
-      iconColors: ['#E8FFF1', '#C6F3D8'] as const,
-      iconTint: '#1A8F58',
+      iconColors: ['#FEF7ED', '#F3E8D3'] as const,
+      iconTint: '#A16207',
       onPress: () =>
         Linking.openURL(
           `https://wa.me/${supportWhatsapp}?text=Hello%20SRV%20Team,%20I%20need%20dealer%20support`
@@ -525,7 +540,7 @@ export function HomeScreen({
       showsVerticalScrollIndicator={false}
     >
       <LinearGradient
-        colors={darkMode ? ['#0B1220', '#101A2F', '#18263E'] : ['#FFF8EC', '#FDEFD2', '#FFF6E8']}
+        colors={darkMode ? ['#0B1220', '#101A2F', '#18263E'] : ['#FEF7ED', '#F3E8D3', '#FFFCF7']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={[styles.heroShell, { marginTop: -insets.top, paddingTop: 26 + insets.top }]}
@@ -585,7 +600,7 @@ export function HomeScreen({
             >
               <LinearGradient
                 colors={
-                  darkMode ? ['#0F172A', '#132238', '#1E293B'] : ['#E8F1FF', '#D7E7FF', '#CEE0FF']
+                  darkMode ? ['#0F172A', '#132238', '#1E293B'] : ['#FEF7ED', '#F3E8D3', '#E6D5B7']
                 }
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
@@ -833,7 +848,7 @@ export function HomeScreen({
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#FFF8EC' },
+  screen: { flex: 1, backgroundColor: '#FFFCF7' },
   screenDark: { backgroundColor: '#08111F' },
   heroShell: {
     paddingTop: 26,
@@ -848,7 +863,7 @@ const styles = StyleSheet.create({
     width: 220,
     height: 220,
     borderRadius: 110,
-    backgroundColor: 'rgba(217,119,6,0.14)',
+    backgroundColor: 'rgba(59,130,246,0.18)',
     top: -60,
     right: -35,
   },
@@ -857,7 +872,7 @@ const styles = StyleSheet.create({
     width: 160,
     height: 160,
     borderRadius: 80,
-    backgroundColor: 'rgba(245,158,11,0.12)',
+    backgroundColor: 'rgba(236,72,153,0.14)',
     bottom: 20,
     left: -24,
   },

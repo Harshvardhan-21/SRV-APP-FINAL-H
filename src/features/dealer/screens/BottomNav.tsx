@@ -15,8 +15,8 @@ type NavControlConfig = {
   accessibilityLabel: string;
 };
 
-const DEALER_PRIMARY = '#D97706';
-const DEALER_PRIMARY_DARK = '#92400E';
+const DEALER_PRIMARY = '#B45309';
+const DEALER_PRIMARY_DARK = '#A16207';
 
 function HomeIcon({ color, size = 24 }: { color: string; size?: number }) {
   return (

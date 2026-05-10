@@ -14,8 +14,7 @@ import { MaintenanceScreen } from './MaintenanceScreen';
 import { ForceUpdateScreen } from './ForceUpdateScreen';
 
 // ── Current app version — keep in sync with app.json ─────────────────────────
-// NOTE: Set to 0.9.0 for testing force update. Change back to match app.json version in production.
-export const APP_VERSION = '0.9.0';
+export const APP_VERSION = '1.0.0';
 
 // Storage key: stores the minAppVersion the user last acknowledged/updated to
 const STORAGE_KEY = 'srv_force_update_dismissed_version';
@@ -31,19 +30,11 @@ export function AppGate({ children }: Props) {
   useEffect(() => {
     const check = async () => {
       if (!appSettings) {
-        console.log('[AppGate] No appSettings yet');
         setChecked(true);
         return;
       }
 
-      console.log('[AppGate] Force Update Check:', {
-        forceUpdate: appSettings.forceUpdate,
-        currentVersion: APP_VERSION,
-        minAppVersion: appSettings.minAppVersion,
-      });
-
       if (!appSettings.forceUpdate) {
-        console.log('[AppGate] Force update is OFF');
         setShowForceUpdate(false);
         setChecked(true);
         return;
@@ -53,30 +44,22 @@ export function AppGate({ children }: Props) {
 
       // If current app version >= required version, no need to show update screen
       const comparison = compareVersions(APP_VERSION, requiredVersion);
-      console.log('[AppGate] Version comparison:', { comparison, result: comparison >= 0 ? 'PASS' : 'FAIL' });
       
       if (comparison >= 0) {
-        console.log('[AppGate] Current version is up to date');
         setShowForceUpdate(false);
         setChecked(true);
         return;
       }
 
       // Check if user already dismissed this specific required version
-      // (meaning they went to store, updated, came back — but version didn't change in code yet)
       try {
         const dismissed = await AsyncStorage.getItem(STORAGE_KEY);
-        console.log('[AppGate] Dismissed version:', dismissed);
         if (dismissed === requiredVersion) {
-          // User already acknowledged this version requirement — don't show again
-          console.log('[AppGate] User already dismissed this version');
           setShowForceUpdate(false);
         } else {
-          console.log('[AppGate] SHOWING FORCE UPDATE SCREEN');
           setShowForceUpdate(true);
         }
       } catch {
-        console.log('[AppGate] Error reading storage, showing force update');
         setShowForceUpdate(true);
       }
       setChecked(true);
