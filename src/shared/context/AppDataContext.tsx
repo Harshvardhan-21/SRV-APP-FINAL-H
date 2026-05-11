@@ -6,7 +6,6 @@ import {
   bannersApi,
   catalogApi,
   electriciansApi,
-  festivalApi,
   giftStoreApi,
   notificationsApi,
   offersApi,
@@ -21,7 +20,6 @@ import {
   supportApi,
   testimonialsApi,
   walletApi,
-  type ActiveFestival,
   type AppNotification,
   type AppSettings,
   type Banner,
@@ -45,7 +43,7 @@ import { storage } from '../api/storage';
 import { useAuth } from './AuthContext';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Context type — mirrors SRV-APP AppDataContext exactly
+// Context type
 // ─────────────────────────────────────────────────────────────────────────────
 type AppDataContextType = {
   loading: boolean;
@@ -85,8 +83,6 @@ type AppDataContextType = {
   referral: { code: string; link: string | null; channels: string[] } | null;
   // Reward schemes
   rewardSchemes: RewardScheme[];
-  // Festival
-  festival: ActiveFestival | null;
 
   // Actions
   refreshAll: () => Promise<void>;
@@ -127,7 +123,6 @@ const defaultCtx: AppDataContextType = {
   userQrCode: null,
   referral: null,
   rewardSchemes: [],
-  festival: null,
   refreshAll: async () => {},
   submitScan: async () => { throw new Error('not ready'); },
   addElectrician: async () => {},
@@ -169,13 +164,12 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   const [userQrCode, setUserQrCode] = useState<UserQrCode | null>(null);
   const [referral, setReferral] = useState<{ code: string; link: string | null; channels: string[] } | null>(null);
   const [rewardSchemes, setRewardSchemes] = useState<RewardScheme[]>([]);
-  const [festival, setFestival] = useState<ActiveFestival | null>(null);
 
   // ── Public data (no auth needed) ─────────────────────────────────────────
   const loadPublicData = async () => {
     console.log('🔄 Loading public data...');
     try {
-      const [prods, cats, bans, tests, setts, fest, offs, schemes, gifts] = await Promise.all([
+      const [prods, cats, bans, tests, setts, offs, schemes, gifts] = await Promise.all([
         productsApi.getAll().catch((err) => {
           console.error('❌ Products API failed:', err.message);
           return { data: [] as Product[] };
@@ -196,10 +190,6 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
           console.error('❌ Settings API failed:', err.message);
           return null;
         }),
-        festivalApi.getTheme().catch((err) => {
-          console.error('❌ Festival API failed:', err.message);
-          return null;
-        }),
         offersApi.getAll(role ?? undefined).catch((err) => {
           console.error('❌ Offers API failed:', err.message);
           return { data: [] as Offer[] };
@@ -213,7 +203,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
           return { data: [] as GiftProduct[] };
         }),
       ]);
-      
+
       console.log('✅ Public data loaded:', {
         products: prods.data?.length || 0,
         categories: cats.data?.length || 0,
@@ -223,15 +213,13 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         rewardSchemes: schemes.data?.length || 0,
         giftProducts: gifts.data?.length || 0,
         appSettings: !!setts,
-        festival: !!fest
       });
-      
+
       setProducts(prods.data ?? []);
       setCategories(cats.data ?? []);
       setBanners(bans.data ?? []);
       setTestimonials(tests.data ?? []);
       if (setts) setAppSettings(setts);
-      if (fest) setFestival(fest);
       setOffers(offs.data ?? []);
       setRewardSchemes(schemes.data ?? []);
       setGiftProducts(gifts.data ?? []);
@@ -294,7 +282,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         wallet: !!wal,
         scanHistory: !!scans,
         notifications: notifs.data?.length || 0,
-        redemptions: reds.data?.length || 0
+        redemptions: reds.data?.length || 0,
       });
 
       if (prof) {
@@ -327,7 +315,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         ]);
         console.log('✅ Dealer data loaded:', {
           electricians: !!elecs,
-          dealerBonus: !!bonus
+          dealerBonus: !!bonus,
         });
         if (elecs) setElectricians(elecs);
         if (bonus) setDealerBonus(bonus);
@@ -361,20 +349,16 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     setLoading(true);
     console.log('🔄 Starting data refresh...');
     console.log('🔧 Using API URL:', API_BASE_URL);
-    
+
     // Test basic connectivity first
     try {
       const healthUrl = `${API_BASE_URL.replace('/api/v1', '')}/health`;
       console.log('🏥 Testing health endpoint:', healthUrl);
-      
       const testResponse = await fetch(healthUrl, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
       });
       console.log('✅ Health check response:', testResponse.status, testResponse.statusText);
-      
       if (testResponse.ok) {
         const healthData = await testResponse.json();
         console.log('📊 Health data:', healthData);
@@ -383,7 +367,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       console.error('❌ Health check failed:', healthError.message);
       console.log('🔍 Backend might not be running at:', API_BASE_URL);
     }
-    
+
     try {
       await Promise.all([loadPublicData(), loadPrivateData()]);
       console.log('✅ Data refresh completed successfully');
@@ -406,7 +390,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     });
     const interval = setInterval(() => {
       if (AppState.currentState === 'active') void refreshAll();
-    }, 30000); // 30s polling keeps admin-side content changes visible without being too aggressive.
+    }, 30000);
     return () => { sub.remove(); clearInterval(interval); };
   }, [isAuthenticated, user?.id]);
 
@@ -480,7 +464,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     loading, profile, wallet, walletSummary: wallet, scanHistory, notifications, offers,
     products, catalogProducts: products, categories, catalogLoading, banners, giftProducts,
     testimonials, electricians, redemptions, appSettings, dealerBonus, userQrCode, referral,
-    rewardSchemes, festival,
+    rewardSchemes,
     refreshAll, submitScan, addElectrician, updateProfile, uploadProfilePhoto,
     removeProfilePhoto, updatePreferences, saveBankAccount, redeemReward,
     transferPoints, requestDealerBonusWithdrawal, submitSupportTicket,
@@ -488,7 +472,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   }), [
     loading, profile, wallet, scanHistory, notifications, offers, products, categories,
     catalogLoading, banners, giftProducts, testimonials, electricians, redemptions, appSettings,
-    dealerBonus, userQrCode, referral, rewardSchemes, festival,
+    dealerBonus, userQrCode, referral, rewardSchemes,
   ]);
 
   return <AppDataContext.Provider value={value}>{children}</AppDataContext.Provider>;
