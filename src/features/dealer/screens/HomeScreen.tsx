@@ -179,62 +179,46 @@ function FilterIcon({ color = '#173E80', size = 16 }: { color?: string; size?: n
 }
 
 function FeaturedProductImage({ uri, size }: { uri: string; size: number }) {
-  const floatY = useRef(new Animated.Value(0)).current;
+  const floatY   = useRef(new Animated.Value(0)).current;
   const imgScale = useRef(new Animated.Value(1)).current;
+  const rotateZ  = useRef(new Animated.Value(0)).current;
+  const shimmerX = useRef(new Animated.Value(-1)).current;
 
   useEffect(() => {
-    const floatLoop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(
-          floatY,
-          withWebSafeNativeDriver({
-            toValue: -7,
-            duration: 1500,
-            easing: Easing.inOut(Easing.sin),
-          })
-        ),
-        Animated.timing(
-          floatY,
-          withWebSafeNativeDriver({
-            toValue: 0,
-            duration: 1500,
-            easing: Easing.inOut(Easing.sin),
-          })
-        ),
-      ])
-    );
-    const scaleLoop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(
-          imgScale,
-          withWebSafeNativeDriver({
-            toValue: 1.04,
-            duration: 2100,
-            easing: Easing.inOut(Easing.ease),
-          })
-        ),
-        Animated.timing(
-          imgScale,
-          withWebSafeNativeDriver({
-            toValue: 1,
-            duration: 2100,
-            easing: Easing.inOut(Easing.ease),
-          })
-        ),
-      ])
-    );
-
-    floatLoop.start();
-    scaleLoop.start();
-    return () => {
-      floatLoop.stop();
-      scaleLoop.stop();
+    const floatLoop = Animated.loop(Animated.sequence([
+      Animated.timing(floatY, withWebSafeNativeDriver({ toValue: -10, duration: 1800, easing: Easing.inOut(Easing.sin) })),
+      Animated.timing(floatY, withWebSafeNativeDriver({ toValue: 0,   duration: 1800, easing: Easing.inOut(Easing.sin) })),
+    ]));
+    const scaleLoop = Animated.loop(Animated.sequence([
+      Animated.timing(imgScale, withWebSafeNativeDriver({ toValue: 1.08, duration: 2400, easing: Easing.inOut(Easing.ease) })),
+      Animated.timing(imgScale, withWebSafeNativeDriver({ toValue: 1,    duration: 2400, easing: Easing.inOut(Easing.ease) })),
+    ]));
+    const swayLoop = Animated.loop(Animated.sequence([
+      Animated.timing(rotateZ, withWebSafeNativeDriver({ toValue: 1,  duration: 2600, easing: Easing.inOut(Easing.sin) })),
+      Animated.timing(rotateZ, withWebSafeNativeDriver({ toValue: -1, duration: 2600, easing: Easing.inOut(Easing.sin) })),
+      Animated.timing(rotateZ, withWebSafeNativeDriver({ toValue: 0,  duration: 2600, easing: Easing.inOut(Easing.sin) })),
+    ]));
+    const runShimmer = () => {
+      shimmerX.setValue(-1);
+      Animated.timing(shimmerX, withWebSafeNativeDriver({ toValue: 2, duration: 900, easing: Easing.inOut(Easing.ease) }))
+        .start(({ finished }) => { if (finished) setTimeout(runShimmer, 3500); });
     };
-  }, [floatY, imgScale]);
+    floatLoop.start(); scaleLoop.start(); swayLoop.start();
+    const t = setTimeout(runShimmer, 1000);
+    return () => { floatLoop.stop(); scaleLoop.stop(); swayLoop.stop(); clearTimeout(t); };
+  }, [floatY, imgScale, rotateZ, shimmerX]);
+
+  const swayDeg   = rotateZ.interpolate({ inputRange: [-1, 0, 1], outputRange: ['-2deg', '0deg', '2deg'] });
+  const shimmerTX = shimmerX.interpolate({ inputRange: [-1, 2], outputRange: [-size * 1.5, size * 3] });
 
   return (
-    <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
-      <Animated.View style={{ transform: [{ translateY: floatY }, { scale: imgScale }] }}>
+    <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+      <Animated.View pointerEvents="none" style={{
+        position: 'absolute', top: 0, bottom: 0,
+        width: size * 0.35, backgroundColor: 'rgba(255,255,255,0.32)',
+        transform: [{ translateX: shimmerTX }, { rotate: '20deg' }], zIndex: 2,
+      }} />
+      <Animated.View style={{ transform: [{ translateY: floatY }, { scale: imgScale }, { rotate: swayDeg }] }}>
         <Image source={{ uri }} style={{ width: size, height: size }} resizeMode="contain" />
       </Animated.View>
     </View>
@@ -301,7 +285,7 @@ function FeaturedCard({
         ]}
       >
         <LinearGradient
-          colors={accent}
+          colors={['#FFFFFF', '#FFFFFF', '#FFFFFF']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.productImageWrap}

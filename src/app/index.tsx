@@ -63,7 +63,7 @@ function AppContent() {
   const [showOnboarding, setShowOnboarding] = useState(true);
   const [currentRole, setCurrentRole] = useState<UserRole>('electrician');
   const [authResolved, setAuthResolved] = useState(false);
-  const [selectedProductCategory, setSelectedProductCategory] = useState('fanbox');
+  const [selectedProductCategory, setSelectedProductCategory] = useState('all');
   const [language, setLanguage] = useState<AppLanguage>('English');
   const [darkMode, setDarkMode] = useState(false);
   const [passwordConfiguredByRole, setPasswordConfiguredByRole] = useState<
@@ -176,7 +176,7 @@ function AppContent() {
       }
 
       if (screen === 'product') {
-        setSelectedProductCategory((current) => current || 'fanbox');
+        setSelectedProductCategory((current) => current || 'all');
       }
 
       setCurrentScreen(screen);
@@ -213,7 +213,7 @@ function AppContent() {
       setShowOnboarding(true);
       setCurrentRole('electrician');
       setCurrentScreen('home');
-      setSelectedProductCategory('fanbox');
+      setSelectedProductCategory('all');
       setElectricianRewardPoints(0);
       setElectricianRewardScans(0);
       setElectricianRewardHistory([]);

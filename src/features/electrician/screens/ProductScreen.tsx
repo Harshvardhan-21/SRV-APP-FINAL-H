@@ -392,7 +392,7 @@ const ProductCard = memo(function ProductCard({
           darkMode ? styles.cardDark : null,
           {
             width: cardW,
-            height: cardW * 2.05,
+            height: cardW * 2.1,
             transform: [
               { scale: pressScale },
               { perspective: 800 },
@@ -423,9 +423,10 @@ const ProductCard = memo(function ProductCard({
 
           {/* Info zone */}
           <View style={[styles.infoZone, darkMode ? styles.infoZoneDark : null]}>
-            <Text style={[styles.productName, darkMode ? styles.productNameDark : null]} numberOfLines={1}>{product.name}</Text>
-            <Text style={[styles.productSub,  darkMode ? styles.productSubDark  : null]} numberOfLines={2}>{product.sub}</Text>
-            <View style={styles.infoSpacer} />
+            <View>
+              <Text style={[styles.productName, darkMode ? styles.productNameDark : null]} numberOfLines={2}>{product.name}</Text>
+              <Text style={[styles.productSub,  darkMode ? styles.productSubDark  : null]} numberOfLines={2}>{product.sub}</Text>
+            </View>
             <TouchableOpacity onPress={onScan} style={[styles.scanBtn, { backgroundColor: cc.scanBg }]} activeOpacity={0.8}>
               <ScanIcon size={15} color={cc.scanText} />
               <Text style={[styles.scanBtnText, { color: cc.scanText }]}>Scan to Earn</Text>
@@ -629,9 +630,9 @@ export function ProductScreen({
             <View style={styles.bannerIconWrap}>
               <CatIcon id={category} size={32} color="#fff" />
             </View>
-            <View>
-              <Text style={styles.catBannerTitle}>{currentCat.label}</Text>
-              <Text style={styles.catBannerSub}>
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <Text style={styles.catBannerTitle} numberOfLines={1} adjustsFontSizeToFit>{currentCat.label}</Text>
+              <Text style={styles.catBannerSub} numberOfLines={1}>
                 {catalogLoading && products.length === 0 ? tx('Loading...') : `${filtered.length} ${tx('products available')}`}
               </Text>
             </View>
@@ -770,17 +771,19 @@ const styles = StyleSheet.create({
     borderRadius: 16, padding: 16,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
   },
-  catBannerLeft: { flexDirection: 'row', alignItems: 'center', gap: 14, flex: 1 },
+  catBannerLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1, minWidth: 0, marginRight: 10 },
   bannerIconWrap: {
-    width: 52, height: 52, borderRadius: 14,
+    width: 48, height: 48, borderRadius: 14,
     backgroundColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center', justifyContent: 'center',
+    flexShrink: 0,
   },
-  catBannerTitle: { fontSize: 18, fontWeight: '900', color: '#fff' },
+  catBannerTitle: { fontSize: 16, fontWeight: '900', color: '#fff' },
   catBannerSub: { fontSize: 12, color: 'rgba(255,255,255,0.85)', marginTop: 2 },
   catScanBtn: {
     backgroundColor: 'rgba(255,255,255,0.22)', borderRadius: 14,
-    paddingHorizontal: 14, paddingVertical: 10, alignItems: 'center', gap: 4,
+    paddingHorizontal: 12, paddingVertical: 10, alignItems: 'center', gap: 4,
+    flexShrink: 0,
   },
   catScanText: { color: '#fff', fontSize: 11, fontWeight: '800', textAlign: 'center' },
 
@@ -834,7 +837,13 @@ const styles = StyleSheet.create({
   },
   ptsBadgeText: { fontSize: 11, fontWeight: '800' },
 
-  infoZone: { padding: 11, paddingTop: 10, paddingBottom: 12 },
+  infoZone: {
+    flex: 1,
+    padding: 11,
+    paddingTop: 10,
+    paddingBottom: 12,
+    justifyContent: 'space-between',
+  },
   infoZoneDark: { backgroundColor: '#111827' },
   infoSpacer: { height: 8 },
 

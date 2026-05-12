@@ -48,10 +48,10 @@ const CAT_COLORS: Record<string, CatColorScheme> = {
   concealedbox: { gradient: ['#3B6E8C','#5A8FAD','#8AB4CC'], scanBg:'#F0F7FB', scanText:'#3B6E8C', cardGradient:['#F8FBFD','#E4EFF6','#CCDDE9'], iconBg:'#DFF0F8' },
   modular:      { gradient: ['#5C4A8C','#7B6AAD','#A898CC'], scanBg:'#F5F3FB', scanText:'#5C4A8C', cardGradient:['#FDFCFF','#EDE9F8','#DDD6F0'], iconBg:'#EAE5F8' },
   mcb:          { gradient: ['#1D4ED8','#3B6EF0','#7BA4F8'], scanBg:'#EFF6FF', scanText:'#1D4ED8', cardGradient:['#F8FBFF','#E0EEFF','#C7DDFF'], iconBg:'#DBEAFE' },
-  busbar:       { gradient: ['#B45309','#D97706','#F59E0B'], scanBg:'#FFFBEB', scanText:'#B45309', cardGradient:['#FFFEF8','#FEF3C7','#FDE68A'], iconBg:'#FEF3C7' },
+  busbar:       { gradient: ['#6F879F','#93A8BE','#D9E1EA'], scanBg: '#F5F8FB', scanText: '#4A637B', cardGradient: ['#FAFBFD','#E9EEF5','#D5DEE9'], iconBg: '#E5ECF4' },
   exhaust:      { gradient: ['#065F46','#059669','#34D399'], scanBg:'#F0FDF4', scanText:'#065F46', cardGradient:['#F8FFF9','#DCFCE7','#BBF7D0'], iconBg:'#D1FAE5' },
   led:          { gradient: ['#92400E','#D97706','#FCD34D'], scanBg:'#FFFBEB', scanText:'#92400E', cardGradient:['#FFFEF5','#FEF9C3','#FEF08A'], iconBg:'#FEF3C7' },
-  changeover:   { gradient: ['#7C3AED','#8B5CF6','#A78BFA'], scanBg:'#F5F3FF', scanText:'#7C3AED', cardGradient:['#FDFCFF','#EDE9FE','#DDD6FE'], iconBg:'#EDE9FE' },
+  changeover:   { gradient: ['#6F879F','#93A8BE','#D9E1EA'], scanBg: '#F5F8FB', scanText: '#4A637B', cardGradient: ['#FAFBFD','#E9EEF5','#D5DEE9'], iconBg: '#E5ECF4' },
   mainswitch:   { gradient: ['#BE123C','#E11D48','#FB7185'], scanBg:'#FFF1F2', scanText:'#BE123C', cardGradient:['#FFF8F9','#FFE4E6','#FECDD3'], iconBg:'#FFE4E6' },
   louver:       { gradient: ['#0F766E','#0D9488','#2DD4BF'], scanBg:'#F0FDFA', scanText:'#0F766E', cardGradient:['#F8FFFD','#CCFBF1','#99F6E4'], iconBg:'#CCFBF1' },
   axialfan:     { gradient: ['#065F46','#059669','#34D399'], scanBg:'#F0FDF4', scanText:'#065F46', cardGradient:['#F8FFF9','#DCFCE7','#BBF7D0'], iconBg:'#D1FAE5' },
@@ -277,39 +277,55 @@ function resolveRemoteImageUrl(value?: string | null): string | null {
   return trimmed.startsWith('/') ? `${apiRoot}${trimmed}` : `${apiRoot}/${trimmed}`;
 }
 
-// ── Animated Category Image (float + breathe — same as ProductScreen) ─
+// ── Animated Category Image (float + breathe + sway + shimmer — same as ProductScreen) ─
 function AnimatedCatImage({ uri, size }: { uri: string; size: number }) {
-  const floatY = useRef(new Animated.Value(0)).current;
+  const floatY   = useRef(new Animated.Value(0)).current;
   const imgScale = useRef(new Animated.Value(1)).current;
+  const rotateZ  = useRef(new Animated.Value(0)).current;
+  const shimmerX = useRef(new Animated.Value(-1)).current;
 
   useEffect(() => {
-    const floatLoop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(floatY, withWebSafeNativeDriver({ toValue: -7, duration: 1600, easing: Easing.inOut(Easing.sin) })),
-        Animated.timing(floatY, withWebSafeNativeDriver({ toValue: 0, duration: 1600, easing: Easing.inOut(Easing.sin) })),
-      ])
-    );
-    const scaleLoop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(imgScale, withWebSafeNativeDriver({ toValue: 1.06, duration: 2200, easing: Easing.inOut(Easing.ease) })),
-        Animated.timing(imgScale, withWebSafeNativeDriver({ toValue: 1, duration: 2200, easing: Easing.inOut(Easing.ease) })),
-      ])
-    );
-    floatLoop.start();
-    scaleLoop.start();
-    return () => { floatLoop.stop(); scaleLoop.stop(); };
-  }, [floatY, imgScale]);
+    const floatLoop = Animated.loop(Animated.sequence([
+      Animated.timing(floatY, withWebSafeNativeDriver({ toValue: -8, duration: 1800, easing: Easing.inOut(Easing.sin) })),
+      Animated.timing(floatY, withWebSafeNativeDriver({ toValue: 0,  duration: 1800, easing: Easing.inOut(Easing.sin) })),
+    ]));
+    const scaleLoop = Animated.loop(Animated.sequence([
+      Animated.timing(imgScale, withWebSafeNativeDriver({ toValue: 1.07, duration: 2400, easing: Easing.inOut(Easing.ease) })),
+      Animated.timing(imgScale, withWebSafeNativeDriver({ toValue: 1,    duration: 2400, easing: Easing.inOut(Easing.ease) })),
+    ]));
+    const swayLoop = Animated.loop(Animated.sequence([
+      Animated.timing(rotateZ, withWebSafeNativeDriver({ toValue: 1,  duration: 2600, easing: Easing.inOut(Easing.sin) })),
+      Animated.timing(rotateZ, withWebSafeNativeDriver({ toValue: -1, duration: 2600, easing: Easing.inOut(Easing.sin) })),
+      Animated.timing(rotateZ, withWebSafeNativeDriver({ toValue: 0,  duration: 2600, easing: Easing.inOut(Easing.sin) })),
+    ]));
+    const runShimmer = () => {
+      shimmerX.setValue(-1);
+      Animated.timing(shimmerX, withWebSafeNativeDriver({ toValue: 2, duration: 900, easing: Easing.inOut(Easing.ease) }))
+        .start(({ finished }) => { if (finished) setTimeout(runShimmer, 3500); });
+    };
+    floatLoop.start(); scaleLoop.start(); swayLoop.start();
+    const t = setTimeout(runShimmer, 800);
+    return () => { floatLoop.stop(); scaleLoop.stop(); swayLoop.stop(); clearTimeout(t); };
+  }, [floatY, imgScale, rotateZ, shimmerX]);
+
+  const swayDeg  = rotateZ.interpolate({ inputRange: [-1, 0, 1], outputRange: ['-2deg', '0deg', '2deg'] });
+  const shimmerTX = shimmerX.interpolate({ inputRange: [-1, 2], outputRange: [-size * 1.5, size * 3] });
 
   return (
-    <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
-      <Animated.View style={{ transform: [{ translateY: floatY }, { scale: imgScale }] }}>
+    <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+      <Animated.View pointerEvents="none" style={{
+        position: 'absolute', top: 0, bottom: 0,
+        width: size * 0.35, backgroundColor: 'rgba(255,255,255,0.32)',
+        transform: [{ translateX: shimmerTX }, { rotate: '20deg' }], zIndex: 2,
+      }} />
+      <Animated.View style={{ transform: [{ translateY: floatY }, { scale: imgScale }, { rotate: swayDeg }] }}>
         <Image source={{ uri }} style={{ width: size, height: size }} resizeMode="contain" />
       </Animated.View>
     </View>
   );
 }
 
-// ── Home Category Card (same design as ProductScreen filterCard) ───────
+// ── Home Category Card (same design as ProductScreen) ───────
 function HomeCategoryCard({
   cat,
   index,
@@ -325,52 +341,64 @@ function HomeCategoryCard({
 }) {
   const cc = getCatColor(cat.id, index);
   const pressScale = useRef(new Animated.Value(1)).current;
-  const tiltX = useRef(new Animated.Value(0)).current;
+  const tiltX      = useRef(new Animated.Value(0)).current;
+  const tiltY      = useRef(new Animated.Value(0)).current;
+  const entryY     = useRef(new Animated.Value(50)).current;
+  const entryOp    = useRef(new Animated.Value(0)).current;
   const imgUri = getCatImage(cat.id, cat.imageUrl);
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(entryY,  withWebSafeNativeDriver({ toValue: 0, duration: 500, delay: index * 60, easing: Easing.out(Easing.back(1.3)) })),
+      Animated.timing(entryOp, withWebSafeNativeDriver({ toValue: 1, duration: 400, delay: index * 60, easing: Easing.out(Easing.ease) })),
+    ]).start();
+  }, [entryY, entryOp, index]);
 
   const handlePressIn = () => {
     Animated.parallel([
-      Animated.spring(pressScale, withWebSafeNativeDriver({ toValue: 0.96, tension: 100, friction: 6 })),
-      Animated.spring(tiltX, withWebSafeNativeDriver({ toValue: 1, tension: 100, friction: 6 })),
+      Animated.spring(pressScale, withWebSafeNativeDriver({ toValue: 0.94, tension: 120, friction: 6 })),
+      Animated.spring(tiltX,      withWebSafeNativeDriver({ toValue: 1,    tension: 120, friction: 6 })),
+      Animated.spring(tiltY,      withWebSafeNativeDriver({ toValue: 1,    tension: 120, friction: 6 })),
     ]).start();
   };
   const handlePressOut = () => {
     Animated.parallel([
-      Animated.spring(pressScale, withWebSafeNativeDriver({ toValue: 1, tension: 100, friction: 6 })),
-      Animated.spring(tiltX, withWebSafeNativeDriver({ toValue: 0, tension: 100, friction: 6 })),
+      Animated.spring(pressScale, withWebSafeNativeDriver({ toValue: 1, tension: 90, friction: 6 })),
+      Animated.spring(tiltX,      withWebSafeNativeDriver({ toValue: 0, tension: 90, friction: 6 })),
+      Animated.spring(tiltY,      withWebSafeNativeDriver({ toValue: 0, tension: 90, friction: 6 })),
     ]).start();
   };
-  const rotate = tiltX.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '4deg'] });
+  const rotateY = tiltX.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '8deg'] });
+  const rotateX = tiltY.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '-5deg'] });
 
   return (
     <Pressable onPress={onPress} onPressIn={handlePressIn} onPressOut={handlePressOut}>
-      <Animated.View
-        style={[
-          homeCatStyles.card,
-          darkMode ? homeCatStyles.cardDark : null,
-          { width: cardW, transform: [{ scale: pressScale }, { perspective: 900 }, { rotateY: rotate }] },
-        ]}
-      >
-        {/* Gradient image zone with floating animated product image */}
-        <LinearGradient
-          colors={darkMode ? ['#1E293B', '#243B55', '#1E293B'] : cc.cardGradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={homeCatStyles.imgZone}
+      <Animated.View style={{ opacity: entryOp, transform: [{ translateY: entryY }] }}>
+        <Animated.View
+          style={[
+            homeCatStyles.card,
+            darkMode ? homeCatStyles.cardDark : null,
+            { width: cardW, transform: [{ scale: pressScale }, { perspective: 800 }, { rotateY }, { rotateX }] },
+          ]}
         >
-          <AnimatedCatImage uri={imgUri} size={homeCatStyles.imgZone.height - 10} />
-        </LinearGradient>
-        {/* Label zone */}
-        <View style={[homeCatStyles.infoZone, darkMode ? homeCatStyles.infoZoneDark : null]}>
-          <Text style={[homeCatStyles.label, darkMode ? homeCatStyles.labelDark : null]} numberOfLines={2}>
-            {cat.label}
-          </Text>
-          <View style={[homeCatStyles.pill, { backgroundColor: darkMode ? 'rgba(255,255,255,0.08)' : cc.scanBg }]}>
-            <Text style={[homeCatStyles.pillText, { color: darkMode ? '#94A3B8' : cc.scanText }]}>
-              View Products
-            </Text>
+          {/* White image zone */}
+          <View style={[homeCatStyles.imgZone, { backgroundColor: darkMode ? '#1E293B' : '#FFFFFF' }]}>
+            <AnimatedCatImage uri={imgUri} size={homeCatStyles.imgZone.height - 8} />
           </View>
-        </View>
+          {/* Accent line */}
+          <View style={[homeCatStyles.accentLine, { backgroundColor: '#4A637B' }]} />
+          {/* Label zone */}
+          <View style={[homeCatStyles.infoZone, darkMode ? homeCatStyles.infoZoneDark : null]}>
+            <Text style={[homeCatStyles.label, darkMode ? homeCatStyles.labelDark : null]} numberOfLines={2}>
+              {cat.label}
+            </Text>
+            <View style={[homeCatStyles.pill, { backgroundColor: darkMode ? 'rgba(255,255,255,0.08)' : '#F5F8FB' }]}>
+              <Text style={[homeCatStyles.pillText, { color: darkMode ? '#94A3B8' : '#4A637B' }]}>
+                View Products
+              </Text>
+            </View>
+          </View>
+        </Animated.View>
       </Animated.View>
     </Pressable>
   );
@@ -383,10 +411,15 @@ const homeCatStyles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#E6ECF5',
-    ...createShadow({ color: '#0F172A', offsetY: 6, blur: 16, opacity: 0.08, elevation: 4 }),
+    shadowColor: '#1A3C8F',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.10,
+    shadowRadius: 14,
+    elevation: 5,
   },
   cardDark: { backgroundColor: '#111827', borderColor: '#1E293B' },
   imgZone: { height: 150, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  accentLine: { height: 3, width: '100%' },
   iconWrap: { width: 64, height: 64, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   infoZone: { padding: 10, backgroundColor: '#FFFFFF' },
   infoZoneDark: { backgroundColor: '#111827' },
@@ -414,59 +447,46 @@ type HomeProduct = {
   points: number;
 };
 function FeaturedProductImage({ uri, size }: { uri: string; size: number }) {
-  const floatY = useRef(new Animated.Value(0)).current;
+  const floatY   = useRef(new Animated.Value(0)).current;
   const imgScale = useRef(new Animated.Value(1)).current;
+  const rotateZ  = useRef(new Animated.Value(0)).current;
+  const shimmerX = useRef(new Animated.Value(-1)).current;
+
   useEffect(() => {
-    const floatLoop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(
-          floatY,
-          withWebSafeNativeDriver({
-            toValue: -8,
-            duration: 1600,
-            easing: Easing.inOut(Easing.sin),
-          })
-        ),
-        Animated.timing(
-          floatY,
-          withWebSafeNativeDriver({
-            toValue: 0,
-            duration: 1600,
-            easing: Easing.inOut(Easing.sin),
-          })
-        ),
-      ])
-    );
-    const scaleLoop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(
-          imgScale,
-          withWebSafeNativeDriver({
-            toValue: 1.05,
-            duration: 2200,
-            easing: Easing.inOut(Easing.ease),
-          })
-        ),
-        Animated.timing(
-          imgScale,
-          withWebSafeNativeDriver({
-            toValue: 1,
-            duration: 2200,
-            easing: Easing.inOut(Easing.ease),
-          })
-        ),
-      ])
-    );
-    floatLoop.start();
-    scaleLoop.start();
-    return () => {
-      floatLoop.stop();
-      scaleLoop.stop();
+    const floatLoop = Animated.loop(Animated.sequence([
+      Animated.timing(floatY, withWebSafeNativeDriver({ toValue: -10, duration: 1800, easing: Easing.inOut(Easing.sin) })),
+      Animated.timing(floatY, withWebSafeNativeDriver({ toValue: 0,   duration: 1800, easing: Easing.inOut(Easing.sin) })),
+    ]));
+    const scaleLoop = Animated.loop(Animated.sequence([
+      Animated.timing(imgScale, withWebSafeNativeDriver({ toValue: 1.08, duration: 2400, easing: Easing.inOut(Easing.ease) })),
+      Animated.timing(imgScale, withWebSafeNativeDriver({ toValue: 1,    duration: 2400, easing: Easing.inOut(Easing.ease) })),
+    ]));
+    const swayLoop = Animated.loop(Animated.sequence([
+      Animated.timing(rotateZ, withWebSafeNativeDriver({ toValue: 1,  duration: 2600, easing: Easing.inOut(Easing.sin) })),
+      Animated.timing(rotateZ, withWebSafeNativeDriver({ toValue: -1, duration: 2600, easing: Easing.inOut(Easing.sin) })),
+      Animated.timing(rotateZ, withWebSafeNativeDriver({ toValue: 0,  duration: 2600, easing: Easing.inOut(Easing.sin) })),
+    ]));
+    const runShimmer = () => {
+      shimmerX.setValue(-1);
+      Animated.timing(shimmerX, withWebSafeNativeDriver({ toValue: 2, duration: 900, easing: Easing.inOut(Easing.ease) }))
+        .start(({ finished }) => { if (finished) setTimeout(runShimmer, 3500); });
     };
-  }, [floatY, imgScale]);
+    floatLoop.start(); scaleLoop.start(); swayLoop.start();
+    const t = setTimeout(runShimmer, 1000);
+    return () => { floatLoop.stop(); scaleLoop.stop(); swayLoop.stop(); clearTimeout(t); };
+  }, [floatY, imgScale, rotateZ, shimmerX]);
+
+  const swayDeg   = rotateZ.interpolate({ inputRange: [-1, 0, 1], outputRange: ['-2deg', '0deg', '2deg'] });
+  const shimmerTX = shimmerX.interpolate({ inputRange: [-1, 2], outputRange: [-size * 1.5, size * 3] });
+
   return (
-    <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
-      <Animated.View style={{ transform: [{ translateY: floatY }, { scale: imgScale }] }}>
+    <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+      <Animated.View pointerEvents="none" style={{
+        position: 'absolute', top: 0, bottom: 0,
+        width: size * 0.35, backgroundColor: 'rgba(255,255,255,0.32)',
+        transform: [{ translateX: shimmerTX }, { rotate: '20deg' }], zIndex: 2,
+      }} />
+      <Animated.View style={{ transform: [{ translateY: floatY }, { scale: imgScale }, { rotate: swayDeg }] }}>
         <Image source={{ uri }} style={{ width: size, height: size }} resizeMode="contain" />
       </Animated.View>
     </View>
@@ -511,7 +531,7 @@ function FeaturedProductCard({
         ]}
       >
         <LinearGradient
-          colors={darkMode ? ['#1E293B', '#243B55', '#1E293B'] : palette.cardGradient}
+          colors={darkMode ? ['#1E293B', '#243B55', '#1E293B'] : ['#FFFFFF', '#FFFFFF', '#FFFFFF']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.productImageZone}
