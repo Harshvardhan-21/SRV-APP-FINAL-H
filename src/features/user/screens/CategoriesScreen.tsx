@@ -19,6 +19,7 @@ import { createShadow } from '@/shared/theme/shadows';
 
 type CatalogTheme = 'user' | 'electrician' | 'dealer' | 'counterboy';
 type ActionMode = 'cart' | 'scan';
+type CatalogLayoutVariant = 'default' | 'classic';
 
 const THEMES: Record<CatalogTheme, {
   primary: string;
@@ -110,6 +111,25 @@ const THEMES: Record<CatalogTheme, {
     cardBg: '#FFFFFF',
     cardShadow: '#7F1D1D',
   },
+};
+
+const CLASSIC_ELECTRICIAN_THEME = {
+  primary: '#173E80',
+  primaryLight: '#E7F0FF',
+  screenBg: '#EEF3F8',
+  searchBg: '#FFFFFF',
+  sectionBg: '#FFFFFF',
+  cardBorder: '#EEEEF3',
+  muted: '#6B7C93',
+  headerGradient: ['#EEF3F8', '#EEF3F8', '#EEF3F8'] as [string, string, string],
+  imageGradient: ['#FAFBFD', '#E9EEF5', '#D5DEE9'] as [string, string, string],
+  sidebarSoft: '#E7F0FF',
+  sidebarBg: '#FFFFFF',
+  productPanelBg: '#FFFFFF',
+  headerSoftText: '#6B7C93',
+  chipBg: 'rgba(23,62,128,0.1)',
+  cardBg: '#FFFFFF',
+  cardShadow: '#1C1E2E',
 };
 
 const DEFAULT_PRODUCT_IMAGES: Record<string, string> = {
@@ -358,6 +378,7 @@ const ProductCard = memo(function ProductCard({
   palette,
   actionLabel,
   onAction,
+  isClassicElectrician,
 }: {
   product: UiProduct;
   cardWidth: number;
@@ -368,9 +389,16 @@ const ProductCard = memo(function ProductCard({
   palette: typeof THEMES['user'];
   actionLabel: string;
   onAction: (product: UiProduct) => void;
+  isClassicElectrician?: boolean;
 }) {
   return (
-    <View style={[styles.card, { width: cardWidth, backgroundColor: cardBg, borderColor }]}>
+    <View
+      style={[
+        styles.card,
+        isClassicElectrician ? styles.cardClassicElectrician : null,
+        { width: cardWidth, backgroundColor: cardBg, borderColor },
+      ]}
+    >
       <View style={[styles.tag, { backgroundColor: product.tagBg }]}>
         <Text style={[styles.tagText, { color: product.tagColor }]}>{product.badge}</Text>
       </View>
@@ -378,7 +406,7 @@ const ProductCard = memo(function ProductCard({
         colors={palette.imageGradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
-        style={styles.imgWrap}
+        style={[styles.imgWrap, isClassicElectrician ? styles.imgWrapClassicElectrician : null]}
       >
         <Image
           source={{ uri: product.imageUrl }}
@@ -393,7 +421,11 @@ const ProductCard = memo(function ProductCard({
         <Text style={[styles.cardDesc, { color: textMuted }]} numberOfLines={2}>{product.desc || 'SRV product'}</Text>
       </View>
       <Pressable
-        style={[styles.actionBtn, { backgroundColor: palette.primaryLight }]}
+        style={[
+          styles.actionBtn,
+          isClassicElectrician ? styles.actionBtnClassicElectrician : null,
+          { backgroundColor: palette.primaryLight },
+        ]}
         android_ripple={{ color: `${palette.primary}25` }}
         onPress={() => onAction(product)}
       >
@@ -412,6 +444,7 @@ const SidebarItem = memo(function SidebarItem({
   textMuted,
   darkMode,
   onPress,
+  isClassicElectrician,
 }: {
   category: UiCategory;
   isActive: boolean;
@@ -420,6 +453,7 @@ const SidebarItem = memo(function SidebarItem({
   textMuted: string;
   darkMode: boolean;
   onPress: () => void;
+  isClassicElectrician?: boolean;
 }) {
   return (
     <Pressable
@@ -427,6 +461,7 @@ const SidebarItem = memo(function SidebarItem({
       android_ripple={{ color: `${palette.primary}15` }}
       style={[
         styles.sidebarItem,
+        isClassicElectrician ? styles.sidebarItemClassicElectrician : null,
         { borderBottomColor: borderColor },
         isActive && { backgroundColor: darkMode ? `${palette.primary}30` : palette.sidebarSoft },
       ]}
@@ -454,18 +489,21 @@ export function CategoriesScreen({
   theme = 'user',
   actionMode,
   initialCategory = 'all',
+  layoutVariant = 'default',
 }: {
   onNavigate: (screen: any) => void;
   onAddToCart?: (item: any) => void;
   theme?: CatalogTheme;
   actionMode?: ActionMode;
   initialCategory?: string;
+  layoutVariant?: CatalogLayoutVariant;
 }) {
   const { darkMode, tx } = usePreferenceContext();
   const { products: apiProducts, categories: apiCategories, catalogLoading } = useAppData();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
-  const palette = THEMES[theme];
+  const isClassicElectrician = theme === 'electrician' && layoutVariant === 'classic';
+  const palette = isClassicElectrician ? CLASSIC_ELECTRICIAN_THEME : THEMES[theme];
   const resolvedActionMode: ActionMode = actionMode ?? (onAddToCart ? 'cart' : 'scan');
   const [selectedCategory, setSelectedCategory] = useState(normalizeCategory(initialCategory) || 'all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -529,10 +567,10 @@ export function CategoriesScreen({
   }, [filteredProducts]);
 
   const SIDEBAR_W = 96;
-  const cardWidth = (width - SIDEBAR_W - 30) / 2;
+  const cardWidth = isClassicElectrician ? (width - 34) / 2 : (width - SIDEBAR_W - 30) / 2;
   const isElectricianTheme = theme === 'electrician';
+  const showElectricianHero = isElectricianTheme && !isClassicElectrician;
   const bg = darkMode ? '#0F172A' : palette.screenBg;
-  const sidebarBg = darkMode ? '#1E293B' : palette.sidebarBg;
   const cardBg = darkMode ? '#1E293B' : palette.cardBg;
   const borderColor = darkMode ? '#2D3748' : palette.cardBorder;
   const textPrimary = darkMode ? '#F1F5F9' : '#1A1A1A';
@@ -561,6 +599,7 @@ export function CategoriesScreen({
         palette={palette}
         actionLabel={actionLabel}
         onAction={handleProductAction}
+        isClassicElectrician={isClassicElectrician}
       />
       {item.right ? (
         <ProductCard
@@ -573,6 +612,7 @@ export function CategoriesScreen({
           palette={palette}
           actionLabel={actionLabel}
           onAction={handleProductAction}
+          isClassicElectrician={isClassicElectrician}
         />
       ) : (
         <View style={{ width: cardWidth }} />
@@ -591,28 +631,71 @@ export function CategoriesScreen({
       palette={palette}
       textMuted={textMuted}
       darkMode={darkMode}
+      isClassicElectrician={isClassicElectrician}
       onPress={() => setSelectedCategory(item.id)}
     />
-  ), [selectedCategory, borderColor, palette, textMuted, darkMode]);
+  ), [selectedCategory, borderColor, palette, textMuted, darkMode, isClassicElectrician]);
 
   const sidebarKeyExtractor = useCallback((item: UiCategory) => item.id, []);
 
+  const renderClassicCategoryChip = useCallback(({ item }: { item: UiCategory }) => (
+    <Pressable
+      onPress={() => setSelectedCategory(item.id)}
+      android_ripple={{ color: `${palette.primary}18` }}
+      style={[
+        styles.classicCategoryChip,
+        {
+          borderColor: selectedCategory === item.id ? palette.primary : borderColor,
+          backgroundColor: selectedCategory === item.id ? palette.sidebarSoft : '#FFFFFF',
+        },
+      ]}
+    >
+      <Text
+        style={[
+          styles.classicCategoryChipText,
+          { color: selectedCategory === item.id ? palette.primary : textMuted },
+        ]}
+        numberOfLines={1}
+      >
+        {item.label}
+      </Text>
+      <Text
+        style={[
+          styles.classicCategoryChipCount,
+          { color: selectedCategory === item.id ? palette.primary : textMuted },
+        ]}
+      >
+        {item.count}
+      </Text>
+    </Pressable>
+  ), [borderColor, palette.primary, palette.sidebarSoft, selectedCategory, textMuted]);
+
   // ── Section header for product FlatList ──────────────────────────────────
   const ListHeader = useMemo(() => (
-    <View style={[styles.sectionHead, isElectricianTheme ? styles.sectionHeadElectrician : null, { borderBottomColor: borderColor, backgroundColor: darkMode ? '#162132' : palette.sectionBg }]}>
+    <View style={[styles.sectionHead, showElectricianHero ? styles.sectionHeadElectrician : null, isClassicElectrician ? styles.sectionHeadClassicElectrician : null, { borderBottomColor: borderColor, backgroundColor: darkMode ? '#162132' : palette.sectionBg }]}>
       <View style={{ flex: 1 }}>
         <Text style={[styles.sectionTitle, { color: textPrimary }]}>{selectedCategoryLabel}</Text>
         <Text style={[styles.sectionCount, { color: textMuted }]}>
           {catalogLoading && products.length === 0 ? tx('Loading products...') : `${filteredProducts.length} ${tx('products')}`}
         </Text>
       </View>
-      {isElectricianTheme ? (
+      {showElectricianHero ? (
         <View style={[styles.liveChip, { backgroundColor: darkMode ? 'rgba(30,64,175,0.28)' : '#E3EEFB', borderColor }]}>
           <Text style={[styles.liveChipText, { color: palette.primary }]}>SRV Pro</Text>
         </View>
       ) : null}
+      {isClassicElectrician ? (
+        <FlatList
+          data={categoryItems}
+          keyExtractor={sidebarKeyExtractor}
+          renderItem={renderClassicCategoryChip}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.classicCategoryStrip}
+        />
+      ) : null}
     </View>
-  ), [borderColor, darkMode, palette.sectionBg, palette.primary, textPrimary, textMuted, selectedCategoryLabel, catalogLoading, products.length, filteredProducts.length, tx, isElectricianTheme]);
+  ), [borderColor, darkMode, palette.sectionBg, palette.primary, textPrimary, textMuted, selectedCategoryLabel, catalogLoading, products.length, filteredProducts.length, tx, showElectricianHero, isClassicElectrician, categoryItems, sidebarKeyExtractor, renderClassicCategoryChip]);
 
   const ListEmpty = useMemo(() => (
     <View style={styles.empty}>
@@ -627,17 +710,18 @@ export function CategoriesScreen({
       <LinearGradient
         style={[
           styles.header,
-          isElectricianTheme ? styles.headerElectrician : null,
+          showElectricianHero ? styles.headerElectrician : null,
+          isClassicElectrician ? styles.headerClassicElectrician : null,
           {
-            paddingTop: insets.top + 8,
-            ...createShadow({ color: palette.primary, offsetY: isElectricianTheme ? 8 : 3, blur: isElectricianTheme ? 18 : 10, opacity: isElectricianTheme ? 0.24 : 0.3, elevation: isElectricianTheme ? 10 : 6 }),
+            paddingTop: isClassicElectrician ? insets.top - 2 : insets.top + 8,
+            ...createShadow({ color: palette.primary, offsetY: showElectricianHero ? 8 : 3, blur: showElectricianHero ? 18 : 10, opacity: showElectricianHero ? 0.24 : 0.12, elevation: showElectricianHero ? 10 : 4 }),
           },
         ]}
         colors={darkMode ? ['#0F172A', '#162132', '#1E293B'] : palette.headerGradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
-        {isElectricianTheme ? (
+        {showElectricianHero ? (
           <>
             <Text style={[styles.headerEyebrow, { color: palette.headerSoftText }]}>ELECTRICIAN CATALOG</Text>
             <View style={styles.headerTopRow}>
@@ -660,9 +744,9 @@ export function CategoriesScreen({
             </View>
           </>
         ) : (
-          <Text style={styles.headerTitle}>{tx('All Categories')}</Text>
+          <Text style={[styles.headerTitle, isClassicElectrician ? styles.headerTitleClassicElectrician : null]}>{tx('All Categories')}</Text>
         )}
-        <View style={[styles.searchRow, isElectricianTheme ? styles.searchRowElectrician : null, { backgroundColor: palette.searchBg }]}>
+        <View style={[styles.searchRow, showElectricianHero ? styles.searchRowElectrician : null, isClassicElectrician ? styles.searchRowClassicElectrician : null, { backgroundColor: palette.searchBg }]}>
           <SearchIcon size={16} color="#9CA3AF" />
           <TextInput
             style={styles.searchInput}
@@ -674,26 +758,27 @@ export function CategoriesScreen({
         </View>
       </LinearGradient>
 
-      <View style={styles.body}>
+      <View style={[styles.body, isClassicElectrician ? styles.bodyClassicElectrician : null]}>
         {/* Sidebar — virtualized FlatList */}
-        <View style={[styles.sidebar, isElectricianTheme ? styles.sidebarElectrician : null, { width: SIDEBAR_W, backgroundColor: sidebarBg, borderRightColor: borderColor }]}>
-          <FlatList
-            data={categoryItems}
-            keyExtractor={sidebarKeyExtractor}
-            renderItem={renderSidebarItem}
-            showsVerticalScrollIndicator={false}
-            bounces={false}
-            // Sidebar items are small — render a generous window
-            initialNumToRender={12}
-            maxToRenderPerBatch={10}
-            windowSize={5}
-            removeClippedSubviews
-          />
-        </View>
+        {isClassicElectrician ? null : (
+          <View style={[styles.sidebar, showElectricianHero ? styles.sidebarElectrician : null, { width: SIDEBAR_W, backgroundColor: darkMode ? '#1E293B' : palette.sidebarBg, borderRightColor: borderColor }]}>
+            <FlatList
+              data={categoryItems}
+              keyExtractor={sidebarKeyExtractor}
+              renderItem={renderSidebarItem}
+              showsVerticalScrollIndicator={false}
+              bounces={false}
+              initialNumToRender={12}
+              maxToRenderPerBatch={10}
+              windowSize={5}
+              removeClippedSubviews
+            />
+          </View>
+        )}
 
         {/* Products — virtualized FlatList with row pairs */}
         <FlatList
-          style={[styles.productsArea, { backgroundColor: darkMode ? '#0F172A' : palette.productPanelBg }]}
+          style={[styles.productsArea, isClassicElectrician ? styles.productsAreaClassicElectrician : null, { backgroundColor: darkMode ? '#0F172A' : palette.productPanelBg }]}
           data={productRows}
           keyExtractor={keyExtractor}
           renderItem={renderProductRow}
@@ -720,9 +805,11 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   header: { paddingHorizontal: 14, paddingBottom: 14, borderBottomLeftRadius: 24, borderBottomRightRadius: 24 },
   headerElectrician: { paddingBottom: 18, borderBottomLeftRadius: 30, borderBottomRightRadius: 30 },
+  headerClassicElectrician: { paddingHorizontal: 12, paddingBottom: 6, borderBottomLeftRadius: 0, borderBottomRightRadius: 0 },
   headerEyebrow: { fontSize: 11, fontWeight: '800', letterSpacing: 1.4, marginBottom: 8 },
   headerTopRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, marginBottom: 12 },
   headerTitle: { fontSize: 22, fontWeight: '900', color: '#FFFFFF', marginBottom: 10, letterSpacing: 0.2 },
+  headerTitleClassicElectrician: { color: '#1C1E2E', marginBottom: 6, textAlign: 'center', fontSize: 20, fontWeight: '800' },
   headerSubtitle: { fontSize: 12.5, lineHeight: 18, fontWeight: '600', paddingRight: 8 },
   headerStatsWrap: { gap: 8 },
   headerStatChip: { minWidth: 76, borderRadius: 16, paddingHorizontal: 10, paddingVertical: 9, alignItems: 'center' },
@@ -741,8 +828,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 13,
   },
+  searchRowClassicElectrician: {
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#D7E7FF',
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+  },
   searchInput: { flex: 1, fontSize: 13, color: '#1E293B', padding: 0, fontWeight: '500' },
   body: { flex: 1, flexDirection: 'row' },
+  bodyClassicElectrician: { flexDirection: 'column' },
   sidebar: { borderRightWidth: 1 },
   sidebarElectrician: { marginTop: 10, marginLeft: 10, marginBottom: 12, borderRadius: 22, overflow: 'hidden', borderWidth: 1 },
   sidebarItem: {
@@ -755,6 +850,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 4,
   },
+  sidebarItemClassicElectrician: { minHeight: 92, paddingHorizontal: 8 },
   activeBar: { position: 'absolute', left: 0, top: 8, bottom: 8, width: 4, borderTopRightRadius: 4, borderBottomRightRadius: 4 },
   sidebarImageWrap: {
     width: 46,
@@ -770,6 +866,7 @@ const styles = StyleSheet.create({
   sidebarLabel: { fontSize: 10, fontWeight: '700', textAlign: 'center', lineHeight: 13 },
   sidebarCount: { fontSize: 10, fontWeight: '700' },
   productsArea: { flex: 1 },
+  productsAreaClassicElectrician: { flex: 1, paddingHorizontal: 10 },
   productsContent: { padding: 10, gap: 8 },
   sectionHead: {
     flexDirection: 'row',
@@ -788,6 +885,25 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 20,
   },
+  sectionHeadClassicElectrician: {
+    marginBottom: 8,
+    paddingHorizontal: 2,
+    paddingTop: 0,
+    paddingBottom: 8,
+    borderRadius: 0,
+  },
+  classicCategoryStrip: { paddingTop: 8 },
+  classicCategoryChip: {
+    minWidth: 92,
+    maxWidth: 148,
+    marginRight: 8,
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  classicCategoryChipText: { fontSize: 12, fontWeight: '800' },
+  classicCategoryChipCount: { fontSize: 10, fontWeight: '700', marginTop: 3 },
   sectionTitle: { fontSize: 15, fontWeight: '900' },
   sectionCount: { fontSize: 11, marginTop: 2, fontWeight: '600' },
   liveChip: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6, alignSelf: 'center' },
@@ -800,6 +916,10 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     ...createShadow({ color: '#2A4365', offsetY: 6, blur: 16, opacity: 0.1, elevation: 4 }),
   },
+  cardClassicElectrician: {
+    borderRadius: 20,
+    ...createShadow({ color: '#1C1E2E', offsetY: 8, blur: 18, opacity: 0.08, elevation: 3 }),
+  },
   tag: { alignSelf: 'flex-start', margin: 9, marginBottom: 0, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999 },
   tagText: { fontSize: 9, fontWeight: '800' },
   imgWrap: {
@@ -810,11 +930,13 @@ const styles = StyleSheet.create({
     marginHorizontal: 8,
     borderRadius: 14,
   },
+  imgWrapClassicElectrician: { height: 122, marginTop: 8, marginHorizontal: 10, borderRadius: 18 },
   img: { width: '100%', height: '100%' },
   cardInfo: { paddingHorizontal: 10, paddingBottom: 8, paddingTop: 2 },
   cardName: { fontSize: 12, fontWeight: '800', lineHeight: 16, marginBottom: 3 },
   cardDesc: { fontSize: 10, lineHeight: 14 },
   actionBtn: { marginHorizontal: 10, marginBottom: 12, paddingVertical: 9, borderRadius: 12, alignItems: 'center' },
+  actionBtnClassicElectrician: { marginHorizontal: 12, borderRadius: 14, paddingVertical: 10 },
   actionBtnText: { fontSize: 11, fontWeight: '900', letterSpacing: 0.2 },
   empty: { alignItems: 'center', paddingVertical: 60 },
   emptyEmoji: { fontSize: 40, marginBottom: 10 },
