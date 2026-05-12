@@ -450,7 +450,7 @@ export function ProductScreen({
   onNavigate: (screen: Screen) => void;
   initialCategory?: string;
   showBottomBanner?: boolean;
-  role?: 'electrician' | 'dealer';
+  role?: 'electrician' | 'dealer' | 'customer';
 }) {
   const { darkMode, tx } = usePreferenceContext();
   const { products: apiProducts, categories: apiCategories, catalogLoading, refreshAll } = useAppData();
@@ -505,9 +505,10 @@ export function ProductScreen({
   const cc = category === 'all' ? DEFAULT_CAT_COLOR : catColor(category);
 
   const isDealer = role === 'dealer';
-  const productActionLabel = isDealer ? tx('Buy Now') : tx('Scan to Earn');
-  const bannerActionLabel = isDealer ? tx('Buy Now') : tx('Scan & Earn').replace(' ', '\n');
-  const handleScan = useCallback(() => onNavigate(isDealer ? 'rewards' : 'scan'), [onNavigate, isDealer]);
+  const isCustomer = role === 'customer';
+  const productActionLabel = (isDealer || isCustomer) ? tx('Buy Now') : tx('Scan to Earn');
+  const bannerActionLabel = (isDealer || isCustomer) ? tx('Buy Now') : tx('Scan & Earn').replace(' ', '\n');
+  const handleScan = useCallback(() => onNavigate((isDealer || isCustomer) ? 'rewards' : 'scan'), [onNavigate, isDealer, isCustomer]);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -573,18 +574,52 @@ export function ProductScreen({
             {uiCategories.map(cat => {
               const active = !isSearching && cat.id === category;
               const cc2 = catColor(cat.id);
+              
+              // Customer theme colors
+              const customerBg = active ? '#6A2F12' : '#FBF1E7';
+              const customerBorder = active ? '#6A2F12' : '#E5D4C1';
+              const customerIconBg = active ? 'rgba(255,255,255,0.2)' : '#F5E8DC';
+              const customerIconColor = active ? '#fff' : '#6A2F12';
+              const customerTextColor = active ? '#fff' : '#6A2F12';
+              const customerMetaColor = active ? 'rgba(255,255,255,0.86)' : '#8D4A1E';
+              
               return (
                 <TouchableOpacity
                   key={cat.id}
                   onPress={() => { setCategory(cat.id); setSearch(''); setShowFilters(false); }}
-                  style={[styles.filterCard, darkMode ? styles.filterCardDark : null, active && { backgroundColor: cc2.scanText, borderColor: cc2.scanText }]}
+                  style={[
+                    styles.filterCard, 
+                    darkMode ? styles.filterCardDark : null, 
+                    isCustomer
+                      ? { backgroundColor: customerBg, borderColor: customerBorder }
+                      : active && { backgroundColor: cc2.scanText, borderColor: cc2.scanText }
+                  ]}
                   activeOpacity={0.86}
                 >
-                  <View style={[styles.filterCardIcon, { backgroundColor: active ? 'rgba(255,255,255,0.2)' : cc2.iconBg }]}>
-                    <CatIcon id={cat.id} size={22} color={active ? '#fff' : cc2.scanText} />
+                  <View style={[
+                    styles.filterCardIcon, 
+                    { backgroundColor: isCustomer ? customerIconBg : (active ? 'rgba(255,255,255,0.2)' : cc2.iconBg) }
+                  ]}>
+                    <CatIcon 
+                      id={cat.id} 
+                      size={22} 
+                      color={isCustomer ? customerIconColor : (active ? '#fff' : cc2.scanText)} 
+                    />
                   </View>
-                  <Text style={[styles.filterCardTitle, darkMode && !active ? styles.filterCardTitleDark : null, active && { color: '#fff' }]} numberOfLines={1}>{cat.label}</Text>
-                  <Text style={[styles.filterCardMeta, darkMode && !active ? styles.filterCardMetaDark : null, active && { color: 'rgba(255,255,255,0.86)' }]}>{cat.count} {tx('products')}</Text>
+                  <Text style={[
+                    styles.filterCardTitle, 
+                    darkMode && !active ? styles.filterCardTitleDark : null, 
+                    isCustomer 
+                      ? { color: customerTextColor }
+                      : active && { color: '#fff' }
+                  ]} numberOfLines={1}>{cat.label}</Text>
+                  <Text style={[
+                    styles.filterCardMeta, 
+                    darkMode && !active ? styles.filterCardMetaDark : null, 
+                    isCustomer
+                      ? { color: customerMetaColor }
+                      : active && { color: 'rgba(255,255,255,0.86)' }
+                  ]}>{cat.count} {tx('products')}</Text>
                 </TouchableOpacity>
               );
             })}
@@ -602,16 +637,43 @@ export function ProductScreen({
         renderItem={({ item: cat }) => {
           const active = !isSearching && cat.id === category;
           const cc2 = cat.id === 'all' ? DEFAULT_CAT_COLOR : catColor(cat.id);
+          
+          // Customer theme colors
+          const customerBg = active ? '#6A2F12' : '#FBF1E7';
+          const customerBorder = active ? '#6A2F12' : '#E5D4C1';
+          const customerIconBg = active ? 'rgba(255,255,255,0.2)' : '#F5E8DC';
+          const customerIconColor = active ? '#fff' : '#6A2F12';
+          const customerTextColor = active ? '#fff' : '#6A2F12';
+          
           return (
             <TouchableOpacity
               onPress={() => { setCategory(cat.id); setSearch(''); }}
-              style={[styles.categoryTab, darkMode ? styles.categoryTabDark : null, active && { backgroundColor: cc2.scanText, borderColor: cc2.scanText }]}
+              style={[
+                styles.categoryTab, 
+                darkMode ? styles.categoryTabDark : null, 
+                isCustomer 
+                  ? { backgroundColor: customerBg, borderColor: customerBorder }
+                  : active && { backgroundColor: cc2.scanText, borderColor: cc2.scanText }
+              ]}
               activeOpacity={0.8}
             >
-              <View style={[styles.tabIconWrap, { backgroundColor: active ? 'rgba(255,255,255,0.2)' : cc2.iconBg }]}>
-                <CatIcon id={cat.id} size={18} color={active ? '#fff' : cc2.scanText} />
+              <View style={[
+                styles.tabIconWrap, 
+                { backgroundColor: isCustomer ? customerIconBg : (active ? 'rgba(255,255,255,0.2)' : cc2.iconBg) }
+              ]}>
+                <CatIcon 
+                  id={cat.id} 
+                  size={18} 
+                  color={isCustomer ? customerIconColor : (active ? '#fff' : cc2.scanText)} 
+                />
               </View>
-              <Text style={[styles.categoryText, darkMode && !active ? styles.categoryTextDark : null, active && { color: '#fff' }]}>{cat.label}</Text>
+              <Text style={[
+                styles.categoryText, 
+                darkMode && !active ? styles.categoryTextDark : null, 
+                isCustomer 
+                  ? { color: customerTextColor }
+                  : active && { color: '#fff' }
+              ]}>{cat.label}</Text>
             </TouchableOpacity>
           );
         }}
@@ -630,19 +692,24 @@ export function ProductScreen({
           )}
         </View>
       ) : (
-        <LinearGradient colors={cc.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.catBanner}>
+        <LinearGradient 
+          colors={isCustomer ? ['#FBF1E7', '#F5E8DC', '#F0DEC9'] : cc.gradient} 
+          start={{ x: 0, y: 0 }} 
+          end={{ x: 1, y: 0 }} 
+          style={styles.catBanner}
+        >
           <View style={styles.catBannerLeft}>
             <View style={styles.bannerIconWrap}>
-              <CatIcon id={category} size={32} color="#fff" />
+              <CatIcon id={category} size={32} color={isCustomer ? '#6A2F12' : '#fff'} />
             </View>
             <View style={{ flex: 1, minWidth: 0 }}>
-              <Text style={styles.catBannerTitle} numberOfLines={1} adjustsFontSizeToFit>{currentCat.label}</Text>
-              <Text style={styles.catBannerSub} numberOfLines={1}>
+              <Text style={[styles.catBannerTitle, isCustomer && { color: '#6A2F12' }]} numberOfLines={1} adjustsFontSizeToFit>{currentCat.label}</Text>
+              <Text style={[styles.catBannerSub, isCustomer && { color: '#8D4A1E' }]} numberOfLines={1}>
                 {catalogLoading && products.length === 0 ? tx('Loading...') : `${filtered.length} ${tx('products available')}`}
               </Text>
             </View>
           </View>
-          {!isDealer ? (
+          {!isDealer && !isCustomer ? (
             <TouchableOpacity onPress={() => onNavigate('scan')} style={styles.catScanBtn}>
               <ScanIcon size={20} color="#fff" />
               <Text style={styles.catScanText}>{bannerActionLabel}</Text>
@@ -659,13 +726,13 @@ export function ProductScreen({
         <TouchableOpacity
           style={[styles.bottomBanner, darkMode ? styles.bottomBannerDark : null]}
           activeOpacity={0.88}
-          onPress={() => onNavigate(isDealer ? 'rewards' : 'scan')}
+          onPress={() => onNavigate((isDealer || isCustomer) ? 'rewards' : 'scan')}
         >
           <Text style={{ fontSize: 26 }}>🏭</Text>
           <View style={{ flex: 1 }}>
             <Text style={styles.bottomBannerTitle}>{tx("North India's Largest Manufacturer")}</Text>
             <Text style={styles.bottomBannerSub}>
-              {isDealer
+              {(isDealer || isCustomer)
                 ? tx('SRV Electricals — since 2000. Explore the latest SRV product range and offers.')
                 : tx('SRV Electricals — since 2000. Scan any QR to earn points!')}
             </Text>
@@ -675,7 +742,7 @@ export function ProductScreen({
       )}
       <View style={{ height: 110 }} />
     </View>
-  ), [darkMode, tx, showBottomBanner, onNavigate, isDealer]);
+  ), [darkMode, tx, showBottomBanner, onNavigate, isDealer, isCustomer]);
 
   const ListEmpty = useMemo(() => (
     <View style={styles.empty}>

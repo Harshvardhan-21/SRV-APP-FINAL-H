@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path, Rect, Circle } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { withWebSafeNativeDriver } from '@/shared/animations/nativeDriver';
@@ -8,8 +9,10 @@ import { createShadow } from '@/shared/theme/shadows';
 import type { Screen } from '@/shared/types/navigation';
 import { useResponsive } from '@/shared/hooks';
 
-const PURPLE = '#6B7C2D';
-const PURPLE_DARK = '#4A5520';
+// Customer theme colors matching Customer_Slide
+const BROWN_PRIMARY = '#6A2F12';
+const BROWN_SECONDARY = '#8D4A1E';
+const BROWN_LIGHT = '#FBF1E7';
 
 type NavControlConfig = {
   id: Screen;
@@ -103,10 +106,39 @@ function ProfileIcon({ color, size = 24 }: { color: string; size?: number }) {
 function CategoriesIcon() {
   return (
     <Svg width={28} height={28} viewBox="0 0 24 24" fill="none">
-      <Rect x="3" y="3" width="8" height="8" rx="2" fill="white" />
-      <Rect x="13" y="3" width="8" height="8" rx="2" fill="white" />
-      <Rect x="3" y="13" width="8" height="8" rx="2" fill="white" />
-      <Rect x="13" y="13" width="8" height="8" rx="2" fill="white" />
+      {/* Single 3D box with proper colors */}
+      <Path
+        d="M12 2L4 6v12l8 4 8-4V6l-8-4z"
+        fill="#FFFFFF"
+        stroke="#FFFFFF"
+        strokeWidth={0.5}
+      />
+      {/* Top face */}
+      <Path
+        d="M12 2L4 6l8 4 8-4-8-4z"
+        fill="#F5E8DC"
+        stroke="#8D4A1E"
+        strokeWidth={1.2}
+        strokeLinejoin="round"
+      />
+      {/* Left face */}
+      <Path
+        d="M4 6v12l8 4V10L4 6z"
+        fill="#E5D4C1"
+        stroke="#8D4A1E"
+        strokeWidth={1.2}
+        strokeLinejoin="round"
+      />
+      {/* Right face */}
+      <Path
+        d="M20 6v12l-8 4V10l8-4z"
+        fill="#FBF1E7"
+        stroke="#8D4A1E"
+        strokeWidth={1.2}
+        strokeLinejoin="round"
+      />
+      {/* Center lines for detail */}
+      <Path d="M12 10v12M4 6l8 4m0 0l8-4" stroke="#6A2F12" strokeWidth={1.5} strokeLinecap="round" opacity={0.4} />
     </Svg>
   );
 }
@@ -174,13 +206,26 @@ function CategoriesButton({
         accessibilityState={{ selected: isActive }}
         style={[catStyles.pressArea, compact && catStyles.pressAreaCompact, { marginTop: compact ? -14 : -20 }]}
       >
-        <Animated.View style={[catStyles.btn, compact && catStyles.btnCompact, { transform: [{ scale: btnScale }], width: btnSize, height: btnSize }]}>
-          <CategoriesIcon />
+        <Animated.View
+          style={[
+            catStyles.btnWrap,
+            compact && catStyles.btnWrapCompact,
+            { transform: [{ scale: btnScale }], width: btnSize, height: btnSize },
+          ]}
+        >
+          <LinearGradient
+            colors={[BROWN_PRIMARY, BROWN_SECONDARY, '#A65D2E']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={[catStyles.btn, compact && catStyles.btnCompact, { width: btnSize, height: btnSize }]}
+          >
+            <CategoriesIcon />
+          </LinearGradient>
         </Animated.View>
       </Pressable>
 
       <Text style={[catStyles.label, isActive && catStyles.labelActive, compact && catStyles.labelCompact]}>
-        {tx('Categories')}
+        {tx('Products')}
       </Text>
     </View>
   );
@@ -195,7 +240,7 @@ const catStyles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 18,
-    backgroundColor: PURPLE,
+    backgroundColor: BROWN_SECONDARY,
     zIndex: 0,
   },
   ringCompact: { borderRadius: 14 },
@@ -205,17 +250,18 @@ const catStyles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 18,
-    backgroundColor: PURPLE,
     alignItems: 'center',
     justifyContent: 'center',
-    ...createShadow({ color: PURPLE, offsetY: 5, blur: 12, opacity: 0.5, elevation: 12 }),
+    ...createShadow({ color: BROWN_PRIMARY, offsetY: 5, blur: 12, opacity: 0.5, elevation: 12 }),
   },
+  btnWrap: { borderRadius: 18 },
+  btnWrapCompact: { borderRadius: 14 },
   btnCompact: {
     borderRadius: 14,
-    ...createShadow({ color: PURPLE, offsetY: 5, blur: 8, opacity: 0.5, elevation: 12 }),
+    ...createShadow({ color: BROWN_PRIMARY, offsetY: 5, blur: 8, opacity: 0.5, elevation: 12 }),
   },
   label: { fontSize: 10, fontWeight: '800', color: '#9E9189', letterSpacing: 0.5, marginTop: 1 },
-  labelActive: { color: PURPLE_DARK },
+  labelActive: { color: BROWN_PRIMARY },
   labelCompact: { fontSize: 8 },
 });
 
@@ -225,7 +271,7 @@ function NavTab({
   id: Screen; label: string; active: boolean; onPress: () => void;
   testID: string; accessibilityLabel: string; compact?: boolean;
 }) {
-  const iconColor = active ? PURPLE : '#A89A91';
+  const iconColor = active ? BROWN_PRIMARY : '#8F8A79';
   const tabScale = useRef(new Animated.Value(1)).current;
 
   const handlePress = () => {
@@ -257,7 +303,14 @@ function NavTab({
       accessibilityState={{ selected: active }}
       style={[styles.tab, compact && styles.tabCompact]}
     >
-      <Animated.View style={[styles.iconWrap, compact && styles.iconWrapCompact, { transform: [{ scale: tabScale }] }]}>
+      <Animated.View
+        style={[
+          styles.iconWrap,
+          active && styles.iconWrapActive,
+          compact && styles.iconWrapCompact,
+          { transform: [{ scale: tabScale }] },
+        ]}
+      >
         {renderIcon()}
       </Animated.View>
       <Text style={[styles.label, active && styles.labelActive, compact && styles.labelCompact]}>
@@ -291,7 +344,16 @@ export function BottomNav({
   const topPad = isShortDevice ? 6 : 10;
 
   return (
-    <View style={[styles.wrap, darkMode ? styles.wrapDark : null, { paddingBottom: bottomPad, paddingTop: topPad, paddingHorizontal: wp(8), minHeight: isShortDevice ? 52 : 54 }]}>
+    <LinearGradient
+      colors={darkMode ? ['#0F172A', '#111827', '#0F172A'] : ['#FBF1E7', '#F5E8DC', '#F0DEC9']}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={[
+        styles.wrap,
+        darkMode ? styles.wrapDark : null,
+        { paddingBottom: bottomPad, paddingTop: topPad, paddingHorizontal: wp(8), minHeight: isShortDevice ? 52 : 54 },
+      ]}
+    >
       <View style={styles.side}>
         {LEFT.map((item) => (
           <NavTab
@@ -327,7 +389,7 @@ export function BottomNav({
           />
         ))}
       </View>
-    </View>
+    </LinearGradient>
   );
 }
 
@@ -336,10 +398,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#FFFDFC',
     borderTopWidth: 1,
-    borderTopColor: '#EEEEF3',
-    ...createShadow({ color: '#6F4C3A', offsetY: -4, blur: 14, opacity: 0.08, elevation: 12 }),
+    borderTopColor: '#E5D4C1',
+    ...createShadow({ color: BROWN_PRIMARY, offsetY: -4, blur: 14, opacity: 0.15, elevation: 12 }),
   },
   wrapDark: {
     backgroundColor: '#0F172A',
@@ -349,10 +410,15 @@ const styles = StyleSheet.create({
   side: { flex: 1, flexDirection: 'row', justifyContent: 'space-around' },
   tab: { flex: 1, alignItems: 'center', justifyContent: 'center', minWidth: 50 },
   tabCompact: { minWidth: 44 },
-  iconWrap: { width: 24, height: 24, alignItems: 'center', justifyContent: 'center' },
+  iconWrap: { width: 24, height: 24, alignItems: 'center', justifyContent: 'center', borderRadius: 12 },
+  iconWrapActive: {
+    width: 34,
+    height: 34,
+    backgroundColor: 'rgba(240,222,201,0.85)',
+  },
   iconWrapCompact: { width: 20, height: 20 },
-  label: { fontSize: 9, fontWeight: '600', color: '#A89A91', marginTop: 2 },
+  label: { fontSize: 9, fontWeight: '600', color: '#8F8A79', marginTop: 2 },
   labelCompact: { fontSize: 8, marginTop: 1 },
-  labelActive: { color: PURPLE_DARK, fontWeight: '800' },
+  labelActive: { color: BROWN_PRIMARY, fontWeight: '800' },
 });
 

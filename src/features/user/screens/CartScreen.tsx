@@ -5,10 +5,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePreferenceContext } from '@/shared/preferences';
 import { createShadow } from '@/shared/theme/shadows';
 
-const PRIMARY = '#6B7C2D';
-const PRIMARY_DARK = '#4D5F1F';
-const PRIMARY_SOFT = '#EEF4D7';
-const MINT_SOFT = '#E7F7EC';
+// Customer theme colors matching Customer_Slide
+const PRIMARY = '#6A2F12';
+const PRIMARY_DARK = '#8D4A1E';
+const PRIMARY_SOFT = '#FBF1E7';
+const MINT_SOFT = '#F0DEC9';
 
 export type CartItem = {
   id: string;
@@ -105,11 +106,11 @@ export function CartScreen({
   const { darkMode, tx } = usePreferenceContext();
   const insets = useSafeAreaInsets();
 
-  const bg = darkMode ? '#0F172A' : '#F4F7EE';
-  const heroSurface = darkMode ? '#1A2434' : '#EAF0DD';
+  const bg = darkMode ? '#0F172A' : '#F2F3F7';
+  const heroSurface = darkMode ? '#1A2434' : '#FBF1E7';
   const cardBg = darkMode ? '#162132' : '#FFFFFF';
-  const cardSoft = darkMode ? '#1D2A3D' : '#F8FAF4';
-  const borderColor = darkMode ? '#2B3A52' : '#DEE7CF';
+  const cardSoft = darkMode ? '#1D2A3D' : '#FBF1E7';
+  const borderColor = darkMode ? '#2B3A52' : '#E5D4C1';
   const textPrimary = darkMode ? '#F8FAFC' : '#1F2937';
   const textMuted = darkMode ? '#9FB0C4' : '#6B7280';
 
@@ -123,10 +124,10 @@ export function CartScreen({
         contentContainerStyle={{ paddingBottom: cartItems.length ? insets.bottom + 150 : insets.bottom + 40 }}
       >
         <LinearGradient
-          colors={darkMode ? ['#1B2638', '#182131', '#111827'] : ['#F1F6E7', '#E8F0DB', '#EEF4E2']}
+          colors={darkMode ? ['#1B2638', '#182131', '#111827'] : ['#FBF1E7', '#F5E8DC', '#F0DEC9']}
           style={[styles.heroCard, { borderColor }]}
         >
-          <View style={[styles.heroGlow, { backgroundColor: darkMode ? 'rgba(107,124,45,0.16)' : 'rgba(107,124,45,0.12)' }]} />
+          <View style={[styles.heroGlow, { backgroundColor: darkMode ? 'rgba(141,74,30,0.16)' : 'rgba(106,47,18,0.12)' }]} />
           <View style={styles.heroTopRow}>
             <View>
               <Text style={[styles.heroEyebrow, { color: PRIMARY_DARK }]}>{tx('Customer Cart')}</Text>

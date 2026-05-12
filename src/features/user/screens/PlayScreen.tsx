@@ -34,9 +34,9 @@ const VIDEO_FILTERS: { id: VideoCategoryKey; label: string }[] = [
 ];
 
 const CAT_COLORS: Record<Exclude<VideoCategoryKey, 'all'>, { bg: string; text: string; label: string }> = {
-  reels: { bg: '#FCE7F3', text: '#BE185D', label: 'Quick Reel' },
-  guides: { bg: '#DBEAFE', text: '#1D4ED8', label: 'Video Guide' },
-  tips: { bg: '#DCFCE7', text: '#15803D', label: 'Helpful Tip' },
+  reels: { bg: '#FBF1E7', text: '#8D4A1E', label: 'Quick Reel' },
+  guides: { bg: '#F5E8DC', text: '#6A2F12', label: 'Video Guide' },
+  tips: { bg: '#F0DEC9', text: '#6A2F12', label: 'Helpful Tip' },
 };
 
 function getYouTubeVideoId(url: string): string | null {
@@ -131,7 +131,7 @@ function CloseIcon({ size = 20, color = '#fff' }: { size?: number; color?: strin
   );
 }
 
-function SendIcon({ size = 18, color = '#6B7C2D' }: { size?: number; color?: string }) {
+function SendIcon({ size = 18, color = '#6A2F12' }: { size?: number; color?: string }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path d="M21.5 3.5 10 15l-1.5 5.5L21.5 3.5Zm0 0L14 20l-2-7-7-2 16.5-7.5Z" stroke={color} strokeWidth={1.8} strokeLinejoin="round" />
@@ -614,8 +614,8 @@ export function PlayScreen({ onNavigate }: { onNavigate: (screen: Screen) => voi
               style={[
                 styles.filterChip,
                 isActive
-                  ? { backgroundColor: '#6B7C2D', borderColor: '#6B7C2D' }
-                  : { backgroundColor: darkMode ? '#132031' : '#FFFFFF', borderColor: darkMode ? '#233248' : '#D7E0D2' },
+                  ? { backgroundColor: '#6A2F12', borderColor: '#6A2F12' }
+                  : { backgroundColor: darkMode ? '#132031' : '#FFFFFF', borderColor: darkMode ? '#233248' : '#E5D4C1' },
               ]}
             >
               <Text style={[styles.filterChipText, { color: isActive ? '#FFFFFF' : darkMode ? '#DCE4EE' : '#475569' }]}>
@@ -872,7 +872,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   browseBtn: {
-    backgroundColor: '#6B7C2D',
+    backgroundColor: '#6A2F12',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 999,

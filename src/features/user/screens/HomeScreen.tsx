@@ -214,16 +214,16 @@ function getCatImage(id: string, apiImageUrl?: string | null): string {
 }
 
 const CUSTOMER_THEME = {
-  heroLight: ['#F7FBEA', '#EEF5D3', '#DCE9A4'] as const,
-  heroDark: ['#17210F', '#233115', '#31471B'] as const,
-  heroGlowOne: 'rgba(151,175,67,0.24)',
-  heroGlowTwo: 'rgba(214,229,166,0.32)',
-  heroGlowThree: 'rgba(107,124,45,0.18)',
-  statLight: ['#F8FBEF', '#EDF5D8', '#DCE9A4'] as const,
-  quickBrowse: ['#F1F7DE', '#DDEBB0'] as const,
-  quickBrowseTint: '#5D6E26',
-  quickRewards: ['#F7F2D8', '#EADFA1'] as const,
-  quickRewardsTint: '#8A6A12',
+  heroLight: ['#FBF1E7', '#F5E8DC', '#F0DEC9'] as const,
+  heroDark: ['#2A1810', '#3D2418', '#4D2E1E'] as const,
+  heroGlowOne: 'rgba(141,74,30,0.24)',
+  heroGlowTwo: 'rgba(166,93,46,0.32)',
+  heroGlowThree: 'rgba(106,47,18,0.18)',
+  statLight: ['#FBF1E7', '#F5E8DC', '#F0DEC9'] as const,
+  quickBrowse: ['#F5E8DC', '#F0DEC9'] as const,
+  quickBrowseTint: '#6A2F12',
+  quickRewards: ['#FBF1E7', '#F0DEC9'] as const,
+  quickRewardsTint: '#8D4A1E',
 };
 
 // ── Animated Category Image (float + breathe — same as ProductScreen) ─
@@ -517,7 +517,7 @@ function WalletIcon({ color = '#10254A', size = 22 }: { color?: string; size?: n
   );
 }
 
-function DownloadIcon({ color = '#1D4ED8', size = 22 }: { color?: string; size?: number }) {
+function DownloadIcon({ color = '#6A2F12', size = 22 }: { color?: string; size?: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       {/* Book/catalog body */}
@@ -1322,7 +1322,7 @@ const styles = StyleSheet.create({
   quickSub: { color: '#74829D', fontSize: 11.5, marginTop: 3 },
   quickSubDark: { color: '#CBD5E1' },
   inlineAction: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  viewAllText: { color: '#6B7C2D', fontSize: 13, fontWeight: '800' },
+  viewAllText: { color: '#6A2F12', fontSize: 13, fontWeight: '800' },
   productsTopBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -1347,10 +1347,10 @@ const styles = StyleSheet.create({
     borderColor: '#243043',
   },
   filterChipActive: {
-    backgroundColor: '#6B7C2D',
-    borderColor: '#6B7C2D',
+    backgroundColor: '#6A2F12',
+    borderColor: '#6A2F12',
   },
-  filterChipText: { color: '#6B7C2D', fontSize: 11.5, fontWeight: '800' },
+  filterChipText: { color: '#6A2F12', fontSize: 11.5, fontWeight: '800' },
   filterChipTextDark: { color: '#CBD5E1' },
   filterChipTextActive: { color: '#FFFFFF' },
   productsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 24 },
@@ -1479,11 +1479,11 @@ const styles = StyleSheet.create({
   categoryPrice: {
     fontSize: 9,
     fontWeight: '700',
-    color: '#6B7C2D',
+    color: '#6A2F12',
     textAlign: 'center',
     marginTop: 3,
     paddingHorizontal: 4,
   },
   categoryPriceDark: { color: '#F87171' },
-  notifDot: { position: 'absolute', top: 6, right: 6, width: 8, height: 8, borderRadius: 4, backgroundColor: '#6B7C2D', borderWidth: 1.5, borderColor: '#fff' },
+  notifDot: { position: 'absolute', top: 6, right: 6, width: 8, height: 8, borderRadius: 4, backgroundColor: '#6A2F12', borderWidth: 1.5, borderColor: '#fff' },
 });
