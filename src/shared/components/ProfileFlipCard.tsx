@@ -403,7 +403,7 @@ export default function ProfileFlipCard({ profile, role = 'electrician', photoUr
                 darkMode 
                   ? ['#0F172A', '#16233B', '#1E3A5F'] 
                   : isDealer 
-                    ? ['#FEF7ED', '#F3E8D3', '#E6D5B7']
+                    ? ['#173E80', '#355C95', '#88AEEA']
                     : ['#587AC7', '#4768B7', '#38549B']
               }
               start={{ x: 0, y: 0 }}
@@ -411,7 +411,13 @@ export default function ProfileFlipCard({ profile, role = 'electrician', photoUr
               style={styles.gradientFill}
             >
               <View style={[styles.textureOne, darkMode ? styles.textureOneDark : null]} />
-              <View style={[styles.textureTwo, darkMode ? styles.textureTwoDark : null]} />
+              <View
+                style={[
+                  styles.textureTwo,
+                  isDealer ? styles.textureTwoDealer : null,
+                  darkMode ? styles.textureTwoDark : null,
+                ]}
+              />
 
               <View style={styles.frontTopRow}>
                 <View style={styles.identityWrap}>
@@ -469,7 +475,7 @@ export default function ProfileFlipCard({ profile, role = 'electrician', photoUr
                 darkMode 
                   ? ['#111827', '#172033', '#243B53'] 
                   : isDealer 
-                    ? ['#F3E8D3', '#E6D5B7', '#D4C5A0']
+                    ? ['#214D99', '#355C95', '#6F96D8']
                     : ['#6284C9', '#4B6DB4', '#35518C']
               }
               start={{ x: 0, y: 0 }}
@@ -566,6 +572,9 @@ const styles = StyleSheet.create({
   },
   textureTwoDark: {
     backgroundColor: 'rgba(14,165,233,0.1)',
+  },
+  textureTwoDealer: {
+    backgroundColor: 'rgba(191,219,254,0.22)',
   },
   downloadMiniBtn: {
     position: 'absolute',

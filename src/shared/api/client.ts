@@ -1,5 +1,6 @@
 import { API_BASE_URL } from './config';
 import { storage } from './storage';
+import { sessionEvents } from './sessionEvents';
 
 type RequestOptions = {
   method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
@@ -118,6 +119,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
           console.error(`❌ Retry failed: ${retryRes.status}`, err);
           if (retryRes.status === 401) {
             await storage.clearAll();
+            sessionEvents.emitExpired();
             throw new Error('SESSION_EXPIRED');
           }
           throw new Error((err as any).message || `Request failed: ${retryRes.status}`);
@@ -126,6 +128,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
       } catch (refreshError) {
         console.error('❌ Token refresh failed:', refreshError);
         await storage.clearAll();
+        sessionEvents.emitExpired();
         throw new Error('SESSION_EXPIRED');
       }
     }

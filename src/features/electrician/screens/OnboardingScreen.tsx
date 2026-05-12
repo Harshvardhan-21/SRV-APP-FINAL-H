@@ -61,8 +61,8 @@ const C = {
   successSoft: '#EAF8EF',
   error: '#D64B4B',
   errorSoft: '#FFF3F3',
-  warning: '#B45309',
-  warningSoft: '#FEF3C7',
+  warning: '#173E80',
+  warningSoft: '#EAF3FF',
   warmA: '#F97316',
   warmB: '#EF4444',
   accentA: '#173E80',
@@ -577,11 +577,19 @@ function Button({
   shadowColor?: string;
   testID?: string;
 }) {
-  const { tx } = usePreferenceContext();
+  const { tx, theme } = usePreferenceContext();
+  const rolePrimaryColors: [string, string] =
+    theme.role === 'dealer'
+      ? ['#173E80', '#355C95']
+      : theme.role === 'counterboy'
+        ? ['#E8453C', '#FF6B6B']
+        : [C.warmB, C.warmA];
+  const rolePrimaryShadow =
+    theme.role === 'dealer' ? '#173E80' : theme.role === 'counterboy' ? '#E8453C' : '#F97316';
   const shadowStyle = disabled
     ? clearShadow()
     : createShadow({
-        color: shadowColor ?? (secondary ? '#0EA5E9' : '#F97316'),
+        color: shadowColor ?? (secondary ? '#0EA5E9' : rolePrimaryShadow),
         offsetY: 8,
         blur: 16,
         opacity: secondary ? 0.14 : 0.18,
@@ -598,7 +606,7 @@ function Button({
               ? colors
               : secondary
                 ? [C.accentA, C.accentB]
-                : [C.warmB, C.warmA]
+                : rolePrimaryColors
         }
         start={{ x: 0, y: 0.5 }}
         end={{ x: 1, y: 0.5 }}
@@ -784,7 +792,7 @@ export function OnboardingScreen({
   const isCompactPhone = width <= 360 || height <= 760;
   const authBackgroundColors: [string, string, string] =
     role === 'dealer'
-      ? ['#FFF9ED', '#FEF3C7', '#FDE7B0']
+      ? ['#E8F1FF', '#F4F8FF', '#EAF3FF']
       : ['#E5EEFF', '#F4F8FF', '#EAF2FF'];
 
   useEffect(() => {
@@ -1806,7 +1814,7 @@ export function OnboardingScreen({
                       colors={
                         phase === 'auth'
                           ? role === 'dealer'
-                            ? ['#F5EBDC', '#FCF6ED']
+                            ? ['#EAF3FF', '#F7FBFF']
                             : ['#E9EFFA', '#F7FAFF']
                           : ['rgba(14,165,233,0.12)', 'rgba(139,92,246,0.12)']
                       }
@@ -1999,6 +2007,25 @@ export function OnboardingScreen({
                             : tx('Complete the account setup flow and create your electrician profile.')}
                         </Text>
                       </LinearGradient>
+                    ) : role === 'dealer' ? (
+                      <LinearGradient
+                        colors={['#173E80', '#355C95', '#88AEEA']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={[s.authHeaderPanel, s.authHeaderPanelDealer]}
+                      >
+                        <Text style={[s.sectionEyebrow, s.sectionEyebrowElectrician]}>
+                          {mode === 'login' ? tx('Authentication') : tx('Create Account')}
+                        </Text>
+                        <Text style={[s.sectionTitleAuth, s.sectionTitleAuthElectrician]}>
+                          {mode === 'login' ? tx('Dealer Login') : tx('Create Dealer Account')}
+                        </Text>
+                        <Text style={[s.sectionTextAuth, s.sectionTextAuthElectrician]}>
+                          {mode === 'login'
+                            ? tx('Choose a secure login method and continue with your dealer account.')
+                            : tx('Complete the account setup flow and create your dealer profile.')}
+                        </Text>
+                      </LinearGradient>
                     ) : (
                       <View style={s.authHeaderPanel}>
                         <Text style={s.sectionEyebrow}>{mode === 'login' ? tx('Authentication') : tx('Create Account')}</Text>
@@ -2013,8 +2040,26 @@ export function OnboardingScreen({
                       </View>
                     )}
                     {directAuthEntry ? (
-                      <View style={[s.entryPill, role === 'electrician' ? s.entryPillElectrician : null]}>
-                        <Text style={[s.entryPillText, role === 'electrician' ? s.entryPillTextElectrician : null]}>
+                      <View
+                        style={[
+                          s.entryPill,
+                          role === 'electrician'
+                            ? s.entryPillElectrician
+                            : role === 'dealer'
+                              ? s.entryPillDealer
+                              : null,
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            s.entryPillText,
+                            role === 'electrician'
+                              ? s.entryPillTextElectrician
+                              : role === 'dealer'
+                                ? s.entryPillTextDealer
+                                : null,
+                          ]}
+                        >
                           {mode === 'login' ? tx('Login flow selected') : tx('Create account flow selected')}
                         </Text>
                       </View>
@@ -3265,7 +3310,7 @@ const s = StyleSheet.create({
     borderColor: '#BFDBFE',
   },
   welcomeBadgeFillDealer: {
-    borderColor: '#FCD34D',
+    borderColor: '#BFDBFE',
   },
   eyebrow: {
     color: C.muted2,
@@ -3279,7 +3324,7 @@ const s = StyleSheet.create({
   bigTitleLanguage: { fontSize: 27, letterSpacing: -0.3 },
   bigTitleNeutral: { color: C.title },
   bigTitleElectrician: { color: '#274C77' },
-  bigTitleDealer: { color: '#7A4B22' },
+  bigTitleDealer: { color: '#173E80' },
   subtext: {
     color: C.muted,
     fontSize: 13.5,
@@ -3420,14 +3465,14 @@ const s = StyleSheet.create({
     right: -42,
     width: 190,
     height: 190,
-    backgroundColor: 'rgba(245,186,83,0.16)',
+    backgroundColor: 'rgba(83,139,233,0.18)',
   },
   authGlowDealerBottom: {
     bottom: 108,
     left: -44,
     width: 220,
     height: 220,
-    backgroundColor: 'rgba(189,143,86,0.1)',
+    backgroundColor: 'rgba(23,62,128,0.12)',
   },
   tabs: {
     flexDirection: 'row',
@@ -3448,10 +3493,10 @@ const s = StyleSheet.create({
     ...createShadow({ color: '#2757AA', offsetY: 6, blur: 14, opacity: 0.16, elevation: 3 }),
   },
   tabDealerActive: {
-    backgroundColor: '#EEF3FA',
+    backgroundColor: '#EDF4FF',
     borderWidth: 1,
-    borderColor: '#B8CAE8',
-    ...createShadow({ color: '#8A5A2F', offsetY: 4, blur: 10, opacity: 0.1, elevation: 2 }),
+    borderColor: '#BFD7FB',
+    ...createShadow({ color: '#355C95', offsetY: 8, blur: 14, opacity: 0.14, elevation: 3 }),
   },
   tabText: { color: C.muted, fontSize: 14, fontWeight: '700' },
   tabTextActive: { color: C.text },
@@ -3469,6 +3514,10 @@ const s = StyleSheet.create({
     borderColor: 'rgba(207,227,255,0.34)',
     ...createShadow({ color: '#173E80', offsetY: 12, blur: 20, opacity: 0.18, elevation: 4 }),
   },
+  authHeaderPanelDealer: {
+    borderColor: 'rgba(207,227,255,0.34)',
+    ...createShadow({ color: '#173E80', offsetY: 12, blur: 20, opacity: 0.18, elevation: 4 }),
+  },
   entryPill: {
     alignSelf: 'flex-start',
     borderRadius: 999,
@@ -3483,8 +3532,14 @@ const s = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#CEE0FF',
   },
+  entryPillDealer: {
+    backgroundColor: '#EDF4FF',
+    borderWidth: 1,
+    borderColor: '#CEE0FF',
+  },
   entryPillText: { color: '#5C6F91', fontSize: 11, fontWeight: '800' },
   entryPillTextElectrician: { color: '#173E80' },
+  entryPillTextDealer: { color: '#173E80' },
   loginChoiceRow: { flexDirection: 'row', gap: 12, marginTop: 8, marginBottom: 6 },
   loginChoiceCard: {
     flex: 1,
@@ -3519,8 +3574,8 @@ const s = StyleSheet.create({
   },
   authCardDealer: {
     backgroundColor: 'rgba(255,255,255,0.97)',
-    borderColor: '#D7E1F0',
-    ...createShadow({ color: '#355C95', offsetY: 12, blur: 20, opacity: 0.1, elevation: 5 }),
+    borderColor: '#D2E3FF',
+    ...createShadow({ color: '#173E80', offsetY: 16, blur: 28, opacity: 0.13, elevation: 6 }),
   },
   formIntroCard: {
     borderRadius: 20,

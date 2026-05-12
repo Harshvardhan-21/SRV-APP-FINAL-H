@@ -2019,12 +2019,12 @@ const roleAccents: Record<
   }
 > = {
   dealer: {
-    accent: '#35538E',
-    accentSoft: '#DCE8FF',
+    accent: '#214D99',
+    accentSoft: '#E3EEFF',
     accentDeep: '#173E80',
-    lightBg: '#F3F7FF',
-    lightHero: '#E8F0FF',
-    heroGradient: ['#F3F7FF', '#DCE8FF', '#BDD1F6'],
+    lightBg: '#F4F8FF',
+    lightHero: '#EDF4FF',
+    heroGradient: ['#F8FBFF', '#E5EFFF', '#C7DBFF'],
     heroGradientDark: ['#0B1220', '#173E80', '#35538E'],
     heroGlowPrimary: 'rgba(53,83,142,0.22)',
     heroGlowSecondary: 'rgba(23,62,128,0.16)',

@@ -51,21 +51,21 @@ export function AuthLandingScreen({
 
   const isDealer = role === 'dealer';
   const isCounterBoy = role === 'counterboy';
-  const accent = isDealer ? '#B45309' : isCounterBoy ? '#E8453C' : '#173E80';
+  const accent = isDealer ? '#173E80' : isCounterBoy ? '#E8453C' : '#173E80';
   const roleTheme = isDealer
     ? {
-        p1: '#B45309',
-        p2: '#D97706',
-        p3: '#E6A855',
-        soft: '#FEF7ED',
-        orb: '#F3E8D3',
-        shell: '#FFFCF7',
-        cardBorder: '#F3E8D3',
-        secondaryBg: '#FEF7ED',
-        secondaryBorder: '#F3E8D3',
-        statsBorder: '#F3E8D3',
-        statBg: '#FEF7ED',
-        statCardBorder: '#F3E8D3',
+        p1: '#173E80',
+        p2: '#355C95',
+        p3: '#88AEEA',
+        soft: '#EAF3FF',
+        orb: '#CFE0FF',
+        shell: '#F4F8FF',
+        cardBorder: '#D7E7FF',
+        secondaryBg: '#F7FBFF',
+        secondaryBorder: '#C5DAFB',
+        statsBorder: '#D7E7FF',
+        statBg: '#EEF5FF',
+        statCardBorder: '#D7E7FF',
         backFade: '#F7FBFF',
       }
     : isCounterBoy
@@ -305,8 +305,8 @@ const styles = StyleSheet.create({
     padding: 20,
     gap: 12,
     ...createShadow({ color: '#000', offsetY: 4, blur: 10, opacity: 0.06, elevation: 3 }),
-    backgroundColor: '#FFFCF8',
-    borderColor: '#E7D9CB',
+    backgroundColor: '#F7FBFF',
+    borderColor: '#D7E7FF',
   },
   rolePill: {
     alignSelf: 'flex-start',

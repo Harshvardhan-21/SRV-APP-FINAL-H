@@ -58,7 +58,7 @@ function TeamIcon({ color = '#FFFFFF', size = 24 }: { color?: string; size?: num
   );
 }
 
-function PlusIcon({ color = '#8A5A12', size = 18 }: { color?: string; size?: number }) {
+function PlusIcon({ color = '#173E80', size = 18 }: { color?: string; size?: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path d="M12 5V19M5 12H19" stroke={color} strokeWidth={2.1} strokeLinecap="round" />
@@ -95,7 +95,7 @@ function HomeIcon({ color = '#FFFFFF', size = 18 }: { color?: string; size?: num
   );
 }
 
-function ShieldIcon({ color = '#1A8F58', size = 16 }: { color?: string; size?: number }) {
+function ShieldIcon({ color = '#173E80', size = 16 }: { color?: string; size?: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
@@ -297,7 +297,7 @@ export function ElectriciansScreen({ onNavigate }: { onNavigate?: (screen: Scree
         showsVerticalScrollIndicator={false}
       >
         <LinearGradient
-          colors={['#A16207', '#B45309', '#D97706']}
+          colors={['#173E80', '#355C95', '#88AEEA']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.heroCard}
@@ -356,13 +356,13 @@ export function ElectriciansScreen({ onNavigate }: { onNavigate?: (screen: Scree
           <StatCard
             label={tx('Total\nElectricians')}
             value={`${totalElectricians}`}
-            accent={darkMode ? ['#3A2A16', '#4A351C', '#5A4123'] : ['#FFF4E6', '#FFE8C7', '#FFD89C']}
+            accent={darkMode ? ['#1D2A44', '#233658', '#2E4671'] : ['#EEF5FF', '#DCE8FF', '#C7DAFF']}
             darkMode={darkMode}
           />
           <StatCard
             label={tx('Added This Month')}
             value={`${addedThisMonth}`}
-            accent={darkMode ? ['#102A22', '#14362C', '#1A4537'] : ['#EEFDF3', '#D7FAE3', '#B8F1CD']}
+            accent={darkMode ? ['#102A22', '#14362C', '#1A4537'] : ['#F4F8FF', '#E5EEFF', '#D7E7FF']}
             darkMode={darkMode}
           />
         </View>
@@ -389,7 +389,7 @@ export function ElectriciansScreen({ onNavigate }: { onNavigate?: (screen: Scree
 
         <View style={styles.listWrap}>
           {apiLoading ? (
-            <ActivityIndicator color="#D97706" size="large" style={{ marginTop: 24 }} />
+            <ActivityIndicator color="#173E80" size="large" style={{ marginTop: 24 }} />
           ) : filtered.length === 0 ? (
             <View style={[styles.memberCard, { backgroundColor: theme.surface, borderColor: theme.border, alignItems: 'center', paddingVertical: 32 }]}>
               <Text style={{ color: theme.textMuted, fontSize: 14, textAlign: 'center' }}>
@@ -510,7 +510,7 @@ export function ElectriciansScreen({ onNavigate }: { onNavigate?: (screen: Scree
                 </View>
 
                 <View style={[styles.verifiedRow, darkMode ? styles.verifiedRowDark : null]}>
-                  <ShieldIcon color={darkMode ? '#86EFAC' : '#1A8F58'} />
+                  <ShieldIcon color={darkMode ? '#93C5FD' : '#173E80'} />
                   <Text style={[styles.verifiedText, darkMode ? styles.verifiedTextDark : null]}>
                     {tx('Submission uses the live dealer-electrician API and saves directly to the database')}
                   </Text>
@@ -591,7 +591,7 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     padding: 20,
     overflow: 'hidden',
-    ...createShadow({ color: '#A16207', offsetY: 10, blur: 20, opacity: 0.2, elevation: 8 }),
+    ...createShadow({ color: '#173E80', offsetY: 12, blur: 24, opacity: 0.2, elevation: 8 }),
   },
   heroGlowOne: {
     position: 'absolute',
@@ -607,7 +607,7 @@ const styles = StyleSheet.create({
     width: 130,
     height: 130,
     borderRadius: 65,
-    backgroundColor: 'rgba(255,200,100,0.20)',
+    backgroundColor: 'rgba(147,197,253,0.22)',
     bottom: -20,
     left: -10,
   },
@@ -646,7 +646,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
-  heroButtonText: { color: '#A16207', fontSize: 13, fontWeight: '800' },
+  heroButtonText: { color: '#173E80', fontSize: 13, fontWeight: '800' },
   statsRow: { flexDirection: 'row', gap: 10 },
   statCard: {
     flex: 1,
@@ -699,11 +699,11 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 18,
-    backgroundColor: '#FEF7ED',
+    backgroundColor: '#EEF5FF',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  memberAvatarText: { color: '#B45309', fontSize: 20, fontWeight: '900' },
+  memberAvatarText: { color: '#173E80', fontSize: 20, fontWeight: '900' },
   memberName: { color: '#18283E', fontSize: 16, fontWeight: '800' },
   memberPhone: { marginTop: 2, color: '#7488A1', fontSize: 12.5 },
   statusPill: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6 },
@@ -722,8 +722,8 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     backgroundColor: '#F5F8FC',
   },
-  metaText: { color: '#A16207', fontSize: 12, fontWeight: '700' },
-  metaPoints: { color: '#B45309', fontSize: 12, fontWeight: '800' },
+  metaText: { color: '#173E80', fontSize: 12, fontWeight: '700' },
+  metaPoints: { color: '#173E80', fontSize: 12, fontWeight: '800' },
   memberCity: { marginTop: 12, color: '#263A56', fontSize: 13, fontWeight: '700' },
   memberJoined: { marginTop: 4, color: '#8597AC', fontSize: 12 },
   modalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(12,26,49,0.38)' },
@@ -829,7 +829,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   otpHint: {
-    color: '#8A5A12',
+    color: '#173E80',
     fontSize: 12,
     fontWeight: '800',
   },
@@ -844,7 +844,7 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   otpResend: {
-    color: '#8A5A12',
+    color: '#173E80',
     fontSize: 12,
     fontWeight: '800',
   },
@@ -878,7 +878,7 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   otpResendSmall: {
-    color: '#8A5A12',
+    color: '#173E80',
     fontSize: 11,
     fontWeight: '800',
   },
@@ -901,7 +901,7 @@ const styles = StyleSheet.create({
     borderColor: '#1F6A45',
   },
   verifiedText: {
-    color: '#1A8F58',
+    color: '#173E80',
     fontSize: 13,
     fontWeight: '700',
   },
@@ -924,11 +924,10 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#B45309',
+    backgroundColor: '#173E80',
   },
   primaryButtonDisabled: {
     backgroundColor: '#E9D7B8',
   },
   primaryButtonText: { color: '#FFFFFF', fontSize: 15, fontWeight: '800' },
 });
-

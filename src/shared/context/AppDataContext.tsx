@@ -142,7 +142,7 @@ const defaultCtx: AppDataContextType = {
 const AppDataContext = createContext<AppDataContextType>(defaultCtx);
 
 export function AppDataProvider({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, user, role, refreshProfile } = useAuth();
+  const { isAuthenticated, user, role, refreshProfile, logout } = useAuth();
   const appStateRef = useRef(AppState.currentState);
 
   const [loading, setLoading] = useState(false);
@@ -241,6 +241,12 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   };
 
   // ── Private data (auth required) ─────────────────────────────────────────
+  const handleSessionExpired = async () => {
+    console.log('🔐 Session expired — logging out');
+    await storage.clearAll();
+    await logout();
+  };
+
   const loadPrivateData = async () => {
     if (!isAuthenticated) {
       console.log('⚠️ User not authenticated, skipping private data');
@@ -252,37 +258,27 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       const [prof, wal, scans, notifs, reds] = await Promise.all([
         profileApi.get().catch((err) => {
           console.error('❌ Profile API failed:', err.message);
-          if (err.message === 'SESSION_EXPIRED') {
-            console.log('🔄 Session expired, will handle in auth context');
-          }
+          if (err.message === 'SESSION_EXPIRED') void handleSessionExpired();
           return null;
         }),
         walletApi.get().catch((err) => {
           console.error('❌ Wallet API failed:', err.message);
-          if (err.message === 'SESSION_EXPIRED') {
-            console.log('🔄 Session expired, will handle in auth context');
-          }
+          if (err.message === 'SESSION_EXPIRED') void handleSessionExpired();
           return null;
         }),
         scanApi.getHistory().catch((err) => {
           console.error('❌ Scan History API failed:', err.message);
-          if (err.message === 'SESSION_EXPIRED') {
-            console.log('🔄 Session expired, will handle in auth context');
-          }
+          if (err.message === 'SESSION_EXPIRED') void handleSessionExpired();
           return null;
         }),
         notificationsApi.getAll(role ?? undefined, user?.id).catch((err) => {
           console.error('❌ Notifications API failed:', err.message);
-          if (err.message === 'SESSION_EXPIRED') {
-            console.log('🔄 Session expired, will handle in auth context');
-          }
+          if (err.message === 'SESSION_EXPIRED') void handleSessionExpired();
           return { data: [] as AppNotification[] };
         }),
         redemptionsApi.getHistory().catch((err) => {
           console.error('❌ Redemptions API failed:', err.message);
-          if (err.message === 'SESSION_EXPIRED') {
-            console.log('🔄 Session expired, will handle in auth context');
-          }
+          if (err.message === 'SESSION_EXPIRED') void handleSessionExpired();
           return { data: [] as RedemptionRecord[], total: 0, page: 1, totalPages: 1 };
         }),
       ]);
@@ -310,16 +306,12 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         const [elecs, bonus] = await Promise.all([
           electriciansApi.getAll().catch((err) => {
             console.error('❌ Electricians API failed:', err.message);
-            if (err.message === 'SESSION_EXPIRED') {
-              console.log('🔄 Session expired, will handle in auth context');
-            }
+            if (err.message === 'SESSION_EXPIRED') void handleSessionExpired();
             return null;
           }),
           walletApi.getDealerBonus().catch((err) => {
             console.error('❌ Dealer Bonus API failed:', err.message);
-            if (err.message === 'SESSION_EXPIRED') {
-              console.log('🔄 Session expired, will handle in auth context');
-            }
+            if (err.message === 'SESSION_EXPIRED') void handleSessionExpired();
             return null;
           }),
         ]);
@@ -334,9 +326,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       // QR code
       const qr = await profileApi.getQrCode().catch((err) => {
         console.error('❌ QR Code API failed:', err.message);
-        if (err.message === 'SESSION_EXPIRED') {
-          console.log('🔄 Session expired, will handle in auth context');
-        }
+        if (err.message === 'SESSION_EXPIRED') void handleSessionExpired();
         return null;
       });
       if (qr) setUserQrCode(qr);
@@ -344,9 +334,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       // Referral
       const ref = await referralApi.get().catch((err) => {
         console.error('❌ Referral API failed:', err.message);
-        if (err.message === 'SESSION_EXPIRED') {
-          console.log('🔄 Session expired, will handle in auth context');
-        }
+        if (err.message === 'SESSION_EXPIRED') void handleSessionExpired();
         return null;
       });
       if (ref) setReferral(ref);

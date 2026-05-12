@@ -331,8 +331,8 @@ function buildUiCategories(products: UiProduct[], apiCats: ApiProductCategory[])
 
 // ── Product Card ──────────────────────────────────────────────────────────────
 const ProductCard = memo(function ProductCard({
-  product, cardW, onScan, darkMode,
-}: { product: UiProduct; cardW: number; onScan: () => void; darkMode: boolean }) {
+  product, cardW, onScan, darkMode, actionLabel,
+}: { product: UiProduct; cardW: number; onScan: () => void; darkMode: boolean; actionLabel: string }) {
   const cc = catColor(product.category);
 
   // Entry animation
@@ -429,7 +429,7 @@ const ProductCard = memo(function ProductCard({
             </View>
             <TouchableOpacity onPress={onScan} style={[styles.scanBtn, { backgroundColor: cc.scanBg }]} activeOpacity={0.8}>
               <ScanIcon size={15} color={cc.scanText} />
-              <Text style={[styles.scanBtnText, { color: cc.scanText }]}>Scan to Earn</Text>
+              <Text style={[styles.scanBtnText, { color: cc.scanText }]}>{actionLabel}</Text>
             </TouchableOpacity>
           </View>
         </Animated.View>
@@ -445,10 +445,12 @@ export function ProductScreen({
   onNavigate,
   initialCategory = 'all',
   showBottomBanner = true,
+  role = 'electrician',
 }: {
   onNavigate: (screen: Screen) => void;
   initialCategory?: string;
   showBottomBanner?: boolean;
+  role?: 'electrician' | 'dealer';
 }) {
   const { darkMode, tx } = usePreferenceContext();
   const { products: apiProducts, categories: apiCategories, catalogLoading, refreshAll } = useAppData();
@@ -502,7 +504,10 @@ export function ProductScreen({
   const currentCat = categoryItems.find(c => c.id === category) ?? allCategoryItem;
   const cc = category === 'all' ? DEFAULT_CAT_COLOR : catColor(category);
 
-  const handleScan = useCallback(() => onNavigate('scan'), [onNavigate]);
+  const isDealer = role === 'dealer';
+  const productActionLabel = isDealer ? tx('Buy Now') : tx('Scan to Earn');
+  const bannerActionLabel = isDealer ? tx('Buy Now') : tx('Scan & Earn').replace(' ', '\n');
+  const handleScan = useCallback(() => onNavigate(isDealer ? 'rewards' : 'scan'), [onNavigate, isDealer]);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -513,12 +518,12 @@ export function ProductScreen({
   // ── Render row ──────────────────────────────────────────────────────────────
   const renderRow = useCallback(({ item }: { item: ProductRow }) => (
     <View style={styles.row}>
-      <ProductCard product={item.left} cardW={cardW} onScan={handleScan} darkMode={darkMode} />
+      <ProductCard product={item.left} cardW={cardW} onScan={handleScan} darkMode={darkMode} actionLabel={productActionLabel} />
       {item.right
-        ? <ProductCard product={item.right} cardW={cardW} onScan={handleScan} darkMode={darkMode} />
+        ? <ProductCard product={item.right} cardW={cardW} onScan={handleScan} darkMode={darkMode} actionLabel={productActionLabel} />
         : <View style={{ width: cardW }} />}
     </View>
-  ), [cardW, handleScan, darkMode]);
+  ), [cardW, handleScan, darkMode, productActionLabel]);
 
   const keyExtractor = useCallback((item: ProductRow) => item.key, []);
 
@@ -637,14 +642,16 @@ export function ProductScreen({
               </Text>
             </View>
           </View>
-          <TouchableOpacity onPress={() => onNavigate('scan')} style={styles.catScanBtn}>
-            <ScanIcon size={20} color="#fff" />
-            <Text style={styles.catScanText}>{tx('Scan & Earn').replace(' ', '\n')}</Text>
-          </TouchableOpacity>
+          {!isDealer ? (
+            <TouchableOpacity onPress={() => onNavigate('scan')} style={styles.catScanBtn}>
+              <ScanIcon size={20} color="#fff" />
+              <Text style={styles.catScanText}>{bannerActionLabel}</Text>
+            </TouchableOpacity>
+          ) : null}
         </LinearGradient>
       )}
     </View>
-  ), [darkMode, tx, search, showFilters, uiCategories, categoryItems, category, isSearching, filtered.length, cc, currentCat, catalogLoading, products.length]);
+  ), [darkMode, tx, search, showFilters, uiCategories, categoryItems, category, isSearching, filtered.length, cc, currentCat, catalogLoading, products.length, isDealer, onNavigate, bannerActionLabel]);
 
   const ListFooter = useMemo(() => (
     <View>
@@ -652,19 +659,23 @@ export function ProductScreen({
         <TouchableOpacity
           style={[styles.bottomBanner, darkMode ? styles.bottomBannerDark : null]}
           activeOpacity={0.88}
-          onPress={() => onNavigate('scan')}
+          onPress={() => onNavigate(isDealer ? 'rewards' : 'scan')}
         >
           <Text style={{ fontSize: 26 }}>🏭</Text>
           <View style={{ flex: 1 }}>
             <Text style={styles.bottomBannerTitle}>{tx("North India's Largest Manufacturer")}</Text>
-            <Text style={styles.bottomBannerSub}>{tx('SRV Electricals — since 2000. Scan any QR to earn points!')}</Text>
+            <Text style={styles.bottomBannerSub}>
+              {isDealer
+                ? tx('SRV Electricals — since 2000. Explore the latest SRV product range and offers.')
+                : tx('SRV Electricals — since 2000. Scan any QR to earn points!')}
+            </Text>
           </View>
           <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 18 }}>›</Text>
         </TouchableOpacity>
       )}
       <View style={{ height: 110 }} />
     </View>
-  ), [darkMode, tx, showBottomBanner, onNavigate]);
+  ), [darkMode, tx, showBottomBanner, onNavigate, isDealer]);
 
   const ListEmpty = useMemo(() => (
     <View style={styles.empty}>

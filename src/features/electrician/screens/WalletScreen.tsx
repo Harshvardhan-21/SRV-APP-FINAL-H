@@ -136,27 +136,27 @@ const ROLE_THEME: Record<string, {
   storeIconWrapBg: string;
 }> = {
   dealer: {
-    heroGradient: ['#A16207', '#B45309', '#D97706'],
-    heroShadow: '#A16207',
-    eyebrowColor: '#FEF7ED',
-    screenBg: '#FFFCF7',
-    cardBorder: '#F3E8D3',
-    cardShadow: '#A16207',
-    sectionEyebrow: '#B45309',
-    sectionIconBg: '#FEF7ED',
-    actionTileBg: '#FEF7ED',
-    actionTileBorder: '#F3E8D3',
-    timelineCardBg: '#FEF7ED',
-    timelineCardBorder: '#F3E8D3',
-    emptyStateBg: '#FEF7ED',
-    emptyStateBorder: '#F3E8D3',
-    emptyIconBg: '#F3E8D3',
-    emptyTitleColor: '#B45309',
-    paginationBtnBg: '#B45309',
-    paginationBtnDisabledBg: '#F3E8D3',
-    paginationBtnDisabledText: '#A16207',
-    paginationInfoBg: '#FEF7ED',
-    storeIconWrapBg: '#FEF7ED',
+    heroGradient: ['#173E80', '#355C95', '#88AEEA'],
+    heroShadow: '#173E80',
+    eyebrowColor: '#EAF3FF',
+    screenBg: '#F4F8FF',
+    cardBorder: '#D7E7FF',
+    cardShadow: '#173E80',
+    sectionEyebrow: '#173E80',
+    sectionIconBg: '#EAF3FF',
+    actionTileBg: '#F7FBFF',
+    actionTileBorder: '#D7E7FF',
+    timelineCardBg: '#F7FBFF',
+    timelineCardBorder: '#D7E7FF',
+    emptyStateBg: '#F7FBFF',
+    emptyStateBorder: '#D7E7FF',
+    emptyIconBg: '#DCE8FF',
+    emptyTitleColor: '#173E80',
+    paginationBtnBg: '#173E80',
+    paginationBtnDisabledBg: '#D7E7FF',
+    paginationBtnDisabledText: '#355C95',
+    paginationInfoBg: '#EEF5FF',
+    storeIconWrapBg: '#EAF3FF',
   },
   electrician: {
     heroGradient: ['#18345B', '#355C95', '#E18D4E'],
@@ -308,7 +308,7 @@ export function WalletScreen({
       label: 'Dealer Bonus',
       detail: '5% electrician bonus',
       icon: SparkIcon,
-      tint: '#FFE0DA',
+      tint: '#EAF3FF',
       target: 'dealer_bonus' as Screen,
     },
   ];
@@ -410,7 +410,7 @@ export function WalletScreen({
         </View>
       </LinearGradient>
 
-      <View style={[styles.card, { borderColor: darkMode ? '#243043' : t.cardBorder, backgroundColor: darkMode ? '#111827' : '#FFFDFC' }, createShadow({ color: darkMode ? '#020617' : t.cardShadow, offsetY: 8, blur: 18, opacity: 0.08, elevation: 4 })]}>
+      <View style={[styles.card, { borderColor: darkMode ? '#243043' : t.cardBorder, backgroundColor: darkMode ? '#111827' : '#FFFFFF' }, createShadow({ color: darkMode ? '#020617' : t.cardShadow, offsetY: 8, blur: 18, opacity: 0.08, elevation: 4 })]}>
         <View style={styles.sectionHeader}>
           <View>
             <Text style={[styles.sectionEyebrow, { color: darkMode ? t.eyebrowColor : t.sectionEyebrow }]}>
@@ -449,7 +449,7 @@ export function WalletScreen({
         </View>
       </View>
 
-      <View style={[styles.card, { borderColor: darkMode ? '#243043' : t.cardBorder, backgroundColor: darkMode ? '#111827' : '#FFFDFC' }, createShadow({ color: darkMode ? '#020617' : t.cardShadow, offsetY: 8, blur: 18, opacity: 0.08, elevation: 4 })]}>
+      <View style={[styles.card, { borderColor: darkMode ? '#243043' : t.cardBorder, backgroundColor: darkMode ? '#111827' : '#FFFFFF' }, createShadow({ color: darkMode ? '#020617' : t.cardShadow, offsetY: 8, blur: 18, opacity: 0.08, elevation: 4 })]}>
         <View style={styles.sectionHeader}>
           <View>
             <Text style={[styles.sectionEyebrow, { color: darkMode ? t.eyebrowColor : t.sectionEyebrow }]}>
