@@ -64,6 +64,8 @@ export function AuthLandingScreen({
         secondaryBg: '#FEF7ED',
         secondaryBorder: '#F3E8D3',
         statsBorder: '#F3E8D3',
+        statBg: '#FEF7ED',
+        statCardBorder: '#F3E8D3',
         backFade: '#F7FBFF',
       }
     : isCounterBoy
@@ -78,6 +80,8 @@ export function AuthLandingScreen({
         secondaryBg: '#FFF5F5',
         secondaryBorder: '#FECACA',
         statsBorder: '#FECACA',
+        statBg: '#FFF5F5',
+        statCardBorder: '#FECACA',
         backFade: '#FFEDEE',
       }
     : {
@@ -91,6 +95,8 @@ export function AuthLandingScreen({
         secondaryBg: '#F7FBFF',
         secondaryBorder: '#BFD6F5',
         statsBorder: '#DCE8F8',
+        statBg: '#EEF5FF',
+        statCardBorder: '#D3E3FF',
         backFade: '#F7FBFF',
       };
   const title = isDealer
@@ -182,7 +188,16 @@ export function AuthLandingScreen({
             ['250+', tx('Products')],
             ['50K+', statThree],
           ].map(([value, label]) => (
-            <View key={`${value}-${label}`} style={styles.statItem}>
+            <View
+              key={`${value}-${label}`}
+              style={[
+                styles.statItem,
+                {
+                  backgroundColor: roleTheme.statBg,
+                  borderColor: roleTheme.statCardBorder,
+                },
+              ]}
+            >
               <Text style={[styles.statValue, { color: accent }]}>{value}</Text>
               <Text style={[styles.statLabel, { color: theme.textMuted }]}>{label}</Text>
             </View>
@@ -348,7 +363,15 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     marginTop: 6,
   },
-  statItem: { alignItems: 'center', gap: 2, backgroundColor: '#FEF7ED', paddingVertical: 10, paddingHorizontal: 12, borderRadius: 16, minWidth: 84 },
+  statItem: {
+    alignItems: 'center',
+    gap: 2,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+    minWidth: 84,
+    borderWidth: 1,
+  },
   statValue: { fontSize: 17, fontWeight: '900' },
   statLabel: { fontSize: 11, fontWeight: '600' },
   backButtonShell: {

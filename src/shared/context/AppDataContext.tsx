@@ -169,7 +169,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   const loadPublicData = async () => {
     console.log('🔄 Loading public data...');
     try {
-      const [prods, cats, bans, tests, setts, offs, schemes, gifts] = await Promise.all([
+      const [prods, cats, roleBans, tests, setts, offs, schemes, gifts] = await Promise.all([
         productsApi.getAll().catch((err) => {
           console.error('❌ Products API failed:', err.message);
           return { data: [] as Product[] };
@@ -204,6 +204,8 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         }),
       ]);
 
+      let bans = roleBans;
+
       console.log('✅ Public data loaded:', {
         products: prods.data?.length || 0,
         categories: cats.data?.length || 0,
@@ -214,6 +216,14 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         giftProducts: gifts.data?.length || 0,
         appSettings: !!setts,
       });
+
+      if ((bans.data?.length ?? 0) === 0 && role) {
+        console.log('No role-specific banners found, retrying without role filter');
+        bans = await bannersApi.getAll().catch((err) => {
+          console.error('Banner fallback API failed:', err.message);
+          return { data: [] as Banner[] };
+        });
+      }
 
       setProducts(prods.data ?? []);
       setCategories(cats.data ?? []);

@@ -32,6 +32,7 @@ import { WebsitePromoSection } from '@/shared/components/WebsitePromoSection';
 import { BannerCarousel } from '@/shared/components/BannerCarousel';
 import { ElectricianTierIcon, getElectricianTier } from './ElectricianTierScreen';
 import { useCatalogDownload } from '@/shared/hooks';
+import { API_BASE_URL } from '@/shared/api';
 
 // ── Category color system (same as ProductScreen) ─────────────────────
 type CatColorScheme = {
@@ -209,8 +210,71 @@ const CAT_IMAGES: Record<string, string> = {
   coversheet:    'https://cdn.shopify.com/s/files/1/0651/4583/1466/files/FanBoxCoverSheet.png?v=1757426708',
 };
 
+const HOME_CATEGORY_LABELS: Record<string, string> = {
+  fanbox: 'Fan Box',
+  concealedbox: 'Concealed Box',
+  modular: 'Modular Box',
+  modularbox: 'Modular Box',
+  mcb: 'MCB Box',
+  busbar: 'Bus Bar',
+  exhaust: 'Exhaust Fan',
+  led: 'LED Lights',
+  changeover: 'Changeover',
+  mainswitch: 'Main Switch',
+  louver: 'Louvers',
+  axialfan: 'Axial Fan',
+  ledflood: 'LED Flood',
+  multipin: 'Multi Pin',
+  pintop: 'Pin Top',
+  accessories: 'Accessories',
+  boxes: 'MCB & DB Boxes',
+  fans: 'Fans & Ventilation',
+};
+
+const HOME_CATEGORY_ALIASES: Record<string, string> = {
+  modularbox: 'modular',
+  axialfan: 'exhaust',
+  ledflood: 'led',
+  boxes: 'mcb',
+  fans: 'exhaust',
+};
+
+function sanitizeCategoryKey(value: string): string {
+  return value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '');
+}
+
+function normalizeHomeCategory(id: string): string {
+  const sanitized = sanitizeCategoryKey(id);
+  return HOME_CATEGORY_ALIASES[sanitized] ?? sanitized;
+}
+
 function getCatImage(id: string, apiImageUrl?: string | null): string {
-  return apiImageUrl || CAT_IMAGES[id] || CAT_IMAGES.fanbox;
+  const normalizedId = normalizeHomeCategory(id);
+  return CAT_IMAGES[normalizedId] || CAT_IMAGES[id] || apiImageUrl || CAT_IMAGES.fanbox;
+}
+
+function resolveRemoteImageUrl(value?: string | null): string | null {
+  if (!value) return null;
+  const trimmed = value.trim().replace(/\\/g, '/');
+  if (!trimmed) return null;
+  if (trimmed.startsWith('//')) return `https:${trimmed}`;
+  if (/^www\./i.test(trimmed)) return `https://${trimmed}`;
+  const apiRoot = API_BASE_URL.replace(/\/api\/v1\/?$/, '');
+  if (/^(https?:|data:|file:)/i.test(trimmed)) {
+    if (!/^https?:/i.test(trimmed)) return trimmed;
+    try {
+      const assetUrl = new URL(trimmed);
+      const apiUrl = new URL(apiRoot);
+      const isPrivateHost = /^(localhost|127\.0\.0\.1|10\.|172\.(1[6-9]|2\d|3[0-1])\.|192\.168\.)/i.test(assetUrl.hostname);
+      if (isPrivateHost && assetUrl.hostname !== apiUrl.hostname) {
+        return `${apiUrl.origin}${assetUrl.pathname}${assetUrl.search}`;
+      }
+    } catch {
+      return trimmed;
+    }
+    return trimmed;
+  }
+  return trimmed.startsWith('/') ? `${apiRoot}${trimmed}` : `${apiRoot}/${trimmed}`;
 }
 
 // ── Animated Category Image (float + breathe — same as ProductScreen) ─
@@ -656,22 +720,21 @@ export function HomeScreen({
   // Prefer admin-managed category metadata, then backfill from products.
   const categories = useMemo(() => {
     const catMap = new Map<string, number>();
-    ctxProducts.forEach((p) => catMap.set(p.category, (catMap.get(p.category) ?? 0) + 1));
-    const CATEGORY_LABELS: Record<string, string> = {
-      fanbox:'Fan Box', concealedbox:'Concealed Box', modular:'Modular Box',
-      modularbox:'Modular Box', mcb:'MCB Box', busbar:'Bus Bar',
-      exhaust:'Exhaust Fan', led:'LED Lights', changeover:'Changeover',
-      mainswitch:'Main Switch', louver:'Louvers', axialfan:'Axial Fan',
-      ledflood:'LED Flood', multipin:'Multi Pin', pintop:'Pin Top', accessories:'Accessories',
-    };
-    const ORDER = ['fanbox','concealedbox','modular','mcb','busbar','exhaust','led','changeover','mainswitch','louver','axialfan','ledflood','multipin','pintop'];
+    ctxProducts.forEach((p) => {
+      const normalizedId = normalizeHomeCategory(p.category);
+      if (!normalizedId) return;
+      catMap.set(normalizedId, (catMap.get(normalizedId) ?? 0) + 1);
+    });
+    const ORDER = ['fanbox','concealedbox','modular','mcb','busbar','exhaust','led','changeover','mainswitch','louver','multipin','pintop'];
     const merged = new Map<string, { id: string; label: string; imageUrl?: string | null }>();
 
     ctxCategories.forEach((category) => {
-      const id = category.categoryId ?? category.slug ?? category.id;
+      const rawId = category.categoryId ?? category.slug ?? category.label ?? category.id;
+      const id = normalizeHomeCategory(rawId);
+      if (!id) return;
       merged.set(id, {
         id,
-        label: category.label || CATEGORY_LABELS[id] || id,
+        label: category.label || HOME_CATEGORY_LABELS[id] || id,
         imageUrl: category.imageUrl ?? null,
       });
     });
@@ -680,7 +743,7 @@ export function HomeScreen({
       if (!merged.has(id)) {
         merged.set(id, {
           id,
-          label: CATEGORY_LABELS[id] ?? id.charAt(0).toUpperCase() + id.slice(1),
+          label: HOME_CATEGORY_LABELS[id] ?? id.charAt(0).toUpperCase() + id.slice(1),
           imageUrl: null,
         });
       }
@@ -730,24 +793,37 @@ export function HomeScreen({
     );
   }, [ctxTestimonials]);
 
-  // Map banners from context — ONLY use API data, no local fallback
+  // Map banners from context — set immediately, prefetch in background
   useEffect(() => {
-    const filtered = ctxBanners.filter(
-      (b) => b.isActive !== false && (b as any).status !== 'inactive' && b.imageUrl,
-    );
+    const filtered = ctxBanners
+      .filter((b) => {
+        const imageUrl = resolveRemoteImageUrl(
+          b.imageUrl ||
+          (b as any).imageUrl ||
+          (b as any).image ||
+          (b as any).imagePath ||
+          (b as any).bannerImage,
+        );
+        return b.isActive !== false && (b as any).status !== 'inactive' && !!imageUrl;
+      })
+      .sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
     const mapped = filtered.map((b) => ({
-      image: { uri: b.imageUrl! },
+      image: {
+        uri: resolveRemoteImageUrl(
+          b.imageUrl ||
+          (b as any).imageUrl ||
+          (b as any).image ||
+          (b as any).imagePath ||
+          (b as any).bannerImage,
+        )!,
+      },
       resizeMode: 'cover' as const,
       backgroundColor: b.bgColor ?? '#192F67',
     }));
-    // Prefetch all banner images so they're in cache before carousel renders
+    setApiBannerSlides(mapped as any);
     const uris = mapped.map((b) => b.image.uri);
-    Promise.all(uris.map((uri) => Image.prefetch(uri).catch(() => null))).finally(() => {
-      setApiBannerSlides(mapped as any);
-    });
+    uris.forEach((uri) => Image.prefetch(uri).catch(() => null));
   }, [ctxBanners]);
-
-  const activeBannerSlides = apiBannerSlides;
 
   const filteredProducts = useMemo(() => {
     if (selectedFilter === 'Boxes') {
@@ -765,8 +841,22 @@ export function HomeScreen({
     return catalogProducts;
   }, [catalogProducts, selectedFilter]);
 
-  // Show only first 6 categories on home screen
-  const displayedCategories = useMemo(() => categories.slice(0, 6), [categories]);
+  // Show only 4 different priority categories on home screen
+  const displayedCategories = useMemo(() => {
+    const preferredOrder = ['fanbox', 'concealedbox', 'modular', 'mcb', 'busbar', 'exhaust', 'led', 'changeover'];
+    const ordered = [
+      ...preferredOrder
+        .map((id) => categories.find((category) => category.id === id))
+        .filter(Boolean),
+      ...categories,
+    ] as typeof categories;
+    const seen = new Set<string>();
+    return ordered.filter((category) => {
+      if (seen.has(category.id)) return false;
+      seen.add(category.id);
+      return true;
+    }).slice(0, 4);
+  }, [categories]);
 
   // 2-column card width (same as ProductScreen)
   const catCardW = Math.floor((width - 28 - 12) / 2);
@@ -999,7 +1089,7 @@ export function HomeScreen({
       </LinearGradient>
 
       <View style={styles.body}>
-        {authUser ? (
+        {authUser && apiBannerSlides.length > 0 ? (
           <BannerCarousel
             slides={apiBannerSlides}
             height={heroImageHeight}
@@ -1047,7 +1137,7 @@ export function HomeScreen({
                   {tx('Browse Categories')}
                 </Text>
               </View>
-              {categories.length > 6 && (
+              {categories.length > 4 && (
                 <TouchableOpacity onPress={() => onNavigate('product')} style={styles.inlineAction} activeOpacity={0.85}>
                   <Text style={styles.viewAllText}>{tx('View all')}</Text>
                   <ChevronRight color="#E8453C" />

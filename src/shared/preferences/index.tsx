@@ -2030,15 +2030,15 @@ const roleAccents: Record<
     heroGlowSecondary: 'rgba(23,62,128,0.16)',
   },
   electrician: {
-    accent: '#DE5A36',
-    accentSoft: '#FDE6DD',
-    accentDeep: '#9A3412',
-    lightBg: '#FFF7F3',
-    lightHero: '#FFF0E8',
-    heroGradient: ['#FFF7F3', '#FDE6DD', '#F8CBB8'],
-    heroGradientDark: ['#0B1220', '#6B231C', '#DE5A36'],
-    heroGlowPrimary: 'rgba(222,90,54,0.22)',
-    heroGlowSecondary: 'rgba(154,52,18,0.16)',
+    accent: '#102A63',
+    accentSoft: '#EAF3FF',
+    accentDeep: '#1D458F',
+    lightBg: '#EEF3F8',
+    lightHero: '#F7FBFF',
+    heroGradient: ['#102A63', '#1D458F', '#F0A43A'],
+    heroGradientDark: ['#0B1220', '#102A63', '#1D458F'],
+    heroGlowPrimary: 'rgba(29,69,143,0.18)',
+    heroGlowSecondary: 'rgba(240,164,58,0.16)',
   },
   user: {
     accent: '#2563EB',
@@ -2136,4 +2136,3 @@ export function usePreferenceValue({
     [currentRole, darkMode, language, setDarkMode, setLanguage, theme]
   );
 }
-

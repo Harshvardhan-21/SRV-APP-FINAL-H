@@ -20,6 +20,46 @@ function buildUrl(path: string, params?: Record<string, string | number | undefi
   return url;
 }
 
+let refreshPromise: Promise<string> | null = null;
+
+async function refreshAccessToken(): Promise<string> {
+  if (refreshPromise) return refreshPromise;
+
+  refreshPromise = (async () => {
+    const refreshToken = await storage.getRefreshToken();
+    if (!refreshToken) {
+      throw new Error('SESSION_EXPIRED');
+    }
+
+    const refreshRes = await fetchWithTimeout(`${API_BASE_URL}/mobile/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken }),
+    });
+
+    if (!refreshRes.ok) {
+      throw new Error('SESSION_EXPIRED');
+    }
+
+    const refreshData = await refreshRes.json().catch(() => ({}));
+    const nextAccessToken = refreshData?.accessToken;
+    const nextRefreshToken = refreshData?.refreshToken || refreshToken;
+
+    if (!nextAccessToken) {
+      throw new Error('SESSION_EXPIRED');
+    }
+
+    await storage.setTokens(nextAccessToken, nextRefreshToken);
+    return nextAccessToken;
+  })();
+
+  try {
+    return await refreshPromise;
+  } finally {
+    refreshPromise = null;
+  }
+}
+
 // Fetch with 15s timeout
 async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs = 15000): Promise<Response> {
   const controller = new AbortController();
@@ -64,38 +104,30 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     // Token expired — try refresh
     if (response.status === 401 && auth) {
       console.log('🔄 Token expired, attempting refresh...');
-      const refreshToken = await storage.getRefreshToken();
-      if (refreshToken) {
-        try {
-          const refreshRes = await fetchWithTimeout(`${API_BASE_URL}/mobile/auth/refresh`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ refreshToken }),
-          });
-          if (refreshRes.ok) {
-            const { accessToken } = await refreshRes.json();
-            await storage.setTokens(accessToken, refreshToken);
-            headers['Authorization'] = `Bearer ${accessToken}`;
-            console.log('✅ Token refreshed successfully');
-            const retryRes = await fetchWithTimeout(url, {
-              method,
-              headers,
-              ...(body ? { body: JSON.stringify(body) } : {}),
-            });
-            if (!retryRes.ok) {
-              const err = await retryRes.json().catch(() => ({}));
-              console.error(`❌ Retry failed: ${retryRes.status}`, err);
-              throw new Error((err as any).message || `Request failed: ${retryRes.status}`);
-            }
-            return retryRes.json() as Promise<T>;
+      try {
+        const accessToken = await refreshAccessToken();
+        headers['Authorization'] = `Bearer ${accessToken}`;
+        console.log('✅ Token refreshed successfully');
+        const retryRes = await fetchWithTimeout(url, {
+          method,
+          headers,
+          ...(body ? { body: JSON.stringify(body) } : {}),
+        });
+        if (!retryRes.ok) {
+          const err = await retryRes.json().catch(() => ({}));
+          console.error(`❌ Retry failed: ${retryRes.status}`, err);
+          if (retryRes.status === 401) {
+            await storage.clearAll();
+            throw new Error('SESSION_EXPIRED');
           }
-        } catch (refreshError) {
-          console.error('❌ Token refresh failed:', refreshError);
-          await storage.clearAll();
-          throw new Error('SESSION_EXPIRED');
+          throw new Error((err as any).message || `Request failed: ${retryRes.status}`);
         }
+        return retryRes.json() as Promise<T>;
+      } catch (refreshError) {
+        console.error('❌ Token refresh failed:', refreshError);
+        await storage.clearAll();
+        throw new Error('SESSION_EXPIRED');
       }
-      throw new Error('SESSION_EXPIRED');
     }
 
     if (!response.ok) {

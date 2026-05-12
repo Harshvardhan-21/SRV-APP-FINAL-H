@@ -548,12 +548,101 @@ export function ProfileScreen({
   );
   const visibleDetailRows = currentRole === 'dealer' ? detailRows : electricianDetailRows;
   const isCounterboyProfile = false;
+  const isElectricianProfile = currentRole === 'electrician';
   const accentAction = theme.accent;
   const accentActionSoft = theme.accentSoft;
   const accentAlt = theme.accentDeep;
   const counterboySurface = theme.surface;
   const counterboyGlowPrimary = theme.heroGlowPrimary;
   const counterboyGlowSecondary = theme.heroGlowSecondary;
+  const electricianHeroBg = darkMode ? theme.heroSurface : '#F7FBFF';
+  const electricianHeroBorder = darkMode ? theme.border : '#D6E6FA';
+  const heroAvatarBorderColor = darkMode
+    ? 'rgba(248,250,252,0.18)'
+    : isElectricianProfile
+      ? '#D6E6FA'
+      : 'rgba(255,255,255,0.78)';
+
+  const heroContent = (
+    <>
+      <View
+        style={[
+          styles.blobTL,
+          { backgroundColor: isElectricianProfile ? 'rgba(16,42,99,0.08)' : counterboyGlowPrimary },
+        ]}
+      />
+      <View
+        style={[
+          styles.blobBR,
+          { backgroundColor: isElectricianProfile ? 'rgba(59,130,246,0.10)' : counterboyGlowSecondary },
+        ]}
+      />
+      <View style={styles.heroTop}>
+        <TouchableOpacity
+          onPress={openPhotoPicker}
+          activeOpacity={0.85}
+          style={styles.avatarWrap}
+        >
+          <View
+            style={[
+              styles.avatarRing,
+              {
+                borderColor: heroAvatarBorderColor,
+              },
+            ]}
+          >
+            {(profilePhotoUri ?? authUser?.profileImage) ? (
+              <Image source={{ uri: (profilePhotoUri ?? authUser?.profileImage)! }} style={styles.avatarImg} />
+            ) : (
+              <View style={[styles.avatarFallback, { backgroundColor: roleColor }]}>
+                <Text style={styles.avatarInitials}>{initials}</Text>
+              </View>
+            )}
+          </View>
+          <View
+            style={[
+              styles.levelBadge,
+              {
+                backgroundColor:
+                  currentRole === 'dealer'
+                    ? dealerMembership.soft
+                    : electricianMembership.soft,
+              },
+            ]}
+          >
+            {currentRole === 'dealer' ? (
+              <TierIcon tier={dealerMembership.tier} size={15} />
+            ) : (
+              <ElectricianTierIcon tier={electricianMembership.tier} size={15} />
+            )}
+          </View>
+        </TouchableOpacity>
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.heroName, { color: theme.textPrimary }]}>{profile.name}</Text>
+          <Text style={[styles.heroPhone, { color: theme.textMuted }]}>
+            +91 {profile.phone}
+          </Text>
+          <View style={styles.tagRow}>
+            <View style={[styles.tag, { backgroundColor: isElectricianProfile ? '#EAF3FF' : theme.soft }]}>
+              <AppIcon name="location" size={12} color={theme.textSecondary} />
+              <Text style={[styles.tagTxt, { color: theme.textSecondary }]}>
+                {tx(profile.city)}
+              </Text>
+            </View>
+            <View style={[styles.tag, { backgroundColor: roleSoft }]}>
+              <Text style={[styles.tagTxt, { color: roleColor }]}>
+                {currentRole === 'electrician'
+                  ? profile.electricianCode
+                  : currentRole === 'counterboy'
+                    ? authUser?.counterboyCode ?? 'Counter Boy'
+                    : profile.dealerCode}
+              </Text>
+            </View>
+          </View>
+        </View>
+      </View>
+    </>
+  );
 
   return (
     <PreferenceContext.Provider value={scopedPreferenceValue}>
@@ -578,84 +667,32 @@ export function ProfileScreen({
             </TouchableOpacity>
           </View>
 
-          <LinearGradient
-            style={[
-              styles.heroCard,
-              { borderColor: theme.border },
-            ]}
-            colors={darkMode ? theme.heroGradientDark : theme.heroGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          >
-            <View style={[styles.blobTL, { backgroundColor: counterboyGlowPrimary }]} />
-            <View style={[styles.blobBR, { backgroundColor: counterboyGlowSecondary }]} />
-            <View style={styles.heroTop}>
-              <TouchableOpacity
-                onPress={openPhotoPicker}
-                activeOpacity={0.85}
-                style={styles.avatarWrap}
-              >
-                <View
-                  style={[
-                    styles.avatarRing,
-                    {
-                      borderColor: darkMode
-                        ? 'rgba(248,250,252,0.18)'
-                        : 'rgba(255,255,255,0.78)',
-                    },
-                  ]}
-                >
-                  {(profilePhotoUri ?? authUser?.profileImage) ? (
-                    <Image source={{ uri: (profilePhotoUri ?? authUser?.profileImage)! }} style={styles.avatarImg} />
-                  ) : (
-                    <View style={[styles.avatarFallback, { backgroundColor: roleColor }]}>
-                      <Text style={styles.avatarInitials}>{initials}</Text>
-                    </View>
-                  )}
-                </View>
-                <View
-                  style={[
-                    styles.levelBadge,
-                    {
-                      backgroundColor:
-                        currentRole === 'dealer'
-                          ? dealerMembership.soft
-                          : electricianMembership.soft,
-                    },
-                  ]}
-                >
-                  {currentRole === 'dealer' ? (
-                    <TierIcon tier={dealerMembership.tier} size={15} />
-                  ) : (
-                    <ElectricianTierIcon tier={electricianMembership.tier} size={15} />
-                  )}
-                </View>
-              </TouchableOpacity>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.heroName, { color: theme.textPrimary }]}>{profile.name}</Text>
-                <Text style={[styles.heroPhone, { color: theme.textMuted }]}>
-                  +91 {profile.phone}
-                </Text>
-                <View style={styles.tagRow}>
-                  <View style={[styles.tag, { backgroundColor: theme.soft }]}>
-                    <AppIcon name="location" size={12} color={theme.textSecondary} />
-                    <Text style={[styles.tagTxt, { color: theme.textSecondary }]}>
-                      {tx(profile.city)}
-                    </Text>
-                  </View>
-                  <View style={[styles.tag, { backgroundColor: roleSoft }]}>
-                    <Text style={[styles.tagTxt, { color: roleColor }]}>
-                      {currentRole === 'electrician'
-                        ? profile.electricianCode
-                        : currentRole === 'counterboy'
-                          ? authUser?.counterboyCode ?? 'Counter Boy'
-                          : profile.dealerCode}
-                    </Text>
-                  </View>
-                </View>
-              </View>
+          {isElectricianProfile ? (
+            <View
+              style={[
+                styles.heroCard,
+                styles.heroCardPlain,
+                {
+                  backgroundColor: electricianHeroBg,
+                  borderColor: electricianHeroBorder,
+                },
+              ]}
+            >
+              {heroContent}
             </View>
-          </LinearGradient>
+          ) : (
+            <LinearGradient
+              style={[
+                styles.heroCard,
+                { borderColor: theme.border },
+              ]}
+              colors={darkMode ? theme.heroGradientDark : theme.heroGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              {heroContent}
+            </LinearGradient>
+          )}
 
           {currentRole !== 'dealer' ? (
             <View style={styles.statsRow}>
@@ -1281,6 +1318,9 @@ const styles = StyleSheet.create({
   },
   editHeaderText: { fontSize: 14, fontWeight: '700' },
   heroCard: { borderRadius: 28, overflow: 'hidden', borderWidth: 1 },
+  heroCardPlain: {
+    ...createShadow({ color: '#102A63', offsetY: 10, blur: 22, opacity: 0.08, elevation: 5 }),
+  },
   blobTL: {
     position: 'absolute',
     top: -40,

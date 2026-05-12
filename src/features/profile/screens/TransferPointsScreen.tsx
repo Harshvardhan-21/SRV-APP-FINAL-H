@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { LinearGradient } from 'expo-linear-gradient';
 import {
   Alert,
   ActivityIndicator,
@@ -82,14 +81,17 @@ export function TransferPointsPage({
     <View style={{ flex: 1, backgroundColor: theme.bg }}>
       <PageHeader title={t('transferPoint')} onBack={onBack} />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <LinearGradient
-          colors={theme.textPrimary === '#F8FAFC' ? theme.heroGradientDark : theme.heroGradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={[styles.posterCard, { borderColor: theme.border }]}
+        <View
+          style={[
+            styles.posterCard,
+            {
+              borderColor: theme.border,
+              backgroundColor: theme.surface,
+            },
+          ]}
         >
           <Image source={transferImage} style={styles.heroImage} resizeMode="contain" />
-        </LinearGradient>
+        </View>
 
         {/* Balance pill */}
         <View style={[styles.balanceCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
@@ -156,26 +158,33 @@ export function TransferPointsPage({
           </View>
         )}
 
-        <LinearGradient
-          colors={theme.textPrimary === '#F8FAFC' ? theme.heroGradientDark : theme.heroGradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.scannerCard}
+        <View
+          style={[
+            styles.scannerCard,
+            {
+              backgroundColor: theme.surface,
+              borderColor: theme.border,
+            },
+          ]}
         >
           <View style={styles.scannerHeader}>
             <View style={styles.scannerIconWrap}>
-              <AppIcon name="scan" size={28} color="#fff" />
+              <AppIcon name="scan" size={28} color={theme.accent} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.scannerTitleWhite, { color: theme.textPrimary }]}>{tx('Scan & Transfer')}</Text>
               <Text style={[styles.scannerSubWhite, { color: theme.textSecondary }]}>{tx('Scan any SRV product QR to transfer points to dealers instantly.')}</Text>
             </View>
           </View>
-          <TouchableOpacity style={styles.scanQrBtnWhite} onPress={() => onNavigate('scan')} activeOpacity={0.85}>
+          <TouchableOpacity
+            style={[styles.scanQrBtnWhite, { backgroundColor: theme.accentSoft }]}
+            onPress={() => onNavigate('scan')}
+            activeOpacity={0.85}
+          >
             <Text style={[styles.scanQrBtnText, { color: theme.accent }]}>{tx('Open Scanner')}</Text>
             <AppIcon name="chevronRight" size={20} color={theme.accent} />
           </TouchableOpacity>
-        </LinearGradient>
+        </View>
       </ScrollView>
     </View>
   );
@@ -197,9 +206,9 @@ const styles = StyleSheet.create({
   resultText: { fontSize: 14, fontWeight: '700', flex: 1 },
   transferBtn: { height: 52, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
   transferBtnText: { color: '#fff', fontSize: 15, fontWeight: '800' },
-  scannerCard: { borderRadius: 24, padding: 20, gap: 16 },
+  scannerCard: { borderRadius: 24, padding: 20, gap: 16, borderWidth: 1 },
   scannerHeader: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  scannerIconWrap: { width: 56, height: 56, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
+  scannerIconWrap: { width: 56, height: 56, borderRadius: 18, backgroundColor: '#EAF3FF', alignItems: 'center', justifyContent: 'center' },
   scannerTitleWhite: { fontSize: 18, fontWeight: '900' },
   scannerSubWhite: { fontSize: 13, marginTop: 4, lineHeight: 18 },
   scanQrBtnWhite: { backgroundColor: '#fff', borderRadius: 18, paddingHorizontal: 20, paddingVertical: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },

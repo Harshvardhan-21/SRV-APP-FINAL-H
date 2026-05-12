@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   FlatList,
   Image,
@@ -31,6 +31,12 @@ const THEMES: Record<CatalogTheme, {
   headerGradient: [string, string, string];
   imageGradient: [string, string, string];
   sidebarSoft: string;
+  sidebarBg: string;
+  productPanelBg: string;
+  headerSoftText: string;
+  chipBg: string;
+  cardBg: string;
+  cardShadow: string;
 }> = {
   user: {
     primary: '#173E80',
@@ -43,18 +49,30 @@ const THEMES: Record<CatalogTheme, {
     headerGradient: ['#183B78', '#355C95', '#7087A8'],
     imageGradient: ['#F7FAFE', '#E3ECF8', '#D1DEEE'],
     sidebarSoft: '#DFEAF8',
+    sidebarBg: '#F4F8FD',
+    productPanelBg: '#F7FBFF',
+    headerSoftText: 'rgba(255,255,255,0.78)',
+    chipBg: 'rgba(255,255,255,0.18)',
+    cardBg: '#FBFDFF',
+    cardShadow: '#2A4365',
   },
   electrician: {
-    primary: '#173E80',
-    primaryLight: '#D6E5FA',
-    screenBg: '#DDE7F3',
-    searchBg: 'rgba(255,255,255,0.9)',
-    sectionBg: '#E8F0FB',
-    cardBorder: '#BDD0E7',
-    muted: '#55697F',
-    headerGradient: ['#183B78', '#355C95', '#7087A8'],
-    imageGradient: ['#F7FAFE', '#E3ECF8', '#D1DEEE'],
-    sidebarSoft: '#DFEAF8',
+    primary: '#123A78',
+    primaryLight: '#DCEBFF',
+    screenBg: '#E7EEF8',
+    searchBg: 'rgba(248,251,255,0.96)',
+    sectionBg: '#EEF4FB',
+    cardBorder: '#C7D8EE',
+    muted: '#58708C',
+    headerGradient: ['#0F2F66', '#1F4E92', '#3C6FB2'],
+    imageGradient: ['#FDFEFF', '#EDF4FB', '#DCE7F5'],
+    sidebarSoft: '#E3EEFB',
+    sidebarBg: '#F7FAFE',
+    productPanelBg: '#F9FBFE',
+    headerSoftText: 'rgba(234,243,255,0.86)',
+    chipBg: 'rgba(255,255,255,0.14)',
+    cardBg: '#FFFFFF',
+    cardShadow: '#102A63',
   },
   dealer: {
     primary: '#B45309',
@@ -67,6 +85,12 @@ const THEMES: Record<CatalogTheme, {
     headerGradient: ['#B45309', '#D97706', '#E6A855'],
     imageGradient: ['#FFFDF7', '#FEF7ED', '#F3E8D3'],
     sidebarSoft: '#FEF7ED',
+    sidebarBg: '#FFFBF5',
+    productPanelBg: '#FFFDF9',
+    headerSoftText: 'rgba(255,247,237,0.82)',
+    chipBg: 'rgba(255,255,255,0.18)',
+    cardBg: '#FFFFFF',
+    cardShadow: '#7C2D12',
   },
   counterboy: {
     primary: '#E8453C',
@@ -79,6 +103,12 @@ const THEMES: Record<CatalogTheme, {
     headerGradient: ['#E8453C', '#FF6B6B', '#F59E9A'],
     imageGradient: ['#FFF8F8', '#FFF1F2', '#FFE4E6'],
     sidebarSoft: '#FFF1F2',
+    sidebarBg: '#FFF8F8',
+    productPanelBg: '#FFF9FA',
+    headerSoftText: 'rgba(255,245,245,0.84)',
+    chipBg: 'rgba(255,255,255,0.18)',
+    cardBg: '#FFFFFF',
+    cardShadow: '#7F1D1D',
   },
 };
 
@@ -147,10 +177,12 @@ type UiProduct = {
   name: string;
   desc: string;
   category: string;
+  categoryLabel: string;
   imageUrl: string;
   badge: string;
   tagColor: string;
   tagBg: string;
+  searchIndex: string;
 };
 
 // Pair of products rendered as one row in the FlatList
@@ -216,11 +248,27 @@ function prettifyCategoryLabel(id: string): string {
 function mapApiProduct(product: ApiProduct, theme: CatalogTheme): UiProduct {
   const { badge, tagColor, tagBg } = resolveBadge(product, theme);
   const normalizedCategory = normalizeCategory(product.category);
+  const categoryLabel = CATEGORY_LABELS[normalizedCategory] || prettifyCategoryLabel(normalizedCategory);
+  const desc = product.sub || product.description || '';
+  const searchIndex = [
+    product.name,
+    desc,
+    badge,
+    product.category,
+    product.categoryId,
+    normalizedCategory,
+    categoryLabel,
+    product.id,
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
   return {
     id: product.id,
     name: product.name,
-    desc: product.sub || product.description || '',
+    desc,
     category: normalizedCategory,
+    categoryLabel,
     imageUrl:
       product.imageUrl ||
       product.image ||
@@ -230,6 +278,7 @@ function mapApiProduct(product: ApiProduct, theme: CatalogTheme): UiProduct {
     badge,
     tagColor,
     tagBg,
+    searchIndex,
   };
 }
 
@@ -404,11 +453,13 @@ export function CategoriesScreen({
   onAddToCart,
   theme = 'user',
   actionMode,
+  initialCategory = 'all',
 }: {
   onNavigate: (screen: any) => void;
   onAddToCart?: (item: any) => void;
   theme?: CatalogTheme;
   actionMode?: ActionMode;
+  initialCategory?: string;
 }) {
   const { darkMode, tx } = usePreferenceContext();
   const { products: apiProducts, categories: apiCategories, catalogLoading } = useAppData();
@@ -416,7 +467,7 @@ export function CategoriesScreen({
   const { width } = useWindowDimensions();
   const palette = THEMES[theme];
   const resolvedActionMode: ActionMode = actionMode ?? (onAddToCart ? 'cart' : 'scan');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState(normalizeCategory(initialCategory) || 'all');
   const [searchQuery, setSearchQuery] = useState('');
 
   const products = useMemo(
@@ -433,16 +484,33 @@ export function CategoriesScreen({
     [categories, products.length, tx],
   );
 
+  useEffect(() => {
+    const nextCategory = normalizeCategory(initialCategory) || 'all';
+    setSelectedCategory(nextCategory);
+    setSearchQuery('');
+  }, [initialCategory]);
+
+  useEffect(() => {
+    if (categoryItems.length === 0) return;
+    setSelectedCategory((prev) =>
+      categoryItems.some((item) => item.id === prev) ? prev : categoryItems[0].id
+    );
+  }, [categoryItems]);
+
   const selectedCategoryLabel = useMemo(
     () => categoryItems.find((item) => item.id === selectedCategory)?.label ?? tx('All Products'),
     [categoryItems, selectedCategory, tx],
   );
 
   const filteredProducts = useMemo(() => {
+    const needle = searchQuery.trim().toLowerCase();
+    const searchTerms = needle.split(/\s+/).filter(Boolean);
     return products.filter((product) => {
-      const matchCategory = selectedCategory === 'all' || product.category === selectedCategory;
-      const needle = searchQuery.trim().toLowerCase();
-      const matchSearch = !needle || product.name.toLowerCase().includes(needle) || product.desc.toLowerCase().includes(needle);
+      const matchCategory =
+        needle.length > 0 || selectedCategory === 'all' || product.category === selectedCategory;
+      const matchSearch =
+        searchTerms.length === 0 ||
+        searchTerms.every((term) => product.searchIndex.includes(term));
       return matchCategory && matchSearch;
     });
   }, [products, searchQuery, selectedCategory]);
@@ -462,9 +530,10 @@ export function CategoriesScreen({
 
   const SIDEBAR_W = 96;
   const cardWidth = (width - SIDEBAR_W - 30) / 2;
+  const isElectricianTheme = theme === 'electrician';
   const bg = darkMode ? '#0F172A' : palette.screenBg;
-  const sidebarBg = darkMode ? '#1E293B' : '#F4F8FD';
-  const cardBg = darkMode ? '#1E293B' : '#FBFDFF';
+  const sidebarBg = darkMode ? '#1E293B' : palette.sidebarBg;
+  const cardBg = darkMode ? '#1E293B' : palette.cardBg;
   const borderColor = darkMode ? '#2D3748' : palette.cardBorder;
   const textPrimary = darkMode ? '#F1F5F9' : '#1A1A1A';
   const textMuted = darkMode ? '#94A3B8' : palette.muted;
@@ -530,15 +599,20 @@ export function CategoriesScreen({
 
   // ── Section header for product FlatList ──────────────────────────────────
   const ListHeader = useMemo(() => (
-    <View style={[styles.sectionHead, { borderBottomColor: borderColor, backgroundColor: darkMode ? '#162132' : palette.sectionBg }]}>
+    <View style={[styles.sectionHead, isElectricianTheme ? styles.sectionHeadElectrician : null, { borderBottomColor: borderColor, backgroundColor: darkMode ? '#162132' : palette.sectionBg }]}>
       <View style={{ flex: 1 }}>
         <Text style={[styles.sectionTitle, { color: textPrimary }]}>{selectedCategoryLabel}</Text>
         <Text style={[styles.sectionCount, { color: textMuted }]}>
           {catalogLoading && products.length === 0 ? tx('Loading products...') : `${filteredProducts.length} ${tx('products')}`}
         </Text>
       </View>
+      {isElectricianTheme ? (
+        <View style={[styles.liveChip, { backgroundColor: darkMode ? 'rgba(30,64,175,0.28)' : '#E3EEFB', borderColor }]}>
+          <Text style={[styles.liveChipText, { color: palette.primary }]}>SRV Pro</Text>
+        </View>
+      ) : null}
     </View>
-  ), [borderColor, darkMode, palette.sectionBg, textPrimary, textMuted, selectedCategoryLabel, catalogLoading, products.length, filteredProducts.length, tx]);
+  ), [borderColor, darkMode, palette.sectionBg, palette.primary, textPrimary, textMuted, selectedCategoryLabel, catalogLoading, products.length, filteredProducts.length, tx, isElectricianTheme]);
 
   const ListEmpty = useMemo(() => (
     <View style={styles.empty}>
@@ -553,17 +627,42 @@ export function CategoriesScreen({
       <LinearGradient
         style={[
           styles.header,
+          isElectricianTheme ? styles.headerElectrician : null,
           {
             paddingTop: insets.top + 8,
-            ...createShadow({ color: palette.primary, offsetY: 3, blur: 10, opacity: 0.3, elevation: 6 }),
+            ...createShadow({ color: palette.primary, offsetY: isElectricianTheme ? 8 : 3, blur: isElectricianTheme ? 18 : 10, opacity: isElectricianTheme ? 0.24 : 0.3, elevation: isElectricianTheme ? 10 : 6 }),
           },
         ]}
         colors={darkMode ? ['#0F172A', '#162132', '#1E293B'] : palette.headerGradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
-        <Text style={styles.headerTitle}>{tx('All Categories')}</Text>
-        <View style={[styles.searchRow, { backgroundColor: palette.searchBg }]}>
+        {isElectricianTheme ? (
+          <>
+            <Text style={[styles.headerEyebrow, { color: palette.headerSoftText }]}>ELECTRICIAN CATALOG</Text>
+            <View style={styles.headerTopRow}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.headerTitle}>{tx('All Categories')}</Text>
+                <Text style={[styles.headerSubtitle, { color: palette.headerSoftText }]}>
+                  Premium SRV products curated for faster selection and scanning.
+                </Text>
+              </View>
+              <View style={styles.headerStatsWrap}>
+                <View style={[styles.headerStatChip, { backgroundColor: palette.chipBg }]}>
+                  <Text style={styles.headerStatValue}>{categoryItems.length - 1}</Text>
+                  <Text style={styles.headerStatLabel}>{tx('categories')}</Text>
+                </View>
+                <View style={[styles.headerStatChip, { backgroundColor: palette.chipBg }]}>
+                  <Text style={styles.headerStatValue}>{products.length}</Text>
+                  <Text style={styles.headerStatLabel}>{tx('products')}</Text>
+                </View>
+              </View>
+            </View>
+          </>
+        ) : (
+          <Text style={styles.headerTitle}>{tx('All Categories')}</Text>
+        )}
+        <View style={[styles.searchRow, isElectricianTheme ? styles.searchRowElectrician : null, { backgroundColor: palette.searchBg }]}>
           <SearchIcon size={16} color="#9CA3AF" />
           <TextInput
             style={styles.searchInput}
@@ -577,7 +676,7 @@ export function CategoriesScreen({
 
       <View style={styles.body}>
         {/* Sidebar — virtualized FlatList */}
-        <View style={[styles.sidebar, { width: SIDEBAR_W, backgroundColor: sidebarBg, borderRightColor: borderColor }]}>
+        <View style={[styles.sidebar, isElectricianTheme ? styles.sidebarElectrician : null, { width: SIDEBAR_W, backgroundColor: sidebarBg, borderRightColor: borderColor }]}>
           <FlatList
             data={categoryItems}
             keyExtractor={sidebarKeyExtractor}
@@ -594,7 +693,7 @@ export function CategoriesScreen({
 
         {/* Products — virtualized FlatList with row pairs */}
         <FlatList
-          style={styles.productsArea}
+          style={[styles.productsArea, { backgroundColor: darkMode ? '#0F172A' : palette.productPanelBg }]}
           data={productRows}
           keyExtractor={keyExtractor}
           renderItem={renderProductRow}
@@ -620,7 +719,15 @@ export function CategoriesScreen({
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   header: { paddingHorizontal: 14, paddingBottom: 14, borderBottomLeftRadius: 24, borderBottomRightRadius: 24 },
+  headerElectrician: { paddingBottom: 18, borderBottomLeftRadius: 30, borderBottomRightRadius: 30 },
+  headerEyebrow: { fontSize: 11, fontWeight: '800', letterSpacing: 1.4, marginBottom: 8 },
+  headerTopRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, marginBottom: 12 },
   headerTitle: { fontSize: 22, fontWeight: '900', color: '#FFFFFF', marginBottom: 10, letterSpacing: 0.2 },
+  headerSubtitle: { fontSize: 12.5, lineHeight: 18, fontWeight: '600', paddingRight: 8 },
+  headerStatsWrap: { gap: 8 },
+  headerStatChip: { minWidth: 76, borderRadius: 16, paddingHorizontal: 10, paddingVertical: 9, alignItems: 'center' },
+  headerStatValue: { color: '#FFFFFF', fontSize: 15, fontWeight: '900' },
+  headerStatLabel: { color: 'rgba(255,255,255,0.8)', fontSize: 10, fontWeight: '700', marginTop: 2 },
   searchRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -629,9 +736,15 @@ const styles = StyleSheet.create({
     paddingVertical: 11,
     gap: 8,
   },
+  searchRowElectrician: {
+    borderRadius: 18,
+    paddingHorizontal: 14,
+    paddingVertical: 13,
+  },
   searchInput: { flex: 1, fontSize: 13, color: '#1E293B', padding: 0, fontWeight: '500' },
   body: { flex: 1, flexDirection: 'row' },
   sidebar: { borderRightWidth: 1 },
+  sidebarElectrician: { marginTop: 10, marginLeft: 10, marginBottom: 12, borderRadius: 22, overflow: 'hidden', borderWidth: 1 },
   sidebarItem: {
     paddingVertical: 12,
     paddingHorizontal: 6,
@@ -669,8 +782,16 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     borderRadius: 18,
   },
+  sectionHeadElectrician: {
+    marginBottom: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    borderRadius: 20,
+  },
   sectionTitle: { fontSize: 15, fontWeight: '900' },
   sectionCount: { fontSize: 11, marginTop: 2, fontWeight: '600' },
+  liveChip: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6, alignSelf: 'center' },
+  liveChipText: { fontSize: 10, fontWeight: '900', letterSpacing: 0.5 },
   // Row holds 2 cards side by side
   row: { flexDirection: 'row', gap: 10 },
   card: {

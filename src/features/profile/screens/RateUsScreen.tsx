@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { LinearGradient } from 'expo-linear-gradient';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { AppIcon, C, PageHeader } from '../components/ProfileShared';
 import { usePreferenceContext } from '@/shared/preferences';
@@ -91,15 +90,11 @@ export function RateUsPage({ onBack }: { onBack: () => void }) {
         showsVerticalScrollIndicator={false}
       >
         {submitted ? (
-          <LinearGradient
-            colors={
-              theme.textPrimary === '#F8FAFC'
-                ? [theme.heroGradientDark[0], theme.heroGradientDark[1]]
-                : [theme.heroGradient[0], theme.heroGradient[1]]
-            }
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={[styles.rateThankYou, { borderColor: theme.border }]}
+          <View
+            style={[
+              styles.rateThankYou,
+              { borderColor: theme.border, backgroundColor: theme.surface },
+            ]}
           >
             <View style={[styles.rateThankYouIcon, { backgroundColor: C.successLight }]}>
               <AppIcon name="star" size={42} color={C.success} />
@@ -124,18 +119,14 @@ export function RateUsPage({ onBack }: { onBack: () => void }) {
                 </View>
               ) : null}
             </View>
-          </LinearGradient>
+          </View>
         ) : (
           <>
-            <LinearGradient
-              colors={
-                theme.textPrimary === '#F8FAFC'
-                  ? theme.heroGradientDark
-                  : theme.heroGradient
-              }
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={[styles.heroCard, { borderColor: theme.border }]}
+            <View
+              style={[
+                styles.heroCard,
+                { borderColor: theme.border, backgroundColor: theme.surface },
+              ]}
             >
               <View style={styles.heroGlowPrimary} />
               <View style={styles.heroGlowSecondary} />
@@ -161,7 +152,7 @@ export function RateUsPage({ onBack }: { onBack: () => void }) {
                   </View>
                 ))}
               </View>
-            </LinearGradient>
+            </View>
 
             <View
               style={[

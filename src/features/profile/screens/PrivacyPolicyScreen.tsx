@@ -1,5 +1,4 @@
 import React from 'react';
-import { LinearGradient } from 'expo-linear-gradient';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { AppIcon, C, PageHeader } from '../components/ProfileShared';
 import { usePreferenceContext } from '@/shared/preferences';
@@ -203,11 +202,11 @@ export function PrivacyPolicyPage({ onBack }: { onBack: () => void }) {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <LinearGradient
-          colors={darkenAware(theme, theme.heroGradient.slice(0, 2) as [string, string], theme.heroGradientDark.slice(0, 2) as [string, string])}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={[styles.heroCard, { borderColor: theme.border }]}
+        <View
+          style={[
+            styles.heroCard,
+            { borderColor: theme.border, backgroundColor: theme.surface },
+          ]}
         >
           <View style={styles.heroGlowOne} />
           <View style={styles.heroGlowTwo} />
@@ -241,7 +240,7 @@ export function PrivacyPolicyPage({ onBack }: { onBack: () => void }) {
               </Text>
             </View>
           </View>
-        </LinearGradient>
+        </View>
 
         <View
           style={[
@@ -263,14 +262,12 @@ export function PrivacyPolicyPage({ onBack }: { onBack: () => void }) {
         </View>
 
         {privacyCopy.sections.map((section, index) => (
-          <LinearGradient
+          <View
             key={index}
-            colors={
-              theme.textPrimary === '#F8FAFC' ? ['#111827', '#182235'] : ['#FFFFFF', '#F7FAFC']
-            }
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={[styles.policySection, { borderColor: theme.border }]}
+            style={[
+              styles.policySection,
+              { borderColor: theme.border, backgroundColor: theme.surface },
+            ]}
           >
             <View style={styles.policySectionGlow} />
             <View style={styles.policySectionHeader}>
@@ -292,19 +289,11 @@ export function PrivacyPolicyPage({ onBack }: { onBack: () => void }) {
             <Text style={[styles.policySectionContent, { color: theme.textSecondary }]}>
               {section.content}
             </Text>
-          </LinearGradient>
+          </View>
         ))}
       </ScrollView>
     </View>
   );
-}
-
-function darkenAware(
-  theme: { textPrimary: string },
-  lightColors: [string, string],
-  darkColors: [string, string]
-) {
-  return theme.textPrimary === '#F8FAFC' ? darkColors : lightColors;
 }
 
 const styles = StyleSheet.create({

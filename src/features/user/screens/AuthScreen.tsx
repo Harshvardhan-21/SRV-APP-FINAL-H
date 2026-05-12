@@ -147,6 +147,16 @@ export function UserAuthScreen({
   const bdr  = darkMode ? '#334155' : '#D7E7FF';
   const tp   = darkMode ? '#F1F5F9' : '#111827';
   const tm   = darkMode ? '#94A3B8' : '#6B7280';
+  const statCardStyle =
+    role === 'electrician'
+      ? {
+          backgroundColor: '#EEF5FF',
+          borderColor: '#D3E3FF',
+        }
+      : {
+          backgroundColor: '#FFF7EF',
+          borderColor: '#F2DEC5',
+        };
 
   const login = async () => {
     if (!lPhone.trim()) { Alert.alert('', tx('Please enter your phone number')); return; }
@@ -175,7 +185,7 @@ export function UserAuthScreen({
   if (mode === 'landing') {
     return (
       <View style={[S.screen, { backgroundColor: bg }]}>
-          <LinearGradient colors={[P1, P2, '#B9CC6C']} style={[S.hero, { paddingTop: insets.top + 12 }]}>
+          <LinearGradient colors={[P1, P2, theme.orb]} style={[S.hero, { paddingTop: insets.top + 12 }]}>
           <Orbs color={theme.orb} />
           <Animated.View style={[S.heroContent, { transform: [{ translateY: slideY }], opacity: fadeO }]}>
             <View style={S.logoWrap}>
@@ -198,13 +208,17 @@ export function UserAuthScreen({
             </LinearGradient>
           </Pressable>
 
-          <Pressable onPress={() => setMode('signup')} style={[S.btnOutline, { borderColor: '#D6E5A6', backgroundColor: '#FBFDF2' }]} android_ripple={{ color: `${P1}15` }}>
+          <Pressable
+            onPress={() => setMode('signup')}
+            style={[S.btnOutline, { borderColor: `${P1}28`, backgroundColor: SOFT }]}
+            android_ripple={{ color: `${P1}15` }}
+          >
             <Text style={[S.btnOutlineText, { color: P1 }]}>{tx('Create New Account')}</Text>
           </Pressable>
 
-          <View style={[S.statsRow, { borderTopColor: '#E3EDC1' }]}>
+          <View style={[S.statsRow, { borderTopColor: `${P1}22` }]}>
             {[['25+', tx('Years')], ['250+', tx('Products')], ['50K+', tx('Customers')]].map(([n, l], i) => (
-              <View key={i} style={S.statItem}>
+              <View key={i} style={[S.statItem, statCardStyle]}>
                 <Text style={[S.statN, { color: P1 }]}>{n}</Text>
                 <Text style={[S.statL, { color: tm }]}>{l}</Text>
               </View>
@@ -216,7 +230,7 @@ export function UserAuthScreen({
         {onBack && (
           <Pressable onPress={onBack} style={S.backToOnboarding} android_ripple={{ color: `${P1}15` }}>
             <LinearGradient
-              colors={[SOFT, '#FBFDF2']}
+              colors={[SOFT, theme.orb]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={[S.backToOnboardingInner, { borderColor: `${P1}40` }]}
@@ -359,7 +373,15 @@ const S = StyleSheet.create({
   landTitle: { fontSize: 20, fontWeight: '900' },
   landSub: { fontSize: 13, lineHeight: 18, marginBottom: 4 },
   statsRow: { flexDirection: 'row', justifyContent: 'space-around', paddingTop: 14, borderTopWidth: 1, marginTop: 6 },
-  statItem: { alignItems: 'center', gap: 2, backgroundColor: '#FFF7EF', paddingVertical: 10, paddingHorizontal: 12, borderRadius: 16, minWidth: 84 },
+  statItem: {
+    alignItems: 'center',
+    gap: 2,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+    minWidth: 84,
+    borderWidth: 1,
+  },
   statN: { fontSize: 17, fontWeight: '900' },
   statL: { fontSize: 11, fontWeight: '600' },
 

@@ -6,9 +6,18 @@ type ProductTheme = 'electrician' | 'dealer';
 export function ProductScreen({
   onNavigate,
   theme = 'electrician',
+  initialCategory = 'all',
 }: {
   onNavigate: (screen: Screen) => void;
   theme?: ProductTheme;
+  initialCategory?: string;
 }) {
-  return <CategoriesScreen onNavigate={onNavigate} theme={theme} actionMode="scan" />;
+  return (
+    <CategoriesScreen
+      onNavigate={onNavigate}
+      theme={theme}
+      actionMode="scan"
+      initialCategory={initialCategory}
+    />
+  );
 }

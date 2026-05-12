@@ -623,7 +623,12 @@ function AppContent() {
           />
         );
       case 'product':
-        return <ElectricianProductScreen onNavigate={handleNavigate} />;
+        return (
+          <ElectricianProductScreen
+            onNavigate={handleNavigate}
+            initialCategory={selectedProductCategory}
+          />
+        );
       case 'notification':
         return <ElectricianNotificationScreen onNavigate={handleNavigate} role="electrician" onNotificationsSeen={handleNotificationsSeen} />;
       case 'scan':
@@ -681,7 +686,12 @@ function AppContent() {
           />
         );
       case 'electrician_tier':
-        return <ElectricianTierScreen onBack={() => setCurrentScreen('home')} />;
+        return (
+          <ElectricianTierScreen
+            onBack={() => setCurrentScreen('home')}
+            totalPoints={electricianRewardPoints}
+          />
+        );
       case 'bank_details':
         return (
           <WalletBankDetailsScreen
