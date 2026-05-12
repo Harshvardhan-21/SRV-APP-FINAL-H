@@ -392,7 +392,7 @@ const ProductCard = memo(function ProductCard({
           darkMode ? styles.cardDark : null,
           {
             width: cardW,
-            height: cardW * 1.82,
+            height: cardW * 2.05,
             transform: [
               { scale: pressScale },
               { perspective: 800 },
@@ -834,9 +834,9 @@ const styles = StyleSheet.create({
   },
   ptsBadgeText: { fontSize: 11, fontWeight: '800' },
 
-  infoZone: { flex: 1, padding: 11, paddingTop: 10 },
+  infoZone: { padding: 11, paddingTop: 10, paddingBottom: 12 },
   infoZoneDark: { backgroundColor: '#111827' },
-  infoSpacer: { flex: 1 },
+  infoSpacer: { height: 8 },
 
   productName: {
     fontSize: 12, fontWeight: '800', color: '#1C1E2E',
