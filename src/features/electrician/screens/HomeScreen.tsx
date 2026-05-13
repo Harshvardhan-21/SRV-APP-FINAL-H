@@ -928,7 +928,7 @@ export function HomeScreen({
       testID: 'electrician-home-action-whatsapp',
       accessibilityLabel: 'Electrician home quick action WhatsApp support',
       title: tx('WhatsApp'),
-      sub: tx('Premium support'),
+      sub: tx('Chat with us'),
       icon: WhatsAppIcon,
       iconColors: ['#DCFCE7', '#BBF7D0'] as const,
       iconTint: '#16A34A',

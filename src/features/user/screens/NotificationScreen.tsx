@@ -78,13 +78,13 @@ const ROLE_THEME = {
     ] as [string, string][],
   },
   user: {
-    hero: ['#18220D', '#40561F', '#6B7C2D'] as [string, string, string],
-    screen: '#F4F8EE',
+    hero: ['#6A2F12', '#8D4A1E', '#B86A33'] as [string, string, string],
+    screen: '#FBF6F1',
     cycle: [
-      ['#F1F6E2', '#DFEABF'],
-      ['#EEF5DE', '#D7E7AA'],
-      ['#EEF7F0', '#D2F0DA'],
-      ['#F5F4E8', '#E7E1BF'],
+      ['#FBF1E7', '#F0DEC9'],
+      ['#F7E6D3', '#EFC9A8'],
+      ['#F5E8DC', '#EBD7C6'],
+      ['#FFF4E8', '#F3D7B8'],
     ] as [string, string][],
   },
 } as const;
@@ -273,7 +273,7 @@ export function NotificationScreen({
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#EEF3F8' },
+  screen: { flex: 1, backgroundColor: '#FBF6F1' },
   screenDark: { backgroundColor: '#08111F' },
   content: { padding: 14, gap: 14, paddingBottom: 120 },
   hero: {
@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 14,
   },
-  heroActionText: { color: '#10254A', fontWeight: '800', fontSize: 12.5 },
+  heroActionText: { color: '#6A2F12', fontWeight: '800', fontSize: 12.5 },
   heroGhostBtn: {
     backgroundColor: 'rgba(255,255,255,0.12)',
     borderWidth: 1,
@@ -336,10 +336,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 6,
   },
-  sectionTitle: { color: '#14213D', fontSize: 20, fontWeight: '900' },
+  sectionTitle: { color: '#6A2F12', fontSize: 20, fontWeight: '900' },
   sectionTitleDark: { color: '#F8FAFC' },
   unreadPill: {
-    backgroundColor: '#E8453C',
+    backgroundColor: '#8D4A1E',
     borderRadius: 999,
     paddingHorizontal: 10,
     paddingVertical: 5,
@@ -370,10 +370,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  cardType: { color: '#10254A', fontSize: 12.5, fontWeight: '800' },
-  cardTime: { color: '#5F718E', fontSize: 11.5, fontWeight: '700' },
-  cardTitle: { color: '#10254A', fontSize: 17, fontWeight: '900' },
-  cardBody: { color: '#41536F', fontSize: 12.5, lineHeight: 19, marginTop: 8 },
+  cardType: { color: '#6A2F12', fontSize: 12.5, fontWeight: '800' },
+  cardTime: { color: '#8B6A52', fontSize: 11.5, fontWeight: '700' },
+  cardTitle: { color: '#6A2F12', fontSize: 17, fontWeight: '900' },
+  cardBody: { color: '#6E5947', fontSize: 12.5, lineHeight: 19, marginTop: 8 },
   cardTypeDark: { color: '#E2E8F0' },
   cardTimeDark: { color: '#94A3B8' },
   cardTitleDark: { color: '#F8FAFC' },
@@ -387,14 +387,14 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 24,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: '#F6EBDD',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
   },
   emptyIconWrapDark: { backgroundColor: 'rgba(255,255,255,0.06)' },
-  emptyTitle: { fontSize: 18, fontWeight: '800', color: '#1E293B', marginBottom: 8 },
+  emptyTitle: { fontSize: 18, fontWeight: '800', color: '#6A2F12', marginBottom: 8 },
   emptyTitleDark: { color: '#F1F5F9' },
-  emptySub: { fontSize: 13, color: '#64748B', textAlign: 'center', lineHeight: 20 },
+  emptySub: { fontSize: 13, color: '#8B6A52', textAlign: 'center', lineHeight: 20 },
   emptySubDark: { color: '#94A3B8' },
 });

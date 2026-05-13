@@ -98,21 +98,23 @@ function DetailPill({
   compact = false,
   lines,
   icon,
+  isUser = false,
 }: {
   label: string;
   value: string;
   compact?: boolean;
   lines?: number;
   icon?: React.ReactNode;
+  isUser?: boolean;
 }) {
   const { tx } = usePreferenceContext();
   return (
-    <View style={[styles.detailPill, compact && styles.detailPillCompact]}>
-      <Text style={styles.detailLabel}>{tx(label)}</Text>
+    <View style={[styles.detailPill, isUser ? styles.detailPillUser : null, compact && styles.detailPillCompact]}>
+      <Text style={[styles.detailLabel, isUser ? styles.detailLabelUser : null]}>{tx(label)}</Text>
       <View style={styles.detailValueRow}>
         {icon ? <View style={styles.detailIconWrap}>{icon}</View> : null}
         <Text
-          style={[styles.detailValue, compact && styles.detailValueCompact]}
+          style={[styles.detailValue, isUser ? styles.detailValueUser : null, compact && styles.detailValueCompact]}
           numberOfLines={lines}
         >
           {value}
@@ -404,6 +406,8 @@ export default function ProfileFlipCard({ profile, role = 'electrician', photoUr
                   ? ['#0F172A', '#16233B', '#1E3A5F'] 
                   : isDealer 
                     ? ['#173E80', '#355C95', '#88AEEA']
+                    : role === 'user'
+                    ? ['#F0D2B6', '#E4BC98', '#CB8A57']
                     : ['#587AC7', '#4768B7', '#38549B']
               }
               start={{ x: 0, y: 0 }}
@@ -415,6 +419,7 @@ export default function ProfileFlipCard({ profile, role = 'electrician', photoUr
                 style={[
                   styles.textureTwo,
                   isDealer ? styles.textureTwoDealer : null,
+                  role === 'user' ? styles.textureTwoUser : null,
                   darkMode ? styles.textureTwoDark : null,
                 ]}
               />
@@ -425,11 +430,11 @@ export default function ProfileFlipCard({ profile, role = 'electrician', photoUr
                     {effectivePhotoUri ? (
                       <Image source={{ uri: effectivePhotoUri }} style={styles.avatarImage} />
                     ) : (
-                      <Text style={styles.avatarText}>{initials}</Text>
+                      <Text style={[styles.avatarText, role === 'user' ? styles.avatarTextUser : null]}>{initials}</Text>
                     )}
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={[styles.roleText, darkMode ? styles.roleTextDark : null]}>
+                    <Text style={[styles.roleText, role === 'user' ? styles.roleTextUser : null, darkMode ? styles.roleTextDark : null]}>
                       {role === 'dealer'
                         ? t('dealerPartner')
                         : role === 'user'
@@ -438,13 +443,14 @@ export default function ProfileFlipCard({ profile, role = 'electrician', photoUr
                         ? tx('Counter Boy Account')
                         : t('electricianPartner')}
                     </Text>
-                    <Text style={styles.nameText}>{profile?.name || fallbackText}</Text>
-                    <Text style={[styles.phoneText, darkMode ? styles.phoneTextDark : null]}>
+                    <Text style={[styles.nameText, role === 'user' ? styles.nameTextUser : null]}>{profile?.name || fallbackText}</Text>
+                    <Text style={[styles.phoneText, role === 'user' ? styles.phoneTextUser : null, darkMode ? styles.phoneTextDark : null]}>
                       {profile?.phone ? '+91 ' + profile.phone : fallbackText}
                     </Text>
                     <Animated.Text
                       style={[
                         styles.inlineTapHint,
+                        role === 'user' ? styles.inlineTapHintUser : null,
                         darkMode ? styles.inlineTapHintDark : null,
                         { transform: [{ scale: hintPulse }] },
                       ]}
@@ -457,8 +463,8 @@ export default function ProfileFlipCard({ profile, role = 'electrician', photoUr
               </View>
 
               <View style={styles.frontBottomRow}>
-                <DetailPill label={codeLabel} value={code || fallbackText} />
-                <DetailPill label="Location" value={frontLocation} icon={<LocationIcon />} />
+                <DetailPill label={codeLabel} value={code || fallbackText} isUser={role === 'user'} />
+                <DetailPill label="Location" value={frontLocation} isUser={role === 'user'} icon={<LocationIcon color={role === 'user' ? '#8D4A1E' : '#FFFFFF'} />} />
               </View>
             </LinearGradient>
           </Animated.View>
@@ -476,26 +482,29 @@ export default function ProfileFlipCard({ profile, role = 'electrician', photoUr
                   ? ['#111827', '#172033', '#243B53'] 
                   : isDealer 
                     ? ['#214D99', '#355C95', '#6F96D8']
+                    : role === 'user'
+                    ? ['#F5DFC9', '#EFCFAC', '#DDA373']
                     : ['#6284C9', '#4B6DB4', '#35518C']
               }
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.gradientFill}
             >
-              <View style={[styles.backGlowOne, darkMode ? styles.backGlowOneDark : null]} />
-              <View style={[styles.backGlowTwo, darkMode ? styles.backGlowTwoDark : null]} />
+              <View style={[styles.backGlowOne, role === 'user' ? styles.backGlowOneUser : null, darkMode ? styles.backGlowOneDark : null]} />
+              <View style={[styles.backGlowTwo, role === 'user' ? styles.backGlowTwoUser : null, darkMode ? styles.backGlowTwoDark : null]} />
               <View style={styles.backContent}>
                 <View style={styles.backLeft}>
-                  <Text style={[styles.backHeading, darkMode ? styles.backHeadingDark : null]}>
+                  <Text style={[styles.backHeading, role === 'user' ? styles.backHeadingUser : null, darkMode ? styles.backHeadingDark : null]}>
                     {tx(role === 'dealer' ? 'Business Details' : role === 'user' ? 'Account Details' : 'Connected Dealer')}
                   </Text>
                   <View style={styles.metaStack}>
-                    <DetailPill label="Name" value={dealerName} compact />
-                    <DetailPill label="Location" value={dealerLocation} compact lines={2} />
+                    <DetailPill label="Name" value={dealerName} compact isUser={role === 'user'} />
+                    <DetailPill label="Location" value={dealerLocation} compact lines={2} isUser={role === 'user'} />
                     <DetailPill
                       label={backThirdLabel}
                       value={backThirdValue}
                       compact
+                      isUser={role === 'user'}
                       lines={role === 'dealer' ? 2 : undefined}
                     />
                   </View>
@@ -505,7 +514,7 @@ export default function ProfileFlipCard({ profile, role = 'electrician', photoUr
                   <View style={styles.qrFrame}>
                     <Image source={{ uri: qrUrl }} style={styles.qrImage} resizeMode="contain" />
                   </View>
-                  <Text style={styles.qrCodeText} numberOfLines={1}>
+                  <Text style={[styles.qrCodeText, role === 'user' ? styles.qrCodeTextUser : null]} numberOfLines={1}>
                     {qrValue}
                   </Text>
                 </View>
@@ -576,6 +585,9 @@ const styles = StyleSheet.create({
   textureTwoDealer: {
     backgroundColor: 'rgba(191,219,254,0.22)',
   },
+  textureTwoUser: {
+    backgroundColor: 'rgba(255,255,255,0.22)',
+  },
   downloadMiniBtn: {
     position: 'absolute',
     top: 12,
@@ -605,6 +617,9 @@ const styles = StyleSheet.create({
   },
   backGlowOneDark: {
     backgroundColor: 'rgba(59,130,246,0.1)',
+  },
+  backGlowOneUser: {
+    backgroundColor: 'rgba(255,255,255,0.18)',
   },
   backGlowTwo: {
     position: 'absolute',
@@ -638,6 +653,10 @@ const styles = StyleSheet.create({
   },
   avatarImage: { width: '100%', height: '100%' },
   avatarText: { color: '#10254A', fontSize: 24, fontWeight: '900' },
+  avatarTextUser: { color: '#8D4A1E' },
+  backGlowTwoUser: {
+    backgroundColor: 'rgba(255,243,230,0.24)',
+  },
   roleText: {
     color: '#AFC0E4',
     fontSize: 9.5,
@@ -647,9 +666,12 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   roleTextDark: { color: '#BFDBFE' },
+  roleTextUser: { color: '#8D4A1E' },
   nameText: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', flexShrink: 1 },
+  nameTextUser: { color: '#4E2B14' },
   phoneText: { color: '#D8E3F8', fontSize: 12.5, marginTop: 5 },
   phoneTextDark: { color: '#CBD5E1' },
+  phoneTextUser: { color: '#7A5336' },
   inlineTapHint: {
     color: 'rgba(255,255,255,0.72)',
     fontSize: 7.8,
@@ -658,6 +680,7 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   inlineTapHintDark: { color: 'rgba(226,232,240,0.82)' },
+  inlineTapHintUser: { color: 'rgba(92,50,22,0.78)' },
 
   frontBottomRow: {
     position: 'absolute',
@@ -676,6 +699,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
   },
+  detailPillUser: {
+    backgroundColor: 'rgba(255,255,255,0.52)',
+    borderColor: 'rgba(141,74,30,0.12)',
+  },
   detailPillCompact: {
     flex: 0,
     paddingVertical: 5,
@@ -691,9 +718,11 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.8,
   },
+  detailLabelUser: { color: '#9A6035' },
   detailValueRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   detailIconWrap: { alignItems: 'center', justifyContent: 'center' },
   detailValue: { color: '#FFFFFF', fontSize: 10, fontWeight: '800', flexShrink: 1, lineHeight: 13 },
+  detailValueUser: { color: '#5C3216' },
   detailValueCompact: { fontSize: 9.5, lineHeight: 12, flex: 1 },
   backContent: { flexDirection: 'row', flex: 1, gap: 10, alignItems: 'stretch' },
   backLeft: { flex: 1, justifyContent: 'flex-start', minWidth: 0 },
@@ -706,6 +735,7 @@ const styles = StyleSheet.create({
     paddingRight: 34,
   },
   backHeadingDark: { color: '#DBEAFE' },
+  backHeadingUser: { color: '#6A2F12' },
   metaStack: { gap: 4, marginTop: 8, paddingRight: 1 },
   qrPanel: { width: 92, alignItems: 'center', justifyContent: 'center', paddingVertical: 10 },
   qrFrame: {
@@ -724,4 +754,5 @@ const styles = StyleSheet.create({
     marginTop: 5,
     width: '100%',
   },
+  qrCodeTextUser: { color: '#8D4A1E' },
 });

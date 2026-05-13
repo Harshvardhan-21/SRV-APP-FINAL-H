@@ -792,7 +792,7 @@ export function HomeScreen({
       testID: 'dealer-home-action-whatsapp',
       accessibilityLabel: 'Dealer home quick action WhatsApp support',
       title: tx('WhatsApp'),
-      sub: tx('Business support'),
+      sub: tx('Chat with us'),
       icon: WhatsAppIcon,
       iconColors: ['#EEF5FF', '#DCE8FF'] as const,
       iconTint: '#173E80',

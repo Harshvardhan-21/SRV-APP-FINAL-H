@@ -195,7 +195,7 @@ export function HomeScreen({
     },
     {
       title: tx('WhatsApp'),
-      sub: tx('Support'),
+      sub: tx('Chat with us'),
       icon: WhatsAppIcon,
       iconColors: [cb.successSoft, '#CDE7DB'] as const,
       iconTint: cb.success,

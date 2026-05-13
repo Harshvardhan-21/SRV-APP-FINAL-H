@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
+import { LinearGradient } from 'expo-linear-gradient';
 import {
   Alert,
   Animated,
@@ -22,18 +23,18 @@ import type { GiftProduct } from '@/shared/api';
 
 // ── Colors ────────────────────────────────────────────────────────────────────
 const C = {
-  primary: '#2563EB',
-  primaryLight: '#EFF6FF',
-  gold: '#F59E0B',
-  goldLight: '#FFF8E1',
-  goldDark: '#92400E',
-  bg: '#F4F8FF',
+  primary: '#8D4A1E',
+  primaryLight: '#FBF1E7',
+  gold: '#D88B2D',
+  goldLight: '#FFF1E0',
+  goldDark: '#8D4A1E',
+  bg: '#FBF6F1',
   surface: '#FFFFFF',
-  border: '#C7DBFF',
-  textDark: '#1C1E2E',
-  textMuted: '#9898A8',
-  success: '#22c55e',
-  successLight: '#e6fdf0',
+  border: '#E9D5C1',
+  textDark: '#40210F',
+  textMuted: '#8B6A52',
+  success: '#A65D2E',
+  successLight: '#F7E6D3',
 };
 
 // ── Coin SVG Icon ─────────────────────────────────────────────────────────────
@@ -98,6 +99,12 @@ function GiftCard({
         disabled={redeeming}
         style={[styles.card, darkMode && styles.cardDark, !canAfford && styles.cardLocked]}
       >
+        <LinearGradient
+          colors={darkMode ? ['#172033', '#111827'] : ['#FFF8F2', '#F7E6D3']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.cardGlow}
+        />
         {/* Badge */}
         {gift.badge ? (
           <View style={styles.badge}>
@@ -242,6 +249,34 @@ export function RewardsScreen({ onBack }: { onBack?: () => void }) {
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={C.primary} />
         }
       >
+        <LinearGradient
+          colors={darkMode ? ['#2A1810', '#3D2418', '#4D2E1E'] : ['#FBF1E7', '#F5E8DC', '#F0DEC9']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.heroCard}
+        >
+          <View style={styles.heroTop}>
+            <View style={styles.heroCopy}>
+              <Text style={[styles.heroEyebrow, darkMode && styles.heroEyebrowDark]}>{tx('Gift Store')}</Text>
+              <Text style={[styles.heroTitle, darkMode && styles.heroTitleDark]}>{tx('Redeem your SRV rewards')}</Text>
+              <Text style={[styles.heroSub, darkMode && styles.heroSubDark]}>
+                {tx('Use your earned points to claim gifts, offers, and customer rewards from one place.')}
+              </Text>
+            </View>
+            <View style={[styles.heroCoinWrap, darkMode && styles.heroCoinWrapDark]}>
+              <CoinIcon size={26} />
+            </View>
+          </View>
+          <View style={styles.heroMetaRow}>
+            <View style={[styles.heroMetaPill, darkMode && styles.heroMetaPillDark]}>
+              <Text style={[styles.heroMetaText, darkMode && styles.heroMetaTextDark]}>{currentPoints.toLocaleString('en-IN')} {tx('pts')}</Text>
+            </View>
+            <View style={[styles.heroMetaPill, styles.heroMetaPillSoft, darkMode && styles.heroMetaPillSoftDark]}>
+              <Text style={[styles.heroMetaText, darkMode && styles.heroMetaTextDark]}>{filtered.length} {tx('gifts')}</Text>
+            </View>
+          </View>
+        </LinearGradient>
+
         {/* Points Banner */}
         <View style={[styles.pointsBanner, darkMode && styles.pointsBannerDark]}>
           <View>
@@ -290,6 +325,47 @@ export function RewardsScreen({ onBack }: { onBack?: () => void }) {
 // ── Styles ────────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   scroll: { padding: 16, paddingBottom: 120 },
+  heroCard: {
+    borderRadius: 24,
+    padding: 18,
+    marginBottom: 14,
+    ...createShadow({ color: '#8D4A1E', offsetY: 10, blur: 20, opacity: 0.14, elevation: 6 }),
+  },
+  heroTop: { flexDirection: 'row', justifyContent: 'space-between', gap: 14 },
+  heroCopy: { flex: 1 },
+  heroEyebrow: {
+    color: 'rgba(64,33,15,0.62)',
+    fontSize: 11,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: 1.1,
+  },
+  heroEyebrowDark: { color: 'rgba(255,255,255,0.68)' },
+  heroTitle: { color: '#40210F', fontSize: 24, fontWeight: '900', marginTop: 6 },
+  heroTitleDark: { color: '#FFFFFF' },
+  heroSub: { color: '#6E5947', fontSize: 12.5, lineHeight: 19, marginTop: 8 },
+  heroSubDark: { color: 'rgba(255,255,255,0.8)' },
+  heroCoinWrap: {
+    width: 52,
+    height: 52,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.52)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  heroCoinWrapDark: { backgroundColor: 'rgba(255,255,255,0.12)' },
+  heroMetaRow: { flexDirection: 'row', gap: 10, marginTop: 18 },
+  heroMetaPill: {
+    backgroundColor: 'rgba(64,33,15,0.08)',
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  heroMetaPillDark: { backgroundColor: 'rgba(255,255,255,0.12)' },
+  heroMetaPillSoft: { backgroundColor: 'rgba(255,255,255,0.5)' },
+  heroMetaPillSoftDark: { backgroundColor: 'rgba(255,255,255,0.18)' },
+  heroMetaText: { color: '#6A2F12', fontSize: 11.5, fontWeight: '800' },
+  heroMetaTextDark: { color: '#FFFFFF' },
 
   // Points banner
   pointsBanner: {
@@ -327,6 +403,7 @@ const styles = StyleSheet.create({
   },
   cardDark: { backgroundColor: '#111827', borderColor: '#243043' },
   cardLocked: { opacity: 0.75 },
+  cardGlow: { ...StyleSheet.absoluteFillObject },
 
   // Badge
   badge: {
@@ -359,7 +436,7 @@ const styles = StyleSheet.create({
   // Image
   imgWrap: {
     height: 130,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#FFF8F2',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 12,

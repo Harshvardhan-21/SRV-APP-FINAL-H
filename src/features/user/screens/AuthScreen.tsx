@@ -174,11 +174,27 @@ export function UserAuthScreen({
     if (!lPhone.trim()) { Alert.alert('', tx('Please enter your phone number')); return; }
     setLoading(true);
     try {
-      // API call to send OTP
-      await authApi.sendOtp({ phone: lPhone.trim(), role });
+      // Real API call to send OTP
+      const response = await fetch(`${authApi.baseUrl}/mobile/auth/send-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: lPhone.trim(), role }),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to send OTP');
+      }
+      
       setOtpSentLogin(true);
-      Alert.alert(tx('OTP Sent'), tx('Please check your phone for the OTP'));
-    } catch (e: any) { Alert.alert(tx('Error'), e?.message ?? tx('Failed to send OTP')); }
+      Alert.alert(
+        tx('OTP Sent'), 
+        data.devOtp ? `${tx('OTP sent successfully')}. Dev OTP: ${data.devOtp}` : tx('Please check your phone for the OTP')
+      );
+    } catch (e: any) { 
+      Alert.alert(tx('Error'), e?.message ?? tx('Failed to send OTP')); 
+    }
     finally { setLoading(false); }
   };
 
@@ -186,11 +202,27 @@ export function UserAuthScreen({
     if (!sPhone.trim()) { Alert.alert('', tx('Please enter your phone number')); return; }
     setLoading(true);
     try {
-      // API call to send OTP
-      await authApi.sendOtp({ phone: sPhone.trim(), role });
+      // Real API call to send signup OTP
+      const response = await fetch(`${authApi.baseUrl}/mobile/auth/signup/send-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: sPhone.trim(), role }),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to send OTP');
+      }
+      
       setOtpSentSignup(true);
-      Alert.alert(tx('OTP Sent'), tx('Please check your phone for the OTP'));
-    } catch (e: any) { Alert.alert(tx('Error'), e?.message ?? tx('Failed to send OTP')); }
+      Alert.alert(
+        tx('OTP Sent'), 
+        data.devOtp ? `${tx('OTP sent successfully')}. Dev OTP: ${data.devOtp}` : tx('Please check your phone for the OTP')
+      );
+    } catch (e: any) { 
+      Alert.alert(tx('Error'), e?.message ?? tx('Failed to send OTP')); 
+    }
     finally { setLoading(false); }
   };
 
@@ -198,14 +230,28 @@ export function UserAuthScreen({
     if (!lPhone.trim()) { Alert.alert('', tx('Please enter your phone number')); return; }
     
     if (useOtpLogin) {
-      // Login with OTP
+      // Login with OTP - Real API
       if (!lOtp.trim()) { Alert.alert('', tx('Please enter the OTP')); return; }
+      
       setLoading(true);
       try {
-        const res = await authApi.verifyOtp({ phone: lPhone.trim(), otp: lOtp.trim(), role });
-        (globalThis as typeof globalThis & { __srvLoginUser?: unknown }).__srvLoginUser = res.user;
+        const response = await fetch(`${authApi.baseUrl}/mobile/auth/verify-otp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone: lPhone.trim(), role, otp: lOtp.trim() }),
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.message || 'Invalid OTP');
+        }
+        
+        (globalThis as typeof globalThis & { __srvLoginUser?: unknown }).__srvLoginUser = data.user;
         onAuthenticated(role, { passwordConfigured: false, passwordValue: '' });
-      } catch (e: any) { Alert.alert(tx('Login Failed'), e?.message ?? tx('Invalid OTP')); }
+      } catch (e: any) { 
+        Alert.alert(tx('Login Failed'), e?.message ?? tx('Invalid OTP')); 
+      }
       finally { setLoading(false); }
     } else {
       // Login with password (password is optional)
@@ -214,7 +260,9 @@ export function UserAuthScreen({
         const res = await authApi.login({ phone: lPhone.trim(), password: lPwd.trim(), role });
         (globalThis as typeof globalThis & { __srvLoginUser?: unknown }).__srvLoginUser = res.user;
         onAuthenticated(role, { passwordConfigured: !!lPwd, passwordValue: lPwd });
-      } catch (e: any) { Alert.alert(tx('Login Failed'), e?.message ?? tx('Check your credentials')); }
+      } catch (e: any) { 
+        Alert.alert(tx('Login Failed'), e?.message ?? tx('Check your credentials')); 
+      }
       finally { setLoading(false); }
     }
   };
@@ -223,20 +271,45 @@ export function UserAuthScreen({
     if (!sName.trim())  { Alert.alert('', tx('Please enter your name')); return; }
     if (!sPhone.trim()) { Alert.alert('', tx('Please enter your phone number')); return; }
     if (!sOtp.trim())   { Alert.alert('', tx('Please enter the OTP')); return; }
+    
     setLoading(true);
     try {
-      // First verify OTP, then register
-      const res = await authApi.registerWithOtp({ 
-        name: sName.trim(), 
-        phone: sPhone.trim(), 
-        email: sEmail.trim(), 
-        password: sPwd.trim(), 
-        otp: sOtp.trim(),
-        role 
+      // First verify OTP
+      const verifyResponse = await fetch(`${authApi.baseUrl}/mobile/auth/signup/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: sPhone.trim(), role, otp: sOtp.trim() }),
       });
-      (globalThis as typeof globalThis & { __srvLoginUser?: unknown }).__srvLoginUser = res.user;
+      
+      const verifyData = await verifyResponse.json();
+      
+      if (!verifyResponse.ok) {
+        throw new Error(verifyData.message || 'Invalid OTP');
+      }
+      
+      // Then register user
+      const registerResponse = await fetch(`${authApi.baseUrl}/mobile/auth/signup/${role}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: sName.trim(),
+          phone: sPhone.trim(),
+          email: sEmail.trim() || undefined,
+          password: sPwd.trim() || undefined,
+        }),
+      });
+      
+      const registerData = await registerResponse.json();
+      
+      if (!registerResponse.ok) {
+        throw new Error(registerData.message || 'Registration failed');
+      }
+      
+      (globalThis as typeof globalThis & { __srvLoginUser?: unknown }).__srvLoginUser = registerData.user;
       onAuthenticated(role, { passwordConfigured: !!sPwd, passwordValue: sPwd });
-    } catch (e: any) { Alert.alert(tx('Signup Failed'), e?.message ?? tx('Invalid OTP or registration failed')); }
+    } catch (e: any) { 
+      Alert.alert(tx('Signup Failed'), e?.message ?? tx('Invalid OTP or registration failed')); 
+    }
     finally { setLoading(false); }
   };
 

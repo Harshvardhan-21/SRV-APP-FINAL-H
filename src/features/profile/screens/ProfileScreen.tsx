@@ -203,14 +203,17 @@ export function ProfileScreen({
   );
   const { t, tx, theme } = scopedPreferenceValue;
   const menuItems = useMemo(
-    () => (currentRole === 'dealer' ? dealerMenuItems : electricianMenuItems),
+    () =>
+      (currentRole === 'dealer' ? dealerMenuItems : electricianMenuItems).filter((item) =>
+        currentRole === 'electrician' ? true : item.screen !== 'Transfer Points'
+      ),
     [currentRole]
   );
   const settingsMenuItems = useMemo(
     () =>
-      currentRole === 'dealer'
-        ? settingsItems.filter((item) => item.screen !== 'Scan History')
-        : settingsItems,
+      currentRole === 'electrician'
+        ? settingsItems
+        : settingsItems.filter((item) => item.screen !== 'Scan History'),
     [currentRole]
   );
   const electricianCount = authUser?.electricianCount ?? 0;
@@ -694,7 +697,7 @@ export function ProfileScreen({
             </LinearGradient>
           )}
 
-          {currentRole !== 'dealer' ? (
+          {currentRole === 'electrician' ? (
             <View style={styles.statsRow}>
               {[
                 {
