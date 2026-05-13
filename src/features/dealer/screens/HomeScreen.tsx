@@ -18,7 +18,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 import { withWebSafeNativeDriver } from '@/shared/animations/nativeDriver';
 import ProfileFlipCard from '@/shared/components/ProfileFlipCard';
-import { TestimonialShowcase, type TestimonialItem } from '@/shared/components/TestimonialShowcase';
+import {
+  TESTIMONIAL_FALLBACK_COPY,
+  getTestimonialTheme,
+  TestimonialShowcase,
+  type TestimonialItem,
+} from '@/shared/components/TestimonialShowcase';
 import { WebsitePromoSection } from '@/shared/components/WebsitePromoSection';
 import { BannerCarousel, type BannerSlide as CarouselSlide } from '@/shared/components/BannerCarousel';
 import { createShadow } from '@/shared/theme/shadows';
@@ -27,20 +32,103 @@ import type { Screen } from '@/shared/types/navigation';
 import { useAuth } from '@/shared/context/AuthContext';
 import { useAppData } from '@/shared/context/AppDataContext';
 import { useCatalogDownload } from '@/shared/hooks';
+import { API_BASE_URL } from '@/shared/api/config';
 
 const logoImage = require('../../../../assets/srv logo white.jpeg');
 
+const API_BASE_HOST = API_BASE_URL.replace(/\/api\/v1\/?$/, '');
+
+const CAT_IMAGES: Record<string, string> = {
+  fanbox: 'https://srvelectricals.com/cdn/shop/files/FC_4_17-30.png?v=1757426626&width=320',
+  concealedbox: 'https://srvelectricals.com/cdn/shop/files/CRD_PL_3.png?v=1757426566&width=320',
+  modular: 'https://srvelectricals.com/cdn/shop/files/3x3_679e5d30-ecf2-446e-9452-354bbf4c4a26.png?v=1757426377&width=320',
+  mcb: 'https://srvelectricals.com/cdn/shop/files/MCB_Box_4_Way_GI.png?v=1757426418&width=320',
+  busbar: 'https://srvelectricals.com/cdn/shop/files/Bus_Bar_100A_Super.png?v=1757426672&width=320',
+  exhaust: 'https://srvelectricals.com/cdn/shop/files/AP-Turtle-Fan.webp?v=1747938680&width=320',
+  led: 'https://srvelectricals.com/cdn/shop/files/FloodLightSleek.png?v=1757426471&width=320',
+  changeover: 'https://srvelectricals.com/cdn/shop/files/ACO_100A_FP.png?v=1757426480&width=320',
+  mainswitch: 'https://srvelectricals.com/cdn/shop/files/CO_32A_DP_PRM.png?v=1757426515&width=320',
+  louver: 'https://srvelectricals.com/cdn/shop/files/Louver_6_inch.png?v=1757426390&width=320',
+};
+
+const HOME_CATEGORY_LABELS: Record<string, string> = {
+  fanbox: 'Fan Box',
+  concealedbox: 'Concealed Box',
+  modular: 'Modular Box',
+  modularbox: 'Modular Box',
+  mcb: 'MCB Box',
+  busbar: 'Bus Bar',
+  exhaust: 'Exhaust Fan',
+  led: 'LED Lights',
+  changeover: 'Changeover',
+  mainswitch: 'Main Switch',
+  louver: 'Louvers',
+  axialfan: 'Axial Fan',
+  ledflood: 'LED Flood',
+  multipin: 'Multi Pin',
+  pintop: 'Pin Top',
+  accessories: 'Accessories',
+  boxes: 'MCB & DB Boxes',
+  fans: 'Fans & Ventilation',
+};
+
+const HOME_CATEGORY_ALIASES: Record<string, string> = {
+  modularbox: 'modular',
+  axialfan: 'exhaust',
+  ledflood: 'led',
+  boxes: 'mcb',
+  fans: 'exhaust',
+};
+
+function sanitizeCategoryKey(value: string) {
+  return value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '');
+}
+
+function normalizeHomeCategory(id: string) {
+  const sanitized = sanitizeCategoryKey(id);
+  return HOME_CATEGORY_ALIASES[sanitized] ?? sanitized;
+}
+
+function getCatImage(id: string, apiImageUrl?: string | null) {
+  const normalizedId = normalizeHomeCategory(id);
+  return resolveRemoteImageUrl(apiImageUrl) ?? CAT_IMAGES[normalizedId] ?? CAT_IMAGES[id] ?? CAT_IMAGES.fanbox;
+}
+
+function resolveRemoteImageUrl(uri?: string | null) {
+  if (!uri) return null;
+  let normalized = uri.trim();
+  if (!normalized) return null;
+  normalized = normalized.replace(/\\/g, '/');
+  if (normalized.startsWith('//')) return `http:${normalized}`;
+  if (normalized.startsWith('/')) return `${API_BASE_HOST}${normalized}`;
+  if (/^www\./i.test(normalized)) return `http://${normalized}`;
+  if (/^https?:\/\//i.test(normalized)) {
+    try {
+      const current = new URL(API_BASE_HOST);
+      const remote = new URL(normalized);
+      const localLike = /^(localhost|127\.0\.0\.1|10\.|192\.168\.|172\.(1[6-9]|2\d|3[0-1])\.)/;
+      if (localLike.test(remote.hostname) && remote.hostname !== current.hostname) {
+        return `${current.protocol}//${current.host}${remote.pathname}${remote.search}`;
+      }
+      return normalized;
+    } catch {
+      return normalized;
+    }
+  }
+  return `${API_BASE_HOST}/${normalized.replace(/^\.?\//, '')}`;
+}
+
 const HOME_PRODUCT_ACCENTS: Record<string, readonly [string, string, string]> = {
-  fanbox:       ['#FAFBFD', '#E9EEF5', '#D5DEE9'],
-  concealedbox: ['#F8FBFD', '#E4EFF6', '#CCDDE9'],
-  modular:      ['#FDFCFF', '#EDE9F8', '#DDD6F0'],
-  mcb:          ['#F8FBFF', '#E0EEFF', '#C7DDFF'],
-  busbar:       ['#FFFEF8', '#FEF3C7', '#FDE68A'],
-  exhaust:      ['#F8FFF9', '#DCFCE7', '#BBF7D0'],
-  led:          ['#FFFEF5', '#FEF9C3', '#FEF08A'],
-  changeover:   ['#FDFCFF', '#EDE9FE', '#DDD6FE'],
-  mainswitch:   ['#FFF8F9', '#FFE4E6', '#FECDD3'],
-  louver:       ['#F8FFFD', '#CCFBF1', '#99F6E4'],
+  fanbox:       ['#F7FBFF', '#E5EEFF', '#CFE0FF'],
+  concealedbox: ['#F7FBFF', '#E5EEFF', '#CFE0FF'],
+  modular:      ['#F7FBFF', '#E5EEFF', '#CFE0FF'],
+  mcb:          ['#F7FBFF', '#E5EEFF', '#CFE0FF'],
+  busbar:       ['#F7FBFF', '#E5EEFF', '#CFE0FF'],
+  exhaust:      ['#F7FBFF', '#E5EEFF', '#CFE0FF'],
+  led:          ['#F7FBFF', '#E5EEFF', '#CFE0FF'],
+  changeover:   ['#F7FBFF', '#E5EEFF', '#CFE0FF'],
+  mainswitch:   ['#F7FBFF', '#E5EEFF', '#CFE0FF'],
+  louver:       ['#F7FBFF', '#E5EEFF', '#CFE0FF'],
 };
 
 function BellIcon({ color = '#10254A', size = 22 }: { color?: string; size?: number }) {
@@ -72,7 +160,7 @@ function UserPlusIcon({ color = '#0F4BA8', size = 24 }: { color?: string; size?:
   );
 }
 
-function PhoneIcon({ color = '#A34A13', size = 24 }: { color?: string; size?: number }) {
+function PhoneIcon({ color = '#173E80', size = 24 }: { color?: string; size?: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
@@ -85,7 +173,7 @@ function PhoneIcon({ color = '#A34A13', size = 24 }: { color?: string; size?: nu
   );
 }
 
-function WalletIcon({ color = '#7A4D14', size = 24 }: { color?: string; size?: number }) {
+function WalletIcon({ color = '#173E80', size = 24 }: { color?: string; size?: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Rect x="3" y="6" width="18" height="13" rx="2.4" stroke={color} strokeWidth={2} />
@@ -114,7 +202,7 @@ function DownloadIcon({ color = '#1D4ED8', size = 22 }: { color?: string; size?:
 function TierBadgeIcon({ tier, size = 24 }: { tier: string; size?: number }) {
   const colorMap: Record<string, { ring: string; fill: string; accent: string }> = {
     Silver: { ring: '#94A3B8', fill: '#E2E8F0', accent: '#64748B' },
-    Gold: { ring: '#D97706', fill: '#FEF3C7', accent: '#B45309' },
+    Gold: { ring: '#355C95', fill: '#EAF3FF', accent: '#173E80' },
     Platinum: { ring: '#2563EB', fill: '#DBEAFE', accent: '#1D4ED8' },
     Diamond: { ring: '#0891B2', fill: '#CFFAFE', accent: '#0E7490' },
   };
@@ -131,7 +219,7 @@ function TierBadgeIcon({ tier, size = 24 }: { tier: string; size?: number }) {
   );
 }
 
-function WhatsAppIcon({ color = '#1A8F58', size = 22 }: { color?: string; size?: number }) {
+function WhatsAppIcon({ color = '#173E80', size = 22 }: { color?: string; size?: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
@@ -173,66 +261,175 @@ function FilterIcon({ color = '#173E80', size = 16 }: { color?: string; size?: n
   );
 }
 
+function ScanIcon({ color = '#10254A', size = 22 }: { color?: string; size?: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Rect x="4" y="4" width="6" height="6" rx="1.2" stroke={color} strokeWidth={1.8} />
+      <Rect x="14" y="4" width="6" height="6" rx="1.2" stroke={color} strokeWidth={1.8} />
+      <Rect x="4" y="14" width="6" height="6" rx="1.2" stroke={color} strokeWidth={1.8} />
+      <Path d="M14 14h2v2h-2zM18 14h2v6h-6v-2h4v-4z" fill={color} />
+    </Svg>
+  );
+}
+
 function FeaturedProductImage({ uri, size }: { uri: string; size: number }) {
-  const floatY = useRef(new Animated.Value(0)).current;
+  const floatY   = useRef(new Animated.Value(0)).current;
   const imgScale = useRef(new Animated.Value(1)).current;
+  const rotateZ  = useRef(new Animated.Value(0)).current;
+  const shimmerX = useRef(new Animated.Value(-1)).current;
 
   useEffect(() => {
-    const floatLoop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(
-          floatY,
-          withWebSafeNativeDriver({
-            toValue: -7,
-            duration: 1500,
-            easing: Easing.inOut(Easing.sin),
-          })
-        ),
-        Animated.timing(
-          floatY,
-          withWebSafeNativeDriver({
-            toValue: 0,
-            duration: 1500,
-            easing: Easing.inOut(Easing.sin),
-          })
-        ),
-      ])
-    );
-    const scaleLoop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(
-          imgScale,
-          withWebSafeNativeDriver({
-            toValue: 1.04,
-            duration: 2100,
-            easing: Easing.inOut(Easing.ease),
-          })
-        ),
-        Animated.timing(
-          imgScale,
-          withWebSafeNativeDriver({
-            toValue: 1,
-            duration: 2100,
-            easing: Easing.inOut(Easing.ease),
-          })
-        ),
-      ])
-    );
-
-    floatLoop.start();
-    scaleLoop.start();
-    return () => {
-      floatLoop.stop();
-      scaleLoop.stop();
+    const floatLoop = Animated.loop(Animated.sequence([
+      Animated.timing(floatY, withWebSafeNativeDriver({ toValue: -10, duration: 1800, easing: Easing.inOut(Easing.sin) })),
+      Animated.timing(floatY, withWebSafeNativeDriver({ toValue: 0,   duration: 1800, easing: Easing.inOut(Easing.sin) })),
+    ]));
+    const scaleLoop = Animated.loop(Animated.sequence([
+      Animated.timing(imgScale, withWebSafeNativeDriver({ toValue: 1.08, duration: 2400, easing: Easing.inOut(Easing.ease) })),
+      Animated.timing(imgScale, withWebSafeNativeDriver({ toValue: 1,    duration: 2400, easing: Easing.inOut(Easing.ease) })),
+    ]));
+    const swayLoop = Animated.loop(Animated.sequence([
+      Animated.timing(rotateZ, withWebSafeNativeDriver({ toValue: 1,  duration: 2600, easing: Easing.inOut(Easing.sin) })),
+      Animated.timing(rotateZ, withWebSafeNativeDriver({ toValue: -1, duration: 2600, easing: Easing.inOut(Easing.sin) })),
+      Animated.timing(rotateZ, withWebSafeNativeDriver({ toValue: 0,  duration: 2600, easing: Easing.inOut(Easing.sin) })),
+    ]));
+    const runShimmer = () => {
+      shimmerX.setValue(-1);
+      Animated.timing(shimmerX, withWebSafeNativeDriver({ toValue: 2, duration: 900, easing: Easing.inOut(Easing.ease) }))
+        .start(({ finished }) => { if (finished) setTimeout(runShimmer, 3500); });
     };
-  }, [floatY, imgScale]);
+    floatLoop.start(); scaleLoop.start(); swayLoop.start();
+    const t = setTimeout(runShimmer, 1000);
+    return () => { floatLoop.stop(); scaleLoop.stop(); swayLoop.stop(); clearTimeout(t); };
+  }, [floatY, imgScale, rotateZ, shimmerX]);
+
+  const swayDeg   = rotateZ.interpolate({ inputRange: [-1, 0, 1], outputRange: ['-2deg', '0deg', '2deg'] });
+  const shimmerTX = shimmerX.interpolate({ inputRange: [-1, 2], outputRange: [-size * 1.5, size * 3] });
 
   return (
-    <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
-      <Animated.View style={{ transform: [{ translateY: floatY }, { scale: imgScale }] }}>
+    <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+      <Animated.View pointerEvents="none" style={{
+        position: 'absolute', top: 0, bottom: 0,
+        width: size * 0.35, backgroundColor: 'rgba(255,255,255,0.32)',
+        transform: [{ translateX: shimmerTX }, { rotate: '20deg' }], zIndex: 2,
+      }} />
+      <Animated.View style={{ transform: [{ translateY: floatY }, { scale: imgScale }, { rotate: swayDeg }] }}>
         <Image source={{ uri }} style={{ width: size, height: size }} resizeMode="contain" />
       </Animated.View>
     </View>
+  );
+}
+
+function AnimatedCatImage({ uri, size }: { uri: string; size: number }) {
+  const floatY = useRef(new Animated.Value(0)).current;
+  const imgScale = useRef(new Animated.Value(1)).current;
+  const rotateZ = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const floatLoop = Animated.loop(Animated.sequence([
+      Animated.timing(floatY, withWebSafeNativeDriver({ toValue: -8, duration: 1800, easing: Easing.inOut(Easing.sin) })),
+      Animated.timing(floatY, withWebSafeNativeDriver({ toValue: 0, duration: 1800, easing: Easing.inOut(Easing.sin) })),
+    ]));
+    const scaleLoop = Animated.loop(Animated.sequence([
+      Animated.timing(imgScale, withWebSafeNativeDriver({ toValue: 1.06, duration: 2200, easing: Easing.inOut(Easing.ease) })),
+      Animated.timing(imgScale, withWebSafeNativeDriver({ toValue: 1, duration: 2200, easing: Easing.inOut(Easing.ease) })),
+    ]));
+    const swayLoop = Animated.loop(Animated.sequence([
+      Animated.timing(rotateZ, withWebSafeNativeDriver({ toValue: 1, duration: 2600, easing: Easing.inOut(Easing.sin) })),
+      Animated.timing(rotateZ, withWebSafeNativeDriver({ toValue: -1, duration: 2600, easing: Easing.inOut(Easing.sin) })),
+      Animated.timing(rotateZ, withWebSafeNativeDriver({ toValue: 0, duration: 2600, easing: Easing.inOut(Easing.sin) })),
+    ]));
+    floatLoop.start();
+    scaleLoop.start();
+    swayLoop.start();
+    return () => {
+      floatLoop.stop();
+      scaleLoop.stop();
+      swayLoop.stop();
+    };
+  }, [floatY, imgScale, rotateZ]);
+
+  const swayDeg = rotateZ.interpolate({ inputRange: [-1, 0, 1], outputRange: ['-2deg', '0deg', '2deg'] });
+
+  return (
+    <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+      <Animated.View style={{ transform: [{ translateY: floatY }, { scale: imgScale }, { rotate: swayDeg }] }}>
+        <Image source={{ uri }} style={{ width: size, height: size }} resizeMode="contain" />
+      </Animated.View>
+    </View>
+  );
+}
+
+function HomeCategoryCard({
+  cat,
+  index,
+  cardW,
+  darkMode,
+  onPress,
+}: {
+  cat: { id: string; label: string; imageUrl?: string | null };
+  index: number;
+  cardW: number;
+  darkMode: boolean;
+  onPress: () => void;
+}) {
+  const pressScale = useRef(new Animated.Value(1)).current;
+  const tiltX = useRef(new Animated.Value(0)).current;
+  const tiltY = useRef(new Animated.Value(0)).current;
+  const entryY = useRef(new Animated.Value(50)).current;
+  const entryOp = useRef(new Animated.Value(0)).current;
+  const imgUri = getCatImage(cat.id, cat.imageUrl);
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(entryY, withWebSafeNativeDriver({ toValue: 0, duration: 500, delay: index * 60, easing: Easing.out(Easing.back(1.3)) })),
+      Animated.timing(entryOp, withWebSafeNativeDriver({ toValue: 1, duration: 400, delay: index * 60, easing: Easing.out(Easing.ease) })),
+    ]).start();
+  }, [entryY, entryOp, index]);
+
+  const handlePressIn = () => {
+    Animated.parallel([
+      Animated.spring(pressScale, withWebSafeNativeDriver({ toValue: 0.94, tension: 120, friction: 6 })),
+      Animated.spring(tiltX, withWebSafeNativeDriver({ toValue: 1, tension: 120, friction: 6 })),
+      Animated.spring(tiltY, withWebSafeNativeDriver({ toValue: 1, tension: 120, friction: 6 })),
+    ]).start();
+  };
+  const handlePressOut = () => {
+    Animated.parallel([
+      Animated.spring(pressScale, withWebSafeNativeDriver({ toValue: 1, tension: 90, friction: 6 })),
+      Animated.spring(tiltX, withWebSafeNativeDriver({ toValue: 0, tension: 90, friction: 6 })),
+      Animated.spring(tiltY, withWebSafeNativeDriver({ toValue: 0, tension: 90, friction: 6 })),
+    ]).start();
+  };
+  const rotateY = tiltX.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '8deg'] });
+  const rotateX = tiltY.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '-5deg'] });
+
+  return (
+    <Pressable onPress={onPress} onPressIn={handlePressIn} onPressOut={handlePressOut}>
+      <Animated.View style={{ opacity: entryOp, transform: [{ translateY: entryY }] }}>
+        <Animated.View
+          style={[
+            homeCatStyles.card,
+            darkMode ? homeCatStyles.cardDark : null,
+            { width: cardW, transform: [{ scale: pressScale }, { perspective: 800 }, { rotateY }, { rotateX }] },
+          ]}
+        >
+          <View style={[homeCatStyles.imgZone, { backgroundColor: darkMode ? '#1E293B' : '#FFFFFF' }]}>
+            <AnimatedCatImage uri={imgUri} size={142} />
+          </View>
+          <View style={[homeCatStyles.accentLine, { backgroundColor: '#4A637B' }]} />
+          <View style={[homeCatStyles.infoZone, darkMode ? homeCatStyles.infoZoneDark : null]}>
+            <Text style={[homeCatStyles.label, darkMode ? homeCatStyles.labelDark : null]} numberOfLines={2}>
+              {cat.label}
+            </Text>
+            <View style={[homeCatStyles.pill, { backgroundColor: darkMode ? 'rgba(255,255,255,0.08)' : '#F5F8FB' }]}>
+              <Text style={[homeCatStyles.pillText, { color: darkMode ? '#94A3B8' : '#4A637B' }]}>
+                View Products
+              </Text>
+            </View>
+          </View>
+        </Animated.View>
+      </Animated.View>
+    </Pressable>
   );
 }
 
@@ -240,20 +437,26 @@ function FeaturedCard({
   title,
   subtitle,
   image,
+  points,
+  price,
   width,
   accent,
   badge,
   onPress,
+  onScan,
 }: {
   title: string;
   subtitle: string;
   image: string;
+  points: number;
+  price: string;
   width: number;
   accent: readonly [string, string, string];
   badge: string;
   onPress: () => void;
+  onScan: () => void;
 }) {
-  const { darkMode } = usePreferenceContext();
+  const { darkMode, tx } = usePreferenceContext();
   const pressScale = useRef(new Animated.Value(1)).current;
   const tilt = useRef(new Animated.Value(0)).current;
 
@@ -296,7 +499,7 @@ function FeaturedCard({
         ]}
       >
         <LinearGradient
-          colors={accent}
+          colors={darkMode ? ['#1E293B', '#243B55', '#1E293B'] : ['#FFFFFF', '#FFFFFF', '#FFFFFF']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.productImageWrap}
@@ -304,8 +507,11 @@ function FeaturedCard({
           <View style={styles.productBadge}>
             <Text style={styles.productBadgeText}>{badge}</Text>
           </View>
+          <View style={[styles.pointsPill, styles.pointsPillFloating, { borderColor: '#173E8033' }]}>
+            <Text style={[styles.pointsPillText, { color: '#173E80' }]}>+{points} pts</Text>
+          </View>
           <View style={styles.productShine} />
-          <FeaturedProductImage uri={image} size={width + 6} />
+          <FeaturedProductImage uri={resolveRemoteImageUrl(image) ?? image} size={width + 6} />
         </LinearGradient>
         <View style={styles.productInfo}>
           <Text
@@ -320,6 +526,17 @@ function FeaturedCard({
           >
             {subtitle}
           </Text>
+          <View style={styles.productFooter}>
+            <Text style={[styles.productPrice, darkMode ? styles.productPriceDark : null]}>{price}</Text>
+          </View>
+          <TouchableOpacity
+            onPress={onScan}
+            style={[styles.productScanBtn, { backgroundColor: '#EEF5FF' }]}
+            activeOpacity={0.85}
+          >
+            <ScanIcon color="#173E80" size={15} />
+            <Text style={[styles.productScanBtnText, { color: '#173E80' }]}>{tx('Scan to Earn')}</Text>
+          </TouchableOpacity>
         </View>
       </Animated.View>
     </Pressable>
@@ -340,9 +557,9 @@ function getTier(count: number) {
     return {
       tier: 'Gold',
       nextAt: 301,
-      gradient: ['#FFF4D8', '#FFE6A8', '#FFD375'] as [string, string, string],
-      accent: '#B45309',
-      chip: '#FFF8E6',
+      gradient: ['#EEF5FF', '#DCE8FF', '#C7DAFF'] as [string, string, string],
+      accent: '#173E80',
+      chip: '#F7FBFF',
     };
   }
   if (count <= 500) {
@@ -376,7 +593,13 @@ export function HomeScreen({
 }) {
   const { darkMode, tx, language } = usePreferenceContext();
   const { user: authUser } = useAuth();
-  const { products: ctxProducts, banners: ctxBanners, testimonials: ctxTestimonials, appSettings } = useAppData();
+  const {
+    products: ctxProducts,
+    categories: ctxCategories,
+    banners: ctxBanners,
+    testimonials: ctxTestimonials,
+    appSettings,
+  } = useAppData();
   const { openCatalog, downloading } = useCatalogDownload();
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
@@ -386,25 +609,39 @@ export function HomeScreen({
   const tier = useMemo(() => getTier(connectedCount), [connectedCount]);
   const cardW = (width - 28 - 12) / 2;
   const heroImageHeight = Math.round((width - 28) * 0.56);
-  const productFilters = ['All', 'Boxes', 'Fans'] as const;
-  const [selectedFilter, setSelectedFilter] = useState<(typeof productFilters)[number]>('All');
   const [apiBannerSlides, setApiBannerSlides] = useState<CarouselSlide[]>([]);
   const [supportWhatsapp, setSupportWhatsapp] = useState('918837684004');
 
   // Map banners from context — prefetch all images first, then set slides
   useEffect(() => {
-    const filtered = ctxBanners.filter(
-      (b) => b.isActive !== false && (b as any).status !== 'inactive' && b.imageUrl,
-    );
+    const filtered = ctxBanners
+      .filter((b) => {
+        const imageUrl = resolveRemoteImageUrl(
+          b.imageUrl ||
+          (b as any).imageUrl ||
+          (b as any).image ||
+          (b as any).imagePath ||
+          (b as any).bannerImage,
+        );
+        return b.isActive !== false && (b as any).status !== 'inactive' && !!imageUrl;
+      })
+      .sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
     const mapped = filtered.map((b) => ({
-      image: { uri: b.imageUrl! },
+      image: {
+        uri: resolveRemoteImageUrl(
+          b.imageUrl ||
+          (b as any).imageUrl ||
+          (b as any).image ||
+          (b as any).imagePath ||
+          (b as any).bannerImage,
+        )!,
+      },
       resizeMode: 'cover' as const,
       backgroundColor: b.bgColor ?? '#192F67',
     }));
+    setApiBannerSlides(mapped as any);
     const uris = mapped.map((b) => b.image.uri);
-    Promise.all(uris.map((uri) => Image.prefetch(uri).catch(() => null))).finally(() => {
-      setApiBannerSlides(mapped);
-    });
+    uris.forEach((uri) => Image.prefetch(uri).catch(() => null));
   }, [ctxBanners]);
 
   // App settings from context
@@ -413,40 +650,87 @@ export function HomeScreen({
   }, [appSettings]);
 
   const activeBannerSlides = apiBannerSlides;
+  const catCardW = Math.floor((width - 28 - 12) / 2);
+  const categories = useMemo(() => {
+    const catMap = new Map<string, number>();
+    ctxProducts.forEach((p) => {
+      const normalizedId = normalizeHomeCategory(p.category);
+      if (!normalizedId) return;
+      catMap.set(normalizedId, (catMap.get(normalizedId) ?? 0) + 1);
+    });
+    const ORDER = ['fanbox','concealedbox','modular','mcb','busbar','exhaust','led','changeover','mainswitch','louver','multipin','pintop'];
+    const merged = new Map<string, { id: string; label: string; imageUrl?: string | null }>();
 
-  const filteredProducts = useMemo(() => {
-    const items = ctxProducts.slice(0, 4);
-    if (selectedFilter === 'Boxes') {
-      return items.filter((product) => {
-        const source = `${product.name} ${product.sub ?? ''}`.toLowerCase();
-        return source.includes('box');
+    ctxCategories.forEach((category) => {
+      const rawId = category.categoryId ?? category.slug ?? category.label ?? category.id;
+      const id = normalizeHomeCategory(rawId);
+      if (!id) return;
+      merged.set(id, {
+        id,
+        label: category.label || HOME_CATEGORY_LABELS[id] || id,
+        imageUrl: category.imageUrl ?? null,
       });
-    }
-    if (selectedFilter === 'Fans') {
-      return items.filter((product) => {
-        const source = `${product.name} ${product.sub ?? ''}`.toLowerCase();
-        return source.includes('fan');
-      });
-    }
-    return items;
-  }, [selectedFilter, ctxProducts]);
+    });
+
+    Array.from(catMap.keys()).forEach((id) => {
+      if (!merged.has(id)) {
+        merged.set(id, {
+          id,
+          label: HOME_CATEGORY_LABELS[id] ?? id.charAt(0).toUpperCase() + id.slice(1),
+          imageUrl: null,
+        });
+      }
+    });
+
+    return Array.from(merged.values()).sort((a, b) => {
+      const ai = ORDER.indexOf(a.id);
+      const bi = ORDER.indexOf(b.id);
+      if (ai === -1 && bi === -1) return a.id.localeCompare(b.id);
+      if (ai === -1) return 1;
+      if (bi === -1) return -1;
+      return ai - bi;
+    });
+  }, [ctxCategories, ctxProducts]);
+  const displayedCategories = useMemo(() => {
+    const preferredOrder = ['fanbox', 'concealedbox', 'modular', 'mcb', 'busbar', 'exhaust', 'led', 'changeover'];
+    const ordered = [
+      ...preferredOrder.map((id) => categories.find((category) => category.id === id)).filter(Boolean),
+      ...categories,
+    ] as typeof categories;
+    const seen = new Set<string>();
+    return ordered.filter((category) => {
+      if (seen.has(category.id)) return false;
+      seen.add(category.id);
+      return true;
+    }).slice(0, 4);
+  }, [categories]);
   const dealerTestimonials = useMemo<TestimonialItem[]>(() => {
     if (ctxTestimonials.length === 0) {
-      return [];
+      return TESTIMONIAL_FALLBACK_COPY.map((item, index) => {
+        const themed = getTestimonialTheme(index);
+        return { ...item, colors: themed.colors, ring: themed.ring, glow: themed.glow };
+      });
     }
     if (ctxTestimonials.length > 0) {
-      return ctxTestimonials.map((t) => ({
-        initials: t.initials ?? t.personName.slice(0, 2).toUpperCase(),
-        name: t.personName,
-        location: t.location ?? '',
-        tier: t.tier ?? '',
-        yearsWithUs: `Connected for ${t.yearsConnected} year${t.yearsConnected !== 1 ? 's' : ''}`,
-        quote: t.quote,
-        highlight: t.highlight ?? '',
-        colors: (t.gradientColors?.slice(0, 3) ?? ['#FFF7E6', '#FDE6B4', '#F6C96E']) as [string, string, string],
-        ring: t.ringColor ?? '#D97706',
-        glow: t.gradientColors?.[0] ?? '#FFE7BA',
-      }));
+      return ctxTestimonials.map((t, index) => {
+        const themed = getTestimonialTheme(index);
+        const fallback = TESTIMONIAL_FALLBACK_COPY[index % TESTIMONIAL_FALLBACK_COPY.length];
+        return {
+          initials: t.initials ?? t.personName.slice(0, 2).toUpperCase() ?? fallback.initials,
+          name: t.personName || fallback.name,
+          location: t.location || fallback.location,
+          tier: t.tier || fallback.tier,
+          yearsWithUs:
+            t.yearsConnected != null
+              ? `Connected for ${t.yearsConnected} year${t.yearsConnected !== 1 ? 's' : ''}`
+              : fallback.yearsWithUs,
+          quote: t.quote?.trim() || fallback.quote,
+          highlight: t.highlight?.trim() || fallback.highlight,
+          colors: themed.colors,
+          ring: themed.ring,
+          glow: themed.glow,
+        };
+      });
     }
     return [];
   }, [language, ctxTestimonials]);
@@ -469,8 +753,8 @@ export function HomeScreen({
       title: tx('Associate Electrician'),
       sub: formatCountText(language, connectedCount, 'connected', 'जुड़े हुए', 'ਜੁੜੇ ਹੋਏ'),
       icon: UserPlusIcon,
-      iconColors: ['#E8F1FF', '#CFE0FF'] as const,
-      iconTint: '#0F4BA8',
+      iconColors: ['#EEF5FF', '#DCE8FF'] as const,
+      iconTint: '#173E80',
       onPress: () => {
         const kyc = authUser?.kycStatus;
         if (kyc !== 'verified') {
@@ -490,8 +774,8 @@ export function HomeScreen({
       title: tx('Product Catalog'),
       sub: tx('Download PDF for latest updated prices'),
       icon: DownloadIcon,
-      iconColors: ['#DBEAFE', '#BFDBFE'] as const,
-      iconTint: '#1D4ED8',
+      iconColors: ['#EEF5FF', '#DCE8FF'] as const,
+      iconTint: '#173E80',
       onPress: () => openCatalog(appSettings?.catalogPdfUrl),
     },
     {
@@ -500,18 +784,18 @@ export function HomeScreen({
       title: tx('Call Electrician'),
       sub: tx('Reach your network'),
       icon: PhoneIcon,
-      iconColors: ['#FFF0EA', '#FFD2C4'] as const,
-      iconTint: '#B14B16',
+      iconColors: ['#EEF5FF', '#DCE8FF'] as const,
+      iconTint: '#173E80',
       onPress: () => onNavigate('call_electrician'),
     },
     {
       testID: 'dealer-home-action-whatsapp',
       accessibilityLabel: 'Dealer home quick action WhatsApp support',
       title: tx('WhatsApp'),
-      sub: tx('Business support'),
+      sub: tx('Chat with us'),
       icon: WhatsAppIcon,
-      iconColors: ['#E8FFF1', '#C6F3D8'] as const,
-      iconTint: '#1A8F58',
+      iconColors: ['#EEF5FF', '#DCE8FF'] as const,
+      iconTint: '#173E80',
       onPress: () =>
         Linking.openURL(
           `https://wa.me/${supportWhatsapp}?text=Hello%20SRV%20Team,%20I%20need%20dealer%20support`
@@ -525,7 +809,7 @@ export function HomeScreen({
       showsVerticalScrollIndicator={false}
     >
       <LinearGradient
-        colors={darkMode ? ['#0B1220', '#101A2F', '#18263E'] : ['#FFF8EC', '#FDEFD2', '#FFF6E8']}
+        colors={darkMode ? ['#0B1220', '#101A2F', '#18263E'] : ['#EAF3FF', '#DCE8FF', '#C7DAFF']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={[styles.heroShell, { marginTop: -insets.top, paddingTop: 26 + insets.top }]}
@@ -585,7 +869,7 @@ export function HomeScreen({
             >
               <LinearGradient
                 colors={
-                  darkMode ? ['#0F172A', '#132238', '#1E293B'] : ['#E8F1FF', '#D7E7FF', '#CEE0FF']
+                  darkMode ? ['#0F172A', '#132238', '#1E293B'] : ['#EEF5FF', '#DCE8FF', '#C7DAFF']
                 }
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
@@ -671,7 +955,7 @@ export function HomeScreen({
       </LinearGradient>
 
       <View style={styles.body}>
-        {authUser ? (
+        {authUser && activeBannerSlides.length > 0 ? (
           <BannerCarousel
             slides={activeBannerSlides}
             height={heroImageHeight}
@@ -707,83 +991,39 @@ export function HomeScreen({
           })}
         </View>
 
-        <View style={styles.sectionHeader}>
-          <View>
-            <Text style={[styles.sectionEyebrow, darkMode ? styles.sectionEyebrowDark : null]}>
-              {tx('Catalog')}
-            </Text>
-            <Text style={[styles.sectionTitle, darkMode ? styles.sectionTitleDark : null]}>
-              {tx('Featured products')}
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.productsTopBar}>
-          <View style={styles.filterRow}>
-            {productFilters.map((filter) => {
-              const active = selectedFilter === filter;
-              return (
-                <TouchableOpacity
-                  key={filter}
-                  onPress={() => setSelectedFilter(filter)}
-                  style={[
-                    styles.filterChip,
-                    darkMode ? styles.filterChipDark : null,
-                    active && styles.filterChipActive,
-                  ]}
-                  activeOpacity={0.86}
-                >
-                  {filter === 'All' ? (
-                    <FilterIcon
-                      color={active ? '#FFFFFF' : darkMode ? '#CBD5E1' : '#173E80'}
-                      size={15}
-                    />
-                  ) : null}
-                  <Text
-                    style={[
-                      styles.filterChipText,
-                      darkMode ? styles.filterChipTextDark : null,
-                      active && styles.filterChipTextActive,
-                    ]}
-                  >
-                    {tx(filter)}
-                  </Text>
+        {categories.length > 0 && (
+          <>
+            <View style={styles.sectionHeader}>
+              <View>
+                <Text style={[styles.sectionEyebrow, darkMode ? styles.sectionEyebrowDark : null]}>
+                  {tx('Shop by Category')}
+                </Text>
+                <Text style={[styles.sectionTitle, darkMode ? styles.sectionTitleDark : null]}>
+                  {tx('Browse Categories')}
+                </Text>
+              </View>
+              {categories.length > 4 && (
+                <TouchableOpacity onPress={() => onNavigate('product')} style={styles.inlineAction} activeOpacity={0.85}>
+                  <Text style={styles.viewAllText}>{tx('View all')}</Text>
+                  <ChevronRight />
                 </TouchableOpacity>
-              );
-            })}
-          </View>
+              )}
+            </View>
 
-          <TouchableOpacity
-            onPress={() => onNavigate('product')}
-            style={styles.inlineAction}
-            activeOpacity={0.85}
-          >
-            <Text style={styles.viewAllText}>{tx('View all')}</Text>
-            <ChevronRight />
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.productsGrid}>
-          {filteredProducts.map((product, index) => {
-            return (
-              <FeaturedCard
-                key={product.id}
-                title={product.name}
-                subtitle={product.sub ?? ''}
-                image={product.imageUrl ?? product.image ?? ''}
-                width={cardW}
-                accent={
-                  HOME_PRODUCT_ACCENTS[product.category] ??
-                  (index % 2 === 0
-                    ? HOME_PRODUCT_ACCENTS.fanbox
-                    : HOME_PRODUCT_ACCENTS.concealedbox)
-                }
-                badge={tx(index % 2 === 0 ? 'Top Pick' : 'Hot Deal')}
-                onPress={() => onOpenProductCategory(product.category)}
-              />
-            );
-          })}
-        </View>
+            <View style={styles.homeCatGrid}>
+              {displayedCategories.map((cat, index) => (
+                <HomeCategoryCard
+                  key={cat.id}
+                  cat={cat}
+                  index={index}
+                  cardW={catCardW}
+                  darkMode={darkMode}
+                  onPress={() => onOpenProductCategory(cat.id)}
+                />
+              ))}
+            </View>
+          </>
+        )}
 
         <TestimonialShowcase
           eyebrow={
@@ -833,7 +1073,7 @@ export function HomeScreen({
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#FFF8EC' },
+  screen: { flex: 1, backgroundColor: '#F4F8FF' },
   screenDark: { backgroundColor: '#08111F' },
   heroShell: {
     paddingTop: 26,
@@ -848,7 +1088,7 @@ const styles = StyleSheet.create({
     width: 220,
     height: 220,
     borderRadius: 110,
-    backgroundColor: 'rgba(217,119,6,0.14)',
+    backgroundColor: 'rgba(37,99,235,0.16)',
     top: -60,
     right: -35,
   },
@@ -857,7 +1097,7 @@ const styles = StyleSheet.create({
     width: 160,
     height: 160,
     borderRadius: 80,
-    backgroundColor: 'rgba(245,158,11,0.12)',
+    backgroundColor: 'rgba(191,219,254,0.28)',
     bottom: 20,
     left: -24,
   },
@@ -918,8 +1158,8 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(148,163,184,0.24)',
   },
   heroGuestBannerWrap: {
-    marginTop: 8,
-    marginBottom: 4,
+    marginTop: 12,
+    marginBottom: 8,
   },
   bellIconWrap: {
     position: 'relative',
@@ -933,7 +1173,7 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#D97706',
+    backgroundColor: '#173E80',
     borderWidth: 1.5,
     borderColor: '#FFFFFF',
   },
@@ -958,7 +1198,7 @@ const styles = StyleSheet.create({
   bannerCard: {
     borderRadius: 28,
     overflow: 'hidden',
-    backgroundColor: '#F4E4C4',
+    backgroundColor: '#F7FBFF',
     ...createShadow({ color: '#0F172A', offsetY: 10, blur: 22, opacity: 0.16, elevation: 9 }),
   },
   bannerCardDark: {
@@ -972,9 +1212,9 @@ const styles = StyleSheet.create({
     marginTop: 14,
     marginBottom: 22,
   },
-  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#E7D3B0' },
+  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#D7E7FF' },
   dotDark: { backgroundColor: '#334155' },
-  dotActive: { width: 28, backgroundColor: '#8A5A12' },
+  dotActive: { width: 28, backgroundColor: '#173E80' },
   dotActiveDark: { width: 28, backgroundColor: '#E2E8F0' },
   quickGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 22 },
   quickCard: {
@@ -1001,13 +1241,13 @@ const styles = StyleSheet.create({
   quickSubDark: { color: '#CBD5E1' },
   kycLockBadge: {
     marginTop: 8,
-    backgroundColor: '#FEF3C7',
+    backgroundColor: '#EAF3FF',
     borderRadius: 8,
     paddingHorizontal: 8,
     paddingVertical: 4,
     alignSelf: 'flex-start',
   },
-  kycLockText: { fontSize: 10, fontWeight: '800', color: '#92400E' },
+  kycLockText: { fontSize: 10, fontWeight: '800', color: '#173E80' },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -1046,14 +1286,20 @@ const styles = StyleSheet.create({
   },
   filterChipDark: { backgroundColor: '#111827', borderColor: '#243043' },
   filterChipActive: {
-    backgroundColor: '#8A5A12',
-    borderColor: '#8A5A12',
+    backgroundColor: '#173E80',
+    borderColor: '#173E80',
   },
-  filterChipText: { color: '#8A5A12', fontSize: 11.5, fontWeight: '800' },
+  filterChipText: { color: '#173E80', fontSize: 11.5, fontWeight: '800' },
   filterChipTextDark: { color: '#CBD5E1' },
   filterChipTextActive: { color: '#FFFFFF' },
   inlineAction: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  viewAllText: { color: '#8A5A12', fontSize: 13, fontWeight: '800' },
+  viewAllText: { color: '#173E80', fontSize: 13, fontWeight: '800' },
+  homeCatGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginBottom: 24,
+  },
   productsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 24 },
   productCard: {
     backgroundColor: '#FFFFFF',
@@ -1100,6 +1346,38 @@ const styles = StyleSheet.create({
   productTitleDark: { color: '#F8FAFC' },
   productSub: { color: '#70819C', fontSize: 11, marginTop: 4, lineHeight: 16, minHeight: 32 },
   productSubDark: { color: '#CBD5E1' },
+  productFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 10,
+    marginBottom: 8,
+  },
+  productPrice: { color: '#152238', fontSize: 15, fontWeight: '900' },
+  productPriceDark: { color: '#F8FAFC' },
+  pointsPill: {
+    backgroundColor: 'rgba(255,255,255,0.92)',
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderWidth: 1,
+  },
+  pointsPillFloating: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    zIndex: 2,
+  },
+  pointsPillText: { fontSize: 10.5, fontWeight: '800' },
+  productScanBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 5,
+    borderRadius: 12,
+    paddingVertical: 9,
+  },
+  productScanBtnText: { fontSize: 11.5, fontWeight: '800' },
   activityCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 22,
@@ -1114,4 +1392,28 @@ const styles = StyleSheet.create({
   activityTitleDark: { color: '#F8FAFC' },
   activityCopy: { color: '#70819C', fontSize: 12.5, lineHeight: 19, marginTop: 8 },
   activityCopyDark: { color: '#CBD5E1' },
+});
+
+const homeCatStyles = StyleSheet.create({
+  card: {
+    borderRadius: 18,
+    overflow: 'hidden',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E6ECF5',
+    shadowColor: '#1A3C8F',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.10,
+    shadowRadius: 14,
+    elevation: 5,
+  },
+  cardDark: { backgroundColor: '#111827', borderColor: '#1E293B' },
+  imgZone: { height: 150, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  accentLine: { height: 3, width: '100%' },
+  infoZone: { padding: 10, backgroundColor: '#FFFFFF' },
+  infoZoneDark: { backgroundColor: '#111827' },
+  label: { fontSize: 12, fontWeight: '800', color: '#152238', lineHeight: 16, marginBottom: 6 },
+  labelDark: { color: '#F1F5F9' },
+  pill: { alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
+  pillText: { fontSize: 10, fontWeight: '700' },
 });

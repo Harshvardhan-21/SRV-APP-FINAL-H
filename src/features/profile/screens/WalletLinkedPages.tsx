@@ -3,13 +3,14 @@ import { BankDetailsPage } from './BankDetailsScreen';
 import { PartnerCommissionPage } from './PartnerCommissionScreen';
 import { PreferenceContext, type AppLanguage, usePreferenceValue } from '@/shared/preferences';
 import { TransferPointsPage } from './TransferPointsScreen';
-import type { Screen } from '@/shared/types/navigation';
+import type { Screen, UserRole } from '@/shared/types/navigation';
 
 type WalletPreferenceProps = {
   language: AppLanguage;
   onLanguageChange: (language: AppLanguage) => void;
   darkMode: boolean;
   onDarkModeChange: (enabled: boolean) => void;
+  currentRole: UserRole;
 };
 
 export function WalletBankDetailsScreen({
@@ -18,12 +19,14 @@ export function WalletBankDetailsScreen({
   onLanguageChange,
   darkMode,
   onDarkModeChange,
+  currentRole,
 }: { onBack: () => void } & WalletPreferenceProps) {
   const preferenceValue = usePreferenceValue({
     language,
     setLanguage: onLanguageChange,
     darkMode,
     setDarkMode: onDarkModeChange,
+    currentRole,
   });
 
   return (
@@ -39,12 +42,14 @@ export function WalletDealerBonusScreen({
   onLanguageChange,
   darkMode,
   onDarkModeChange,
+  currentRole,
 }: { onBack: () => void } & WalletPreferenceProps) {
   const preferenceValue = usePreferenceValue({
     language,
     setLanguage: onLanguageChange,
     darkMode,
     setDarkMode: onDarkModeChange,
+    currentRole,
   });
 
   return (
@@ -61,6 +66,7 @@ export function WalletTransferPointsScreen({
   onLanguageChange,
   darkMode,
   onDarkModeChange,
+  currentRole,
 }: {
   onBack: () => void;
   onNavigate: (screen: Screen) => void;
@@ -70,6 +76,7 @@ export function WalletTransferPointsScreen({
     setLanguage: onLanguageChange,
     darkMode,
     setDarkMode: onDarkModeChange,
+    currentRole,
   });
 
   return (

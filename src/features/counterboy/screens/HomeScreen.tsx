@@ -11,15 +11,22 @@ import { useAuth } from '@/shared/context/AuthContext';
 import { usePreferenceContext } from '@/shared/preferences';
 import { createShadow } from '@/shared/theme/shadows';
 import { BannerCarousel } from '@/shared/components/BannerCarousel';
+import {
+  TESTIMONIAL_FALLBACK_COPY,
+  getTestimonialTheme,
+  TestimonialShowcase,
+  type TestimonialItem,
+} from '@/shared/components/TestimonialShowcase';
 import { WebsitePromoSection } from '@/shared/components/WebsitePromoSection';
 import ProfileFlipCard from '@/shared/components/ProfileFlipCard';
 import type { Screen } from '@/shared/types/navigation';
 import { useCatalogDownload } from '@/shared/hooks';
+import { counterboyTheme as cb } from '@/features/counterboy/theme';
 
-const CB_PRIMARY = '#E8453C';
-const CB_DARK    = '#B91C1C';
-const CB_LIGHT   = '#FFF5F5';
-const CB_SOFT    = '#FFE4E4';
+const CB_PRIMARY = cb.primary;
+const CB_DARK = cb.primaryDeep;
+const CB_LIGHT = cb.bg;
+const CB_SOFT = cb.soft;
 
 const logoImage = require('../../../../assets/srv logo white.jpeg');
 
@@ -109,11 +116,12 @@ export function HomeScreen({
 }) {
   const { darkMode, tx } = usePreferenceContext();
   const { user: authUser } = useAuth();
-  const { banners: ctxBanners, appSettings } = useAppData();
+  const { banners: ctxBanners, testimonials: ctxTestimonials, appSettings } = useAppData();
   const { openCatalog, downloading } = useCatalogDownload();
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const [apiBannerSlides, setApiBannerSlides] = useState<any[]>([]);
+  const [testimonials, setTestimonials] = useState<TestimonialItem[]>([]);
   const [supportWhatsapp, setSupportWhatsapp] = useState('918837684004');
   const heroImageHeight = Math.round((width - 28) * 0.56);
 
@@ -134,37 +142,63 @@ export function HomeScreen({
     if (appSettings?.whatsappNumber) setSupportWhatsapp(appSettings.whatsappNumber);
   }, [appSettings]);
 
+  useEffect(() => {
+    if (ctxTestimonials.length > 0) {
+      setTestimonials(
+        ctxTestimonials.map((t, index) => {
+          const themed = getTestimonialTheme(index);
+          const fallback = TESTIMONIAL_FALLBACK_COPY[index % TESTIMONIAL_FALLBACK_COPY.length];
+          return {
+            initials: t.initials ?? t.personName.slice(0, 2).toUpperCase() ?? fallback.initials,
+            name: t.personName || fallback.name,
+            location: t.location || fallback.location,
+            tier: t.tier || fallback.tier,
+            yearsWithUs:
+              t.yearsConnected != null
+                ? `Connected for ${t.yearsConnected} year${t.yearsConnected !== 1 ? 's' : ''}`
+                : fallback.yearsWithUs,
+            quote: t.quote?.trim() || fallback.quote,
+            highlight: t.highlight?.trim() || fallback.highlight,
+            colors: themed.colors,
+            ring: themed.ring,
+            glow: themed.glow,
+          };
+        })
+      );
+      return;
+    }
+
+    setTestimonials(
+      TESTIMONIAL_FALLBACK_COPY.map((item, index) => {
+        const themed = getTestimonialTheme(index);
+        return { ...item, colors: themed.colors, ring: themed.ring, glow: themed.glow };
+      })
+    );
+  }, [ctxTestimonials]);
+
   const quickActions = [
-    {
-      title: tx('Scan Product'),
-      sub: tx('Scan & earn points'),
-      icon: ScanIcon,
-      iconColors: ['#FFE4E4', '#FFCECE'] as const,
-      iconTint: CB_PRIMARY,
-      onPress: () => onNavigate('scan'),
-    },
     {
       title: tx('Products'),
       sub: tx('Browse catalog'),
       icon: ProductIcon,
-      iconColors: ['#FFF0EE', '#FFE0DC'] as const,
-      iconTint: CB_DARK,
+      iconColors: [cb.soft, cb.peachSoft] as const,
+      iconTint: cb.primary,
       onPress: () => onNavigate('product'),
     },
     {
       title: tx('Product Catalog'),
       sub: tx('Download PDF for latest updated prices'),
       icon: DownloadIcon,
-      iconColors: ['#DBEAFE', '#BFDBFE'] as const,
-      iconTint: '#1D4ED8',
+      iconColors: [cb.blushSoft, cb.soft] as const,
+      iconTint: cb.primaryDeep,
       onPress: () => openCatalog(appSettings?.catalogPdfUrl),
     },
     {
       title: tx('WhatsApp'),
-      sub: tx('Support'),
+      sub: tx('Chat with us'),
       icon: WhatsAppIcon,
-      iconColors: ['#E8FFF1', '#C6F3D8'] as const,
-      iconTint: '#1A8F58',
+      iconColors: [cb.successSoft, '#CDE7DB'] as const,
+      iconTint: cb.success,
       onPress: () => Linking.openURL(`https://wa.me/${supportWhatsapp}?text=Hello%20SRV%20Team`),
     },
   ];
@@ -178,7 +212,7 @@ export function HomeScreen({
     >
       {/* Hero */}
       <LinearGradient
-        colors={darkMode ? ['#1A0000', '#2D0A0A', '#3D1010'] : ['#FFF5F5', '#FFE4E4', '#FFF0EE']}
+        colors={darkMode ? cb.heroDark : cb.heroLight}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={[styles.heroShell, { marginTop: -insets.top, paddingTop: 26 + insets.top }]}
@@ -188,15 +222,19 @@ export function HomeScreen({
 
         {/* Top row */}
         <View style={styles.topRow}>
-          <View style={[styles.logoWrap, darkMode ? styles.logoWrapDark : null]}>
-            <Image source={logoImage} style={styles.logoImage} resizeMode="contain" />
+          <View style={styles.brandBlock}>
+            <View style={[styles.logoWrap, darkMode ? styles.logoWrapDark : null]}>
+              <Image source={logoImage} style={styles.logoImage} resizeMode="contain" />
+            </View>
           </View>
           <TouchableOpacity
             onPress={() => onNavigate('notification')}
             style={[styles.topActionBtn, darkMode ? styles.topActionBtnDark : null]}
             activeOpacity={0.85}
           >
-            <BellIcon color={darkMode ? '#FF8080' : CB_PRIMARY} />
+            <View style={[styles.topIconCore, styles.notificationCore, darkMode ? styles.notificationCoreDark : null]}>
+              <BellIcon color={darkMode ? '#FDBA74' : '#C2410C'} />
+            </View>
             {hasUnreadNotif && <View style={styles.redDot} />}
           </TouchableOpacity>
         </View>
@@ -252,94 +290,53 @@ export function HomeScreen({
           })}
         </View>
 
-        {/* Products CTA */}
-        <TouchableOpacity
-          style={[styles.productsCta, darkMode ? styles.productsCtaDark : null]}
-          onPress={() => onNavigate('product')}
-          activeOpacity={0.9}
-        >
-          <LinearGradient
-            colors={[CB_PRIMARY, CB_DARK]}
-            start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-            style={styles.productsCtaGradient}
-          >
-            <View>
-              <Text style={styles.productsCtaEyebrow}>{tx('SRV Catalog')}</Text>
-              <Text style={styles.productsCtaTitle}>{tx('Browse All Products')}</Text>
-              <Text style={styles.productsCtaSub}>{tx('Electrical goods, boxes, fans & more')}</Text>
-            </View>
-            <ChevronRight color="#FFFFFF" size={20} />
-          </LinearGradient>
-        </TouchableOpacity>
+        <TestimonialShowcase
+          eyebrow={tx('Electrician Testimonials')}
+          title={tx('What Members Say')}
+          subtitle={tx('Trusted feedback from the SRV network')}
+          items={testimonials}
+          darkMode={darkMode}
+        />
 
         <WebsitePromoSection darkMode={darkMode} />
-
-        <View style={[styles.activityCard, darkMode ? styles.activityCardDark : null]}>
-          <Text style={[styles.activityTitle, darkMode ? styles.activityTitleDark : null]}>{tx('Counter Boy Network')}</Text>
-          <Text style={[styles.activityCopy, darkMode ? styles.activityCopyDark : null]}>
-            {tx('You are part of the SRV counter boy network. Scan products, earn points, and grow with every sale.')}
-          </Text>
-          <TouchableOpacity
-            style={styles.activityBtn}
-            onPress={() => onNavigate('scan')}
-            activeOpacity={0.9}
-          >
-            <Text style={styles.activityBtnText}>{tx('Start Scanning')}</Text>
-            <ChevronRight color="#FFFFFF" size={14} />
-          </TouchableOpacity>
-        </View>
       </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#FFF5F5' },
-  screenDark: { backgroundColor: '#0F0000' },
+  screen: { flex: 1, backgroundColor: '#EEF3F8' },
+  screenDark: { backgroundColor: cb.darkBg },
   heroShell: {
     paddingHorizontal: 14,
     paddingBottom: 12,
     overflow: 'hidden',
     ...createShadow({ color: CB_PRIMARY, offsetY: 8, blur: 20, opacity: 0.12, elevation: 6 }),
   },
-  heroGlowOne: { position: 'absolute', width: 200, height: 200, borderRadius: 100, backgroundColor: 'rgba(232,69,60,0.08)', top: -60, right: -40 },
-  heroGlowTwo: { position: 'absolute', width: 140, height: 140, borderRadius: 70, backgroundColor: 'rgba(232,69,60,0.06)', bottom: -30, left: -20 },
+  heroGlowOne: { position: 'absolute', width: 200, height: 200, borderRadius: 100, backgroundColor: 'rgba(232,69,60,0.18)', top: -60, right: -40 },
+  heroGlowTwo: { position: 'absolute', width: 140, height: 140, borderRadius: 70, backgroundColor: 'rgba(255,107,107,0.18)', bottom: -30, left: -20 },
   topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
+  brandBlock: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   logoWrap: { width: 48, height: 48, borderRadius: 14, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', ...createShadow({ color: CB_PRIMARY, offsetY: 2, blur: 8, opacity: 0.12, elevation: 3 }) },
-  logoWrapDark: { backgroundColor: '#1A0000' },
+  logoWrapDark: { backgroundColor: cb.darkSurface },
   logoImage: { width: 48, height: 48 },
   topActionBtn: { width: 44, height: 44, borderRadius: 14, backgroundColor: CB_LIGHT, alignItems: 'center', justifyContent: 'center', ...createShadow({ color: CB_PRIMARY, offsetY: 2, blur: 6, opacity: 0.1, elevation: 2 }) },
-  topActionBtnDark: { backgroundColor: '#2D0A0A' },
+  topActionBtnDark: { backgroundColor: cb.darkSurface },
+  topIconCore: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+  notificationCore: { backgroundColor: '#FFEDD5' },
+  notificationCoreDark: { backgroundColor: 'rgba(194,65,12,0.18)' },
   redDot: { position: 'absolute', top: 8, right: 8, width: 8, height: 8, borderRadius: 4, backgroundColor: CB_PRIMARY, borderWidth: 1.5, borderColor: '#FFFFFF' },
   heroBannerWrap: { marginTop: 8, marginBottom: 4 },
   body: { paddingHorizontal: 14, paddingTop: 18, paddingBottom: 120 },
   quickGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 22 },
   quickCard: {
-    borderRadius: 20, backgroundColor: '#FFFFFF', padding: 14, borderWidth: 1, borderColor: '#FFE4E4',
+    borderRadius: 20, backgroundColor: '#FFFFFF', padding: 14,
     ...createShadow({ color: CB_PRIMARY, offsetY: 4, blur: 10, opacity: 0.07, elevation: 3 }),
   },
-  quickCardDark: { backgroundColor: '#1A0000', borderColor: '#3D1010' },
+  quickCardDark: { backgroundColor: cb.darkSurface, borderColor: cb.darkBorder },
   quickIconBox: { width: 48, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
-  quickTitle: { fontSize: 13, fontWeight: '800', color: '#1F0000' },
-  quickTitleDark: { color: '#F8FAFC' },
-  quickSub: { marginTop: 3, fontSize: 11, color: '#9B6060' },
-  quickSubDark: { color: '#94A3B8' },
-  productsCta: { borderRadius: 24, overflow: 'hidden', ...createShadow({ color: CB_PRIMARY, offsetY: 6, blur: 14, opacity: 0.2, elevation: 6 }) },
-  productsCtaDark: {},
-  productsCtaGradient: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 20, borderRadius: 24 },
-  productsCtaEyebrow: { fontSize: 10, fontWeight: '800', color: 'rgba(255,255,255,0.75)', textTransform: 'uppercase', letterSpacing: 1 },
-  productsCtaTitle: { marginTop: 4, fontSize: 20, fontWeight: '900', color: '#FFFFFF' },
-  productsCtaSub: { marginTop: 4, fontSize: 12, color: 'rgba(255,255,255,0.84)' },
-  activityCard: { borderRadius: 24, backgroundColor: '#FFFFFF', padding: 18, borderWidth: 1, borderColor: '#FFE4E4', ...createShadow({ color: CB_PRIMARY, offsetY: 4, blur: 10, opacity: 0.07, elevation: 3 }) },
-  activityCardDark: { backgroundColor: '#1A0000', borderColor: '#3D1010' },
-  activityTitle: { fontSize: 18, fontWeight: '900', color: '#1F0000' },
-  activityTitleDark: { color: '#F8FAFC' },
-  activityCopy: { marginTop: 8, fontSize: 13, color: '#7A4040', lineHeight: 20 },
-  activityCopyDark: { color: '#94A3B8' },
-  activityBtn: {
-    marginTop: 14, flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start',
-    backgroundColor: CB_PRIMARY, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 14,
-    ...createShadow({ color: CB_PRIMARY, offsetY: 4, blur: 8, opacity: 0.3, elevation: 4 }),
-  },
-  activityBtnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '800' },
+  quickTitle: { fontSize: 13, fontWeight: '800', color: cb.text },
+  quickTitleDark: { color: cb.darkText },
+  quickSub: { marginTop: 3, fontSize: 11, color: cb.muted },
+  quickSubDark: { color: cb.darkMuted },
 });

@@ -1,11 +1,11 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { AppState } from 'react-native';
+import { API_BASE_URL } from '../api/config';
 import {
   authApi,
   bannersApi,
   catalogApi,
   electriciansApi,
-  festivalApi,
   giftStoreApi,
   notificationsApi,
   offersApi,
@@ -20,7 +20,6 @@ import {
   supportApi,
   testimonialsApi,
   walletApi,
-  type ActiveFestival,
   type AppNotification,
   type AppSettings,
   type Banner,
@@ -44,7 +43,7 @@ import { storage } from '../api/storage';
 import { useAuth } from './AuthContext';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Context type — mirrors SRV-APP AppDataContext exactly
+// Context type
 // ─────────────────────────────────────────────────────────────────────────────
 type AppDataContextType = {
   loading: boolean;
@@ -84,8 +83,6 @@ type AppDataContextType = {
   referral: { code: string; link: string | null; channels: string[] } | null;
   // Reward schemes
   rewardSchemes: RewardScheme[];
-  // Festival
-  festival: ActiveFestival | null;
 
   // Actions
   refreshAll: () => Promise<void>;
@@ -126,7 +123,6 @@ const defaultCtx: AppDataContextType = {
   userQrCode: null,
   referral: null,
   rewardSchemes: [],
-  festival: null,
   refreshAll: async () => {},
   submitScan: async () => { throw new Error('not ready'); },
   addElectrician: async () => {},
@@ -146,7 +142,7 @@ const defaultCtx: AppDataContextType = {
 const AppDataContext = createContext<AppDataContextType>(defaultCtx);
 
 export function AppDataProvider({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, user, role, refreshProfile } = useAuth();
+  const { isAuthenticated, user, role, refreshProfile, logout } = useAuth();
   const appStateRef = useRef(AppState.currentState);
 
   const [loading, setLoading] = useState(false);
@@ -168,77 +164,213 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   const [userQrCode, setUserQrCode] = useState<UserQrCode | null>(null);
   const [referral, setReferral] = useState<{ code: string; link: string | null; channels: string[] } | null>(null);
   const [rewardSchemes, setRewardSchemes] = useState<RewardScheme[]>([]);
-  const [festival, setFestival] = useState<ActiveFestival | null>(null);
 
   // ── Public data (no auth needed) ─────────────────────────────────────────
   const loadPublicData = async () => {
-    const [prods, cats, bans, tests, setts, fest, offs, schemes, gifts] = await Promise.all([
-      productsApi.getAll().catch(() => ({ data: [] as Product[] })),
-      catalogApi.getCategories().catch(() => ({ data: [] as ProductCategory[] })),
-      bannersApi.getAll(role ?? undefined).catch(() => ({ data: [] as Banner[] })),
-      testimonialsApi.getAll().catch(() => ({ data: [] as Testimonial[] })),
-      settingsApi.getAppSettings().catch(() => null),
-      festivalApi.getTheme().catch(() => null),
-      offersApi.getAll(role ?? undefined).catch(() => ({ data: [] as Offer[] })),
-      rewardSchemesApi.getAll().catch(() => ({ data: [] as RewardScheme[] })),
-      giftStoreApi.getProducts(role ?? undefined).catch(() => ({ data: [] as GiftProduct[] })),
-    ]);
-    setProducts(prods.data ?? []);
-    setCategories(cats.data ?? []);
-    setBanners(bans.data ?? []);
-    setTestimonials(tests.data ?? []);
-    if (setts) setAppSettings(setts);
-    if (fest) setFestival(fest);
-    setOffers(offs.data ?? []);
-    setRewardSchemes(schemes.data ?? []);
-    setGiftProducts(gifts.data ?? []);
-    setCatalogLoading(false);
+    console.log('🔄 Loading public data...');
+    try {
+      const [prods, cats, roleBans, tests, setts, offs, schemes, gifts] = await Promise.all([
+        productsApi.getAll().catch((err) => {
+          console.error('❌ Products API failed:', err.message);
+          return { data: [] as Product[] };
+        }),
+        catalogApi.getCategories().catch((err) => {
+          console.error('❌ Categories API failed:', err.message);
+          return { data: [] as ProductCategory[] };
+        }),
+        bannersApi.getAll(role ?? undefined).catch((err) => {
+          console.error('❌ Banners API failed:', err.message);
+          return { data: [] as Banner[] };
+        }),
+        testimonialsApi.getAll().catch((err) => {
+          console.error('❌ Testimonials API failed:', err.message);
+          return { data: [] as Testimonial[] };
+        }),
+        settingsApi.getAppSettings().catch((err) => {
+          console.error('❌ Settings API failed:', err.message);
+          return null;
+        }),
+        offersApi.getAll(role ?? undefined).catch((err) => {
+          console.error('❌ Offers API failed:', err.message);
+          return { data: [] as Offer[] };
+        }),
+        rewardSchemesApi.getAll().catch((err) => {
+          console.error('❌ Reward Schemes API failed:', err.message);
+          return { data: [] as RewardScheme[] };
+        }),
+        giftStoreApi.getProducts(role ?? undefined).catch((err) => {
+          console.error('❌ Gift Store API failed:', err.message);
+          return { data: [] as GiftProduct[] };
+        }),
+      ]);
+
+      let bans = roleBans;
+
+      console.log('✅ Public data loaded:', {
+        products: prods.data?.length || 0,
+        categories: cats.data?.length || 0,
+        banners: bans.data?.length || 0,
+        testimonials: tests.data?.length || 0,
+        offers: offs.data?.length || 0,
+        rewardSchemes: schemes.data?.length || 0,
+        giftProducts: gifts.data?.length || 0,
+        appSettings: !!setts,
+      });
+
+      if ((bans.data?.length ?? 0) === 0 && role) {
+        console.log('No role-specific banners found, retrying without role filter');
+        bans = await bannersApi.getAll().catch((err) => {
+          console.error('Banner fallback API failed:', err.message);
+          return { data: [] as Banner[] };
+        });
+      }
+
+      setProducts(prods.data ?? []);
+      setCategories(cats.data ?? []);
+      setBanners(bans.data ?? []);
+      setTestimonials(tests.data ?? []);
+      if (setts) setAppSettings(setts);
+      setOffers(offs.data ?? []);
+      setRewardSchemes(schemes.data ?? []);
+      setGiftProducts(gifts.data ?? []);
+      setCatalogLoading(false);
+    } catch (error) {
+      console.error('❌ Public data loading failed:', error);
+      setCatalogLoading(false);
+    }
   };
 
   // ── Private data (auth required) ─────────────────────────────────────────
+  const handleSessionExpired = async () => {
+    console.log('🔐 Session expired — logging out');
+    await storage.clearAll();
+    await logout();
+  };
+
   const loadPrivateData = async () => {
-    if (!isAuthenticated) return;
-
-    const [prof, wal, scans, notifs, reds] = await Promise.all([
-      profileApi.get().catch(() => null),
-      walletApi.get().catch(() => null),
-      scanApi.getHistory().catch(() => null),
-      notificationsApi.getAll(role ?? undefined, user?.id).catch(() => ({ data: [] as AppNotification[] })),
-      redemptionsApi.getHistory().catch(() => ({ data: [] as RedemptionRecord[], total: 0, page: 1, totalPages: 1 })),
-    ]);
-
-    if (prof) {
-      setProfile(prof);
-      await storage.setUserProfile(prof);
+    if (!isAuthenticated) {
+      console.log('⚠️ User not authenticated, skipping private data');
+      return;
     }
-    if (wal) setWallet(wal);
-    if (scans) setScanHistory(scans);
-    setNotifications(notifs.data ?? []);
-    setRedemptions(reds.data ?? []);
 
-    // Dealer-specific
-    if (role === 'dealer') {
-      const [elecs, bonus] = await Promise.all([
-        electriciansApi.getAll().catch(() => null),
-        walletApi.getDealerBonus().catch(() => null),
+    console.log('🔄 Loading private data for user:', user?.id, 'role:', role);
+    try {
+      const [prof, wal, scans, notifs, reds] = await Promise.all([
+        profileApi.get().catch((err) => {
+          console.error('❌ Profile API failed:', err.message);
+          if (err.message === 'SESSION_EXPIRED') void handleSessionExpired();
+          return null;
+        }),
+        walletApi.get().catch((err) => {
+          console.error('❌ Wallet API failed:', err.message);
+          if (err.message === 'SESSION_EXPIRED') void handleSessionExpired();
+          return null;
+        }),
+        scanApi.getHistory().catch((err) => {
+          console.error('❌ Scan History API failed:', err.message);
+          if (err.message === 'SESSION_EXPIRED') void handleSessionExpired();
+          return null;
+        }),
+        notificationsApi.getAll(role ?? undefined, user?.id).catch((err) => {
+          console.error('❌ Notifications API failed:', err.message);
+          if (err.message === 'SESSION_EXPIRED') void handleSessionExpired();
+          return { data: [] as AppNotification[] };
+        }),
+        redemptionsApi.getHistory().catch((err) => {
+          console.error('❌ Redemptions API failed:', err.message);
+          if (err.message === 'SESSION_EXPIRED') void handleSessionExpired();
+          return { data: [] as RedemptionRecord[], total: 0, page: 1, totalPages: 1 };
+        }),
       ]);
-      if (elecs) setElectricians(elecs);
-      if (bonus) setDealerBonus(bonus);
+
+      console.log('✅ Private data loaded:', {
+        profile: !!prof,
+        wallet: !!wal,
+        scanHistory: !!scans,
+        notifications: notifs.data?.length || 0,
+        redemptions: reds.data?.length || 0,
+      });
+
+      if (prof) {
+        setProfile(prof);
+        await storage.setUserProfile(prof);
+      }
+      if (wal) setWallet(wal);
+      if (scans) setScanHistory(scans);
+      setNotifications(notifs.data ?? []);
+      setRedemptions(reds.data ?? []);
+
+      // Dealer-specific
+      if (role === 'dealer') {
+        console.log('🔄 Loading dealer-specific data...');
+        const [elecs, bonus] = await Promise.all([
+          electriciansApi.getAll().catch((err) => {
+            console.error('❌ Electricians API failed:', err.message);
+            if (err.message === 'SESSION_EXPIRED') void handleSessionExpired();
+            return null;
+          }),
+          walletApi.getDealerBonus().catch((err) => {
+            console.error('❌ Dealer Bonus API failed:', err.message);
+            if (err.message === 'SESSION_EXPIRED') void handleSessionExpired();
+            return null;
+          }),
+        ]);
+        console.log('✅ Dealer data loaded:', {
+          electricians: !!elecs,
+          dealerBonus: !!bonus,
+        });
+        if (elecs) setElectricians(elecs);
+        if (bonus) setDealerBonus(bonus);
+      }
+
+      // QR code
+      const qr = await profileApi.getQrCode().catch((err) => {
+        console.error('❌ QR Code API failed:', err.message);
+        if (err.message === 'SESSION_EXPIRED') void handleSessionExpired();
+        return null;
+      });
+      if (qr) setUserQrCode(qr);
+
+      // Referral
+      const ref = await referralApi.get().catch((err) => {
+        console.error('❌ Referral API failed:', err.message);
+        if (err.message === 'SESSION_EXPIRED') void handleSessionExpired();
+        return null;
+      });
+      if (ref) setReferral(ref);
+    } catch (error) {
+      console.error('❌ Private data loading failed:', error);
     }
-
-    // QR code
-    const qr = await profileApi.getQrCode().catch(() => null);
-    if (qr) setUserQrCode(qr);
-
-    // Referral
-    const ref = await referralApi.get().catch(() => null);
-    if (ref) setReferral(ref);
   };
 
   const refreshAll = async () => {
     setLoading(true);
+    console.log('🔄 Starting data refresh...');
+    console.log('🔧 Using API URL:', API_BASE_URL);
+
+    // Test basic connectivity first
+    try {
+      const healthUrl = `${API_BASE_URL.replace('/api/v1', '')}/health`;
+      console.log('🏥 Testing health endpoint:', healthUrl);
+      const testResponse = await fetch(healthUrl, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      console.log('✅ Health check response:', testResponse.status, testResponse.statusText);
+      if (testResponse.ok) {
+        const healthData = await testResponse.json();
+        console.log('📊 Health data:', healthData);
+      }
+    } catch (healthError: any) {
+      console.error('❌ Health check failed:', healthError.message);
+      console.log('🔍 Backend might not be running at:', API_BASE_URL);
+    }
+
     try {
       await Promise.all([loadPublicData(), loadPrivateData()]);
+      console.log('✅ Data refresh completed successfully');
+    } catch (error) {
+      console.error('❌ Data refresh failed:', error);
     } finally {
       setLoading(false);
     }
@@ -256,7 +388,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     });
     const interval = setInterval(() => {
       if (AppState.currentState === 'active') void refreshAll();
-    }, 30000); // 30s polling keeps admin-side content changes visible without being too aggressive.
+    }, 30000);
     return () => { sub.remove(); clearInterval(interval); };
   }, [isAuthenticated, user?.id]);
 
@@ -330,7 +462,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     loading, profile, wallet, walletSummary: wallet, scanHistory, notifications, offers,
     products, catalogProducts: products, categories, catalogLoading, banners, giftProducts,
     testimonials, electricians, redemptions, appSettings, dealerBonus, userQrCode, referral,
-    rewardSchemes, festival,
+    rewardSchemes,
     refreshAll, submitScan, addElectrician, updateProfile, uploadProfilePhoto,
     removeProfilePhoto, updatePreferences, saveBankAccount, redeemReward,
     transferPoints, requestDealerBonusWithdrawal, submitSupportTicket,
@@ -338,7 +470,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   }), [
     loading, profile, wallet, scanHistory, notifications, offers, products, categories,
     catalogLoading, banners, giftProducts, testimonials, electricians, redemptions, appSettings,
-    dealerBonus, userQrCode, referral, rewardSchemes, festival,
+    dealerBonus, userQrCode, referral, rewardSchemes,
   ]);
 
   return <AppDataContext.Provider value={value}>{children}</AppDataContext.Provider>;

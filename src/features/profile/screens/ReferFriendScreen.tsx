@@ -111,8 +111,8 @@ export function ReferFriendPage({ onBack }: { onBack: () => void }) {
               <AppIcon
                 name={icon as IconName}
                 size={24}
-                color={label === 'WhatsApp' ? '#16A34A' : C.primary}
-              />
+                  color={label === 'WhatsApp' ? '#16A34A' : C.primary}
+                />
             </TouchableOpacity>
           ))}
         </View>
@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
     paddingLeft: 16,
     paddingRight: 6,
     paddingVertical: 6,
-    backgroundColor: '#F8FBFF',
+    backgroundColor: '#F5F7FA',
   },
   linkValue: { flex: 1, fontSize: 12, fontWeight: '700', marginRight: 10 },
   copyBtn: {

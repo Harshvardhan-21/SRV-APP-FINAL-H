@@ -7,9 +7,10 @@ import { usePreferenceContext } from '@/shared/preferences';
 import { createShadow } from '@/shared/theme/shadows';
 import type { Screen } from '@/shared/types/navigation';
 import { useResponsive } from '@/shared/hooks';
+import { counterboyTheme as cb } from '@/features/counterboy/theme';
 
 const CB_PRIMARY = '#E8453C';
-const CB_DARK    = '#B91C1C';
+const CB_DARK = '#991B1B';
 
 type NavControlConfig = {
   id: Screen;
@@ -56,110 +57,11 @@ function ProfileIcon({ color, size = 24 }: { color: string; size?: number }) {
   );
 }
 
-function ScanQRIcon() {
-  return (
-    <Svg width={28} height={28} viewBox="0 0 24 24" fill="none">
-      <Rect x="3" y="3" width="7" height="7" rx="1.5" stroke="white" strokeWidth={2} />
-      <Rect x="5.5" y="5.5" width="2" height="2" fill="white" />
-      <Rect x="14" y="3" width="7" height="7" rx="1.5" stroke="white" strokeWidth={2} />
-      <Rect x="16.5" y="5.5" width="2" height="2" fill="white" />
-      <Rect x="3" y="14" width="7" height="7" rx="1.5" stroke="white" strokeWidth={2} />
-      <Rect x="5.5" y="16.5" width="2" height="2" fill="white" />
-      <Rect x="14" y="14" width="3" height="3" rx={0.6} fill="white" />
-      <Rect x="18" y="14" width="3" height="3" rx={0.6} fill="white" />
-      <Rect x="14" y="18" width="3" height="3" rx={0.6} fill="white" />
-      <Rect x="18" y="18" width="3" height="3" rx={0.6} fill="white" />
-    </Svg>
-  );
-}
-
-function ScanButton({ isActive, onPress, compact = false }: { isActive: boolean; onPress: () => void; compact?: boolean }) {
-  const { tx } = usePreferenceContext();
-  const ring1Scale = useRef(new Animated.Value(1)).current;
-  const ring1Opacity = useRef(new Animated.Value(0.5)).current;
-  const ring2Scale = useRef(new Animated.Value(1)).current;
-  const ring2Opacity = useRef(new Animated.Value(0.3)).current;
-  const btnScale = useRef(new Animated.Value(1)).current;
-
-  const btnSize = compact ? 48 : 60;
-  const ringSize = compact ? 48 : 60;
-  const ringTop = compact ? -16 : -22;
-
-  useEffect(() => {
-    const makeRingAnim = (scale: Animated.Value, opacity: Animated.Value, delay: number) =>
-      Animated.loop(
-        Animated.sequence([
-          Animated.delay(delay),
-          Animated.parallel([
-            Animated.timing(scale, withWebSafeNativeDriver({ toValue: 1.4, duration: 900, easing: Easing.out(Easing.ease) })),
-            Animated.timing(opacity, withWebSafeNativeDriver({ toValue: 0, duration: 900 })),
-          ]),
-          Animated.parallel([
-            Animated.timing(scale, withWebSafeNativeDriver({ toValue: 1, duration: 0 })),
-            Animated.timing(opacity, withWebSafeNativeDriver({ toValue: 0.5, duration: 0 })),
-          ]),
-          Animated.delay(200),
-        ])
-      );
-    makeRingAnim(ring1Scale, ring1Opacity, 0).start();
-    makeRingAnim(ring2Scale, ring2Opacity, 450).start();
-  }, [ring1Opacity, ring1Scale, ring2Opacity, ring2Scale]);
-
-  const handlePress = () => {
-    Animated.sequence([
-      Animated.timing(btnScale, withWebSafeNativeDriver({ toValue: 0.87, duration: 80 })),
-      Animated.spring(btnScale, withWebSafeNativeDriver({ toValue: 1, tension: 200, friction: 7 })),
-    ]).start();
-    onPress();
-  };
-
-  return (
-    <View style={[scanStyles.wrapper, compact && scanStyles.wrapperCompact]}>
-      <Animated.View style={[scanStyles.ring, compact && scanStyles.ringCompact, { transform: [{ scale: ring1Scale }], opacity: ring1Opacity, top: ringTop, width: ringSize, height: ringSize }]} />
-      <Animated.View style={[scanStyles.ring, compact && scanStyles.ringCompact, { transform: [{ scale: ring2Scale }], opacity: ring2Opacity, top: ringTop, width: ringSize, height: ringSize }]} />
-      <Pressable
-        onPress={handlePress}
-        testID="counterboy-bottom-nav-scan"
-        accessible
-        accessibilityRole="button"
-        accessibilityLabel="Counter boy bottom navigation scan"
-        accessibilityState={{ selected: isActive }}
-        style={[scanStyles.pressArea, compact && scanStyles.pressAreaCompact, { marginTop: compact ? -14 : -20 }]}
-      >
-        <Animated.View style={[scanStyles.btn, compact && scanStyles.btnCompact, { transform: [{ scale: btnScale }], width: btnSize, height: btnSize }]}>
-          <ScanQRIcon />
-        </Animated.View>
-      </Pressable>
-      <Text style={[scanStyles.label, isActive && scanStyles.labelActive, compact && scanStyles.labelCompact]}>
-        {tx('SCAN')}
-      </Text>
-    </View>
-  );
-}
-
-const scanStyles = StyleSheet.create({
-  wrapper: { alignItems: 'center', width: 72 },
-  wrapperCompact: { width: 60 },
-  ring: { position: 'absolute', top: -22, width: 60, height: 60, borderRadius: 18, backgroundColor: CB_PRIMARY, zIndex: 0 },
-  ringCompact: { borderRadius: 14 },
-  pressArea: { marginTop: -20, marginBottom: 5, zIndex: 1 },
-  pressAreaCompact: { marginBottom: 3 },
-  btn: {
-    width: 60, height: 60, borderRadius: 18, backgroundColor: CB_PRIMARY,
-    alignItems: 'center', justifyContent: 'center',
-    ...createShadow({ color: CB_PRIMARY, offsetY: 5, blur: 12, opacity: 0.5, elevation: 12 }),
-  },
-  btnCompact: { borderRadius: 14, ...createShadow({ color: CB_PRIMARY, offsetY: 5, blur: 8, opacity: 0.5, elevation: 12 }) },
-  label: { fontSize: 10, fontWeight: '800', color: '#9E9189', letterSpacing: 0.5, marginTop: 1 },
-  labelActive: { color: CB_PRIMARY },
-  labelCompact: { fontSize: 8 },
-});
-
 function NavTab({ id, label, active, onPress, testID, accessibilityLabel, compact = false }: {
   id: Screen; label: string; active: boolean; onPress: () => void;
   testID: string; accessibilityLabel: string; compact?: boolean;
 }) {
-  const iconColor = active ? CB_PRIMARY : '#A89A91';
+  const iconColor = active ? CB_PRIMARY : cb.muted;
   const tabScale = useRef(new Animated.Value(1)).current;
 
   const handlePress = () => {
@@ -212,19 +114,10 @@ export function BottomNav({ currentScreen, onNavigate }: { currentScreen: Screen
 
   return (
     <View style={[styles.wrap, darkMode ? styles.wrapDark : null, { paddingBottom: bottomPad, paddingTop: topPad, paddingHorizontal: wp(8), minHeight: isShortDevice ? 52 : 54 }]}>
-      <View style={styles.side}>
-        {LEFT.map((item) => (
-          <NavTab key={item.id} id={item.id} label={tx(item.label)} active={currentScreen === item.id}
-            onPress={() => onNavigate(item.id)} testID={item.testID} accessibilityLabel={item.accessibilityLabel} compact={isShortDevice} />
-        ))}
-      </View>
-      <ScanButton isActive={currentScreen === 'scan'} onPress={() => onNavigate('scan')} compact={isShortDevice} />
-      <View style={styles.side}>
-        {RIGHT.map((item) => (
-          <NavTab key={item.id} id={item.id} label={tx(item.label)} active={currentScreen === item.id}
-            onPress={() => onNavigate(item.id)} testID={item.testID} accessibilityLabel={item.accessibilityLabel} compact={isShortDevice} />
-        ))}
-      </View>
+      {[...LEFT, ...RIGHT].map((item) => (
+        <NavTab key={item.id} id={item.id} label={tx(item.label)} active={currentScreen === item.id}
+          onPress={() => onNavigate(item.id)} testID={item.testID} accessibilityLabel={item.accessibilityLabel} compact={isShortDevice} />
+      ))}
     </View>
   );
 }
@@ -232,16 +125,15 @@ export function BottomNav({ currentScreen, onNavigate }: { currentScreen: Screen
 const styles = StyleSheet.create({
   wrap: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    backgroundColor: '#FFFDFC', borderTopWidth: 1, borderTopColor: '#FFE4E4',
+    backgroundColor: '#FFFDFC', borderTopWidth: 1, borderTopColor: cb.border,
     ...createShadow({ color: CB_PRIMARY, offsetY: -4, blur: 14, opacity: 0.08, elevation: 12 }),
   },
-  wrapDark: { backgroundColor: '#0F172A', borderTopColor: '#2D1515', ...createShadow({ color: '#020617', offsetY: -4, blur: 14, opacity: 0.08, elevation: 12 }) },
-  side: { flex: 1, flexDirection: 'row', justifyContent: 'space-around' },
+  wrapDark: { backgroundColor: cb.darkBg, borderTopColor: cb.darkBorder, ...createShadow({ color: '#020617', offsetY: -4, blur: 14, opacity: 0.08, elevation: 12 }) },
   tab: { flex: 1, alignItems: 'center', justifyContent: 'center', minWidth: 50 },
   tabCompact: { minWidth: 44 },
   iconWrap: { width: 24, height: 24, alignItems: 'center', justifyContent: 'center' },
   iconWrapCompact: { width: 20, height: 20 },
-  label: { fontSize: 9, fontWeight: '600', color: '#A89A91', marginTop: 2 },
+  label: { fontSize: 9, fontWeight: '600', color: cb.muted, marginTop: 2 },
   labelCompact: { fontSize: 8, marginTop: 1 },
   labelActive: { color: CB_PRIMARY, fontWeight: '800' },
 });

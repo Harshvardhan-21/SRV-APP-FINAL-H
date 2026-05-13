@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path, Rect, Circle } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { withWebSafeNativeDriver } from '@/shared/animations/nativeDriver';
@@ -8,7 +9,10 @@ import { createShadow } from '@/shared/theme/shadows';
 import type { Screen } from '@/shared/types/navigation';
 import { useResponsive } from '@/shared/hooks';
 
-const PURPLE = '#6B7C2D';
+// Customer theme colors matching Customer_Slide
+const BROWN_PRIMARY = '#6A2F12';
+const BROWN_SECONDARY = '#8D4A1E';
+const BROWN_LIGHT = '#FBF1E7';
 
 type NavControlConfig = {
   id: Screen;
@@ -99,14 +103,103 @@ function ProfileIcon({ color, size = 24 }: { color: string; size?: number }) {
   );
 }
 
-function CategoriesIcon() {
+function CategoriesIcon({ size = 32, compact = false }: { size?: number; compact?: boolean }) {
+  const lidAngle  = useRef(new Animated.Value(0)).current;
+  const floatY    = useRef(new Animated.Value(0)).current;
+  const floatO    = useRef(new Animated.Value(0)).current;
+  const starScale = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const sequence = Animated.loop(
+      Animated.sequence([
+        Animated.delay(600),
+        Animated.timing(lidAngle, withWebSafeNativeDriver({ toValue: 1, duration: 400, easing: Easing.out(Easing.cubic) })),
+        Animated.parallel([
+          Animated.timing(floatY,    withWebSafeNativeDriver({ toValue: 0, duration: 0 })),
+          Animated.timing(floatO,    withWebSafeNativeDriver({ toValue: 0, duration: 0 })),
+          Animated.timing(starScale, withWebSafeNativeDriver({ toValue: 0, duration: 0 })),
+        ]),
+        Animated.parallel([
+          Animated.spring(starScale, withWebSafeNativeDriver({ toValue: 1, tension: 180, friction: 6 })),
+          Animated.timing(floatO,    withWebSafeNativeDriver({ toValue: 1, duration: 200 })),
+          Animated.timing(floatY,    withWebSafeNativeDriver({ toValue: -8, duration: 700, easing: Easing.out(Easing.cubic) })),
+        ]),
+        Animated.timing(floatY, withWebSafeNativeDriver({ toValue: -10, duration: 350, easing: Easing.inOut(Easing.sin) })),
+        Animated.timing(floatY, withWebSafeNativeDriver({ toValue: -8,  duration: 350, easing: Easing.inOut(Easing.sin) })),
+        Animated.parallel([
+          Animated.timing(floatO,    withWebSafeNativeDriver({ toValue: 0, duration: 300 })),
+          Animated.timing(starScale, withWebSafeNativeDriver({ toValue: 0, duration: 250 })),
+          Animated.timing(lidAngle,  withWebSafeNativeDriver({ toValue: 0, duration: 400, easing: Easing.in(Easing.cubic) })),
+        ]),
+        Animated.delay(400),
+      ])
+    );
+    sequence.start();
+    return () => sequence.stop();
+  }, [lidAngle, floatY, floatO, starScale]);
+
+  const lidLeftOpacity  = lidAngle.interpolate({ inputRange: [0, 1], outputRange: [0.7,  0.25] });
+  const lidRightOpacity = lidAngle.interpolate({ inputRange: [0, 1], outputRange: [0.85, 0.35] });
+  const lidLeftY        = lidAngle.interpolate({ inputRange: [0, 1], outputRange: [0, -5] });
+  const lidRightY       = lidAngle.interpolate({ inputRange: [0, 1], outputRange: [0, -5] });
+
+  const s = size;
+
   return (
-    <Svg width={28} height={28} viewBox="0 0 24 24" fill="none">
-      <Rect x="3" y="3" width="8" height="8" rx="2" fill="white" />
-      <Rect x="13" y="3" width="8" height="8" rx="2" fill="white" />
-      <Rect x="3" y="13" width="8" height="8" rx="2" fill="white" />
-      <Rect x="13" y="13" width="8" height="8" rx="2" fill="white" />
-    </Svg>
+    <View style={{ width: s, height: s + 6, alignItems: 'center', justifyContent: 'center' }}>
+
+      {/* Star popping out */}
+      <Animated.View style={{
+        position: 'absolute', top: 2, alignItems: 'center',
+        opacity: floatO,
+        transform: [{ translateY: floatY }, { scale: starScale }],
+      }}>
+        <Svg width={s * 0.38} height={s * 0.38} viewBox="0 0 20 20" fill="none">
+          <Path
+            d="M10 1L12.5 7.5L19.5 7.5L14 12L16 19L10 15L4 19L6 12L0.5 7.5L7.5 7.5Z"
+            fill="rgba(255,255,255,0.95)"
+            stroke="rgba(255,255,255,0.5)"
+            strokeWidth={0.6}
+            strokeLinejoin="round"
+          />
+        </Svg>
+      </Animated.View>
+
+      {/* Main box body */}
+      <Svg width={s * 1.05} height={s * 1.05} viewBox="0 0 30 30" fill="none"
+        style={{ position: 'absolute', bottom: -4 }}>
+        <Path d="M3 13V22L13 27.5V18.5L3 13Z"
+          fill="rgba(255,255,255,0.25)" stroke="rgba(255,255,255,0.9)" strokeWidth={1.2} strokeLinejoin="round" />
+        <Path d="M27 13V22L17 27.5V18.5L27 13Z"
+          fill="rgba(255,255,255,0.45)" stroke="rgba(255,255,255,0.9)" strokeWidth={1.2} strokeLinejoin="round" />
+        <Path d="M13 27.5L17 27.5" stroke="rgba(255,255,255,0.9)" strokeWidth={1.2} strokeLinecap="round" />
+        <Path d="M3 13L15 7L27 13" stroke="white" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" />
+        <Path d="M15 13V18.5" stroke="rgba(255,255,255,0.6)" strokeWidth={1} strokeLinecap="round" />
+      </Svg>
+
+      {/* Left lid */}
+      <Animated.View style={{
+        position: 'absolute', bottom: -4, width: s * 1.05, height: s * 1.05,
+        opacity: lidLeftOpacity, transform: [{ translateY: lidLeftY }],
+      }}>
+        <Svg width={s * 1.05} height={s * 1.05} viewBox="0 0 30 30" fill="none">
+          <Path d="M3 13L13 8.5L15 13L3 17.5Z"
+            fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.9)" strokeWidth={1.2} strokeLinejoin="round" />
+        </Svg>
+      </Animated.View>
+
+      {/* Right lid */}
+      <Animated.View style={{
+        position: 'absolute', bottom: -4, width: s * 1.05, height: s * 1.05,
+        opacity: lidRightOpacity, transform: [{ translateY: lidRightY }],
+      }}>
+        <Svg width={s * 1.05} height={s * 1.05} viewBox="0 0 30 30" fill="none">
+          <Path d="M27 13L17 8.5L15 13L27 17.5Z"
+            fill="rgba(255,255,255,0.35)" stroke="rgba(255,255,255,0.9)" strokeWidth={1.2} strokeLinejoin="round" />
+        </Svg>
+      </Animated.View>
+
+    </View>
   );
 }
 
@@ -173,13 +266,26 @@ function CategoriesButton({
         accessibilityState={{ selected: isActive }}
         style={[catStyles.pressArea, compact && catStyles.pressAreaCompact, { marginTop: compact ? -14 : -20 }]}
       >
-        <Animated.View style={[catStyles.btn, compact && catStyles.btnCompact, { transform: [{ scale: btnScale }], width: btnSize, height: btnSize }]}>
-          <CategoriesIcon />
+        <Animated.View
+          style={[
+            catStyles.btnWrap,
+            compact && catStyles.btnWrapCompact,
+            { transform: [{ scale: btnScale }], width: btnSize, height: btnSize },
+          ]}
+        >
+          <LinearGradient
+            colors={[BROWN_PRIMARY, BROWN_SECONDARY, '#A65D2E']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={[catStyles.btn, compact && catStyles.btnCompact, { width: btnSize, height: btnSize }]}
+          >
+            <CategoriesIcon size={compact ? 26 : 30} compact={compact} />
+          </LinearGradient>
         </Animated.View>
       </Pressable>
 
       <Text style={[catStyles.label, isActive && catStyles.labelActive, compact && catStyles.labelCompact]}>
-        {tx('Categories')}
+        {tx('Products')}
       </Text>
     </View>
   );
@@ -194,7 +300,7 @@ const catStyles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 18,
-    backgroundColor: PURPLE,
+    backgroundColor: BROWN_SECONDARY,
     zIndex: 0,
   },
   ringCompact: { borderRadius: 14 },
@@ -204,17 +310,18 @@ const catStyles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 18,
-    backgroundColor: PURPLE,
     alignItems: 'center',
     justifyContent: 'center',
-    ...createShadow({ color: PURPLE, offsetY: 5, blur: 12, opacity: 0.5, elevation: 12 }),
+    ...createShadow({ color: BROWN_PRIMARY, offsetY: 5, blur: 12, opacity: 0.5, elevation: 12 }),
   },
+  btnWrap: { borderRadius: 18 },
+  btnWrapCompact: { borderRadius: 14 },
   btnCompact: {
     borderRadius: 14,
-    ...createShadow({ color: PURPLE, offsetY: 5, blur: 8, opacity: 0.5, elevation: 12 }),
+    ...createShadow({ color: BROWN_PRIMARY, offsetY: 5, blur: 8, opacity: 0.5, elevation: 12 }),
   },
   label: { fontSize: 10, fontWeight: '800', color: '#9E9189', letterSpacing: 0.5, marginTop: 1 },
-  labelActive: { color: PURPLE },
+  labelActive: { color: BROWN_PRIMARY },
   labelCompact: { fontSize: 8 },
 });
 
@@ -224,7 +331,7 @@ function NavTab({
   id: Screen; label: string; active: boolean; onPress: () => void;
   testID: string; accessibilityLabel: string; compact?: boolean;
 }) {
-  const iconColor = active ? PURPLE : '#A89A91';
+  const iconColor = active ? BROWN_PRIMARY : '#8F8A79';
   const tabScale = useRef(new Animated.Value(1)).current;
 
   const handlePress = () => {
@@ -256,7 +363,14 @@ function NavTab({
       accessibilityState={{ selected: active }}
       style={[styles.tab, compact && styles.tabCompact]}
     >
-      <Animated.View style={[styles.iconWrap, compact && styles.iconWrapCompact, { transform: [{ scale: tabScale }] }]}>
+      <Animated.View
+        style={[
+          styles.iconWrap,
+          active && styles.iconWrapActive,
+          compact && styles.iconWrapCompact,
+          { transform: [{ scale: tabScale }] },
+        ]}
+      >
         {renderIcon()}
       </Animated.View>
       <Text style={[styles.label, active && styles.labelActive, compact && styles.labelCompact]}>
@@ -290,7 +404,16 @@ export function BottomNav({
   const topPad = isShortDevice ? 6 : 10;
 
   return (
-    <View style={[styles.wrap, darkMode ? styles.wrapDark : null, { paddingBottom: bottomPad, paddingTop: topPad, paddingHorizontal: wp(8), minHeight: isShortDevice ? 52 : 54 }]}>
+    <LinearGradient
+      colors={darkMode ? ['#0F172A', '#111827', '#0F172A'] : ['#FBF1E7', '#F5E8DC', '#F0DEC9']}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={[
+        styles.wrap,
+        darkMode ? styles.wrapDark : null,
+        { paddingBottom: bottomPad, paddingTop: topPad, paddingHorizontal: wp(8), minHeight: isShortDevice ? 52 : 54 },
+      ]}
+    >
       <View style={styles.side}>
         {LEFT.map((item) => (
           <NavTab
@@ -326,7 +449,7 @@ export function BottomNav({
           />
         ))}
       </View>
-    </View>
+    </LinearGradient>
   );
 }
 
@@ -335,10 +458,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#FFFDFC',
     borderTopWidth: 1,
-    borderTopColor: '#EEEEF3',
-    ...createShadow({ color: '#6F4C3A', offsetY: -4, blur: 14, opacity: 0.08, elevation: 12 }),
+    borderTopColor: '#E5D4C1',
+    ...createShadow({ color: BROWN_PRIMARY, offsetY: -4, blur: 14, opacity: 0.15, elevation: 12 }),
   },
   wrapDark: {
     backgroundColor: '#0F172A',
@@ -348,10 +470,15 @@ const styles = StyleSheet.create({
   side: { flex: 1, flexDirection: 'row', justifyContent: 'space-around' },
   tab: { flex: 1, alignItems: 'center', justifyContent: 'center', minWidth: 50 },
   tabCompact: { minWidth: 44 },
-  iconWrap: { width: 24, height: 24, alignItems: 'center', justifyContent: 'center' },
+  iconWrap: { width: 24, height: 24, alignItems: 'center', justifyContent: 'center', borderRadius: 12 },
+  iconWrapActive: {
+    width: 34,
+    height: 34,
+    backgroundColor: 'rgba(240,222,201,0.85)',
+  },
   iconWrapCompact: { width: 20, height: 20 },
-  label: { fontSize: 9, fontWeight: '600', color: '#A89A91', marginTop: 2 },
+  label: { fontSize: 9, fontWeight: '600', color: '#8F8A79', marginTop: 2 },
   labelCompact: { fontSize: 8, marginTop: 1 },
-  labelActive: { color: PURPLE, fontWeight: '800' },
+  labelActive: { color: BROWN_PRIMARY, fontWeight: '800' },
 });
 

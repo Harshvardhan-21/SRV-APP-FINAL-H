@@ -74,7 +74,7 @@ export function NotificationsPage({ onBack }: { onBack: () => void }) {
       <PageHeader title={t('notification')} onBack={onBack} />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {loading ? (
-          <ActivityIndicator color={C.primary} style={{ marginTop: 32 }} />
+          <ActivityIndicator color={theme.accent} style={{ marginTop: 32 }} />
         ) : notifData.length === 0 ? (
           <View style={[styles.emptyCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
             <Text style={[styles.emptyText, { color: theme.textMuted }]}>
@@ -111,7 +111,7 @@ export function NotificationsPage({ onBack }: { onBack: () => void }) {
               <View style={styles.metaColumn}>
                 <Text style={[styles.meta, { color: theme.textMuted }]}>{n.time}</Text>
                 {deletingId === n.id ? (
-                  <ActivityIndicator color={C.primary} size="small" style={{ marginTop: 4 }} />
+                  <ActivityIndicator color={theme.accent} size="small" style={{ marginTop: 4 }} />
                 ) : (
                   <TouchableOpacity
                     onPress={() => handleDelete(n.id)}

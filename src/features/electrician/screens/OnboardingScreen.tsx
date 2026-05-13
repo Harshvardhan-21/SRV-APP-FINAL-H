@@ -45,8 +45,8 @@ type LoginMethod = 'otp' | 'password' | null;
 
 const C = {
   bg: '#EEF3F8',
-  heroA: '#EAF3FF',
-  heroB: '#DDEEFF',
+  heroA: '#EEF3F8',
+  heroB: '#EAF3FF',
   heroC: '#F6EEFF',
   white: '#FFFFFF',
   line: '#E6ECF5',
@@ -61,12 +61,12 @@ const C = {
   successSoft: '#EAF8EF',
   error: '#D64B4B',
   errorSoft: '#FFF3F3',
-  warning: '#B45309',
-  warningSoft: '#FEF3C7',
+  warning: '#173E80',
+  warningSoft: '#EAF3FF',
   warmA: '#F97316',
   warmB: '#EF4444',
-  accentA: '#0EA5E9',
-  accentB: '#8B5CF6',
+  accentA: '#173E80',
+  accentB: '#355C95',
 };
 
 const roleMeta = {
@@ -163,13 +163,19 @@ function useReveal() {
   };
 }
 
-function Info({ text, kind }: { text: string; kind: 'error' | 'success' | 'warning' }) {
+function Info({ text, kind }: { text: string; kind: 'error' | 'success' | 'warning' | 'hint' }) {
   const { tx } = usePreferenceContext();
   return (
     <View
       style={[
         s.info,
-        kind === 'error' ? s.infoError : kind === 'warning' ? s.infoWarning : s.infoSuccess,
+        kind === 'error'
+          ? s.infoError
+          : kind === 'warning'
+            ? s.infoWarning
+            : kind === 'hint'
+              ? s.infoHint
+              : s.infoSuccess,
       ]}
     >
       <Text
@@ -179,7 +185,9 @@ function Info({ text, kind }: { text: string; kind: 'error' | 'success' | 'warni
             ? s.infoErrorText
             : kind === 'warning'
               ? s.infoWarningText
-              : s.infoSuccessText,
+              : kind === 'hint'
+                ? s.infoHintText
+                : s.infoSuccessText,
         ]}
       >
         {tx(text)}
@@ -491,10 +499,11 @@ function Field({
   const { tx } = usePreferenceContext();
   const hasAction = Boolean(actionLabel || actionContent);
   const isWideAction = actionLabel === 'Current Address';
+  const isHintMessage = Boolean(error?.startsWith('Dev OTP:'));
   return (
     <View style={s.group}>
       <Text style={s.label}>{tx(label)}</Text>
-      <View style={[s.shell, error ? s.shellError : null]}>
+      <View style={[s.shell, error ? (isHintMessage ? s.shellHint : s.shellError) : null]}>
         {prefix ? (
           <View style={s.prefixWrap}>
             <Text style={s.prefix}>{prefix}</Text>
@@ -546,7 +555,7 @@ function Field({
           </Pressable>
         ) : null}
       </View>
-      {error ? <Info text={error} kind="error" /> : null}
+      {error ? <Info text={error} kind={isHintMessage ? 'hint' : 'error'} /> : null}
     </View>
   );
 }
@@ -568,11 +577,19 @@ function Button({
   shadowColor?: string;
   testID?: string;
 }) {
-  const { tx } = usePreferenceContext();
+  const { tx, theme } = usePreferenceContext();
+  const rolePrimaryColors: [string, string] =
+    theme.role === 'dealer'
+      ? ['#173E80', '#355C95']
+      : theme.role === 'counterboy'
+        ? ['#E8453C', '#FF6B6B']
+        : [C.warmB, C.warmA];
+  const rolePrimaryShadow =
+    theme.role === 'dealer' ? '#173E80' : theme.role === 'counterboy' ? '#E8453C' : '#F97316';
   const shadowStyle = disabled
     ? clearShadow()
     : createShadow({
-        color: shadowColor ?? (secondary ? '#0EA5E9' : '#F97316'),
+        color: shadowColor ?? (secondary ? '#0EA5E9' : rolePrimaryShadow),
         offsetY: 8,
         blur: 16,
         opacity: secondary ? 0.14 : 0.18,
@@ -589,7 +606,7 @@ function Button({
               ? colors
               : secondary
                 ? [C.accentA, C.accentB]
-                : [C.warmB, C.warmA]
+                : rolePrimaryColors
         }
         start={{ x: 0, y: 0.5 }}
         end={{ x: 1, y: 0.5 }}
@@ -732,6 +749,7 @@ export function OnboardingScreen({
   const [phase, setPhase] = useState<IntroStep>(resolvedInitialPhase);
   const [mode, setMode] = useState<AuthMode>(initialMode);
   const [role, setRole] = useState<UserRole>(fixedRole ?? 'electrician');
+  const directAuthEntry = Boolean(fixedRole && resolvedInitialPhase === 'auth');
   const [authSelectionOpen, setAuthSelectionOpen] = useState(resolvedInitialPhase === 'auth');
   const [electricianLoginMethod, setElectricianLoginMethod] = useState<LoginMethod>(null);
   const [dealerLoginMethod, setDealerLoginMethod] = useState<LoginMethod>(null);
@@ -766,6 +784,7 @@ export function OnboardingScreen({
   const [signupStep, setSignupStep] = useState<SignupStep>('name');
   const [dealerVerified, setDealerVerified] = useState(false);
   const [verifiedDealerName, setVerifiedDealerName] = useState('');
+  const [verifiedDealerCode, setVerifiedDealerCode] = useState('');
   const [locationLoading, setLocationLoading] = useState(false);
   const [locationMessage, setLocationMessage] = useState('');
   const [showAddressModal, setShowAddressModal] = useState(false);
@@ -773,8 +792,8 @@ export function OnboardingScreen({
   const isCompactPhone = width <= 360 || height <= 760;
   const authBackgroundColors: [string, string, string] =
     role === 'dealer'
-      ? ['#F6F1EA', '#F2ECE4', '#FBF8F3']
-      : ['#F3F6FB', '#EEF3FA', '#FAFCFF'];
+      ? ['#E8F1FF', '#F4F8FF', '#EAF3FF']
+      : ['#E5EEFF', '#F4F8FF', '#EAF2FF'];
 
   useEffect(() => {
     const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
@@ -1124,6 +1143,7 @@ export function OnboardingScreen({
     setSignupStep('name');
     setDealerVerified(false);
     setVerifiedDealerName('');
+    setVerifiedDealerCode('');
     setLocationLoading(false);
     setLocationMessage('');
   };
@@ -1231,6 +1251,13 @@ export function OnboardingScreen({
           return loginPhone.length === 10 && loginStep === 'password' && loginPass.length >= 8;
         return false;
       }
+      if (role === 'counterboy') {
+        if (dealerLoginMethod === 'otp')
+          return loginPhone.length === 10 && loginOtp.length === 4 && loginOtpVerified;
+        if (dealerLoginMethod === 'password')
+          return loginPhone.length === 10 && loginStep === 'password' && loginPass.length >= 8;
+        return false;
+      }
       return loginPhone.length === 10 && loginOtp.length === 4 && loginPass.length >= 8;
     }
     if (role === 'dealer') {
@@ -1306,6 +1333,18 @@ export function OnboardingScreen({
           setError('loginPass');
         }
         if (!dealerLoginMethod) return setError('loginMode', 'Please choose a login option.');
+      } else if (role === 'counterboy') {
+        if (dealerLoginMethod === 'otp') {
+          if (!loginOtpVerified)
+            return setError('loginOtp', 'Please verify the OTP before logging in.');
+          setError('loginOtp');
+        }
+        if (dealerLoginMethod === 'password') {
+          if (loginPass.length < 8)
+            return setError('loginPass', 'Password must be at least 8 characters long.');
+          setError('loginPass');
+        }
+        if (!dealerLoginMethod) return setError('loginMode', 'Please choose a login option.');
       }
     }
     if (mode === 'signup' && role === 'dealer') {
@@ -1338,7 +1377,7 @@ export function OnboardingScreen({
       const passwordConfigured =
         mode === 'signup'
           ? signupPass.length >= 8
-          : role === 'dealer'
+          : role === 'dealer' || role === 'counterboy'
             ? true
             : electricianLoginMethod === 'password'
               ? true
@@ -1361,7 +1400,7 @@ export function OnboardingScreen({
       if (mode === 'login') {
         if (
           (role === 'electrician' && electricianLoginMethod === 'password') ||
-          (role === 'dealer' && dealerLoginMethod === 'password')
+          ((role === 'dealer' || role === 'counterboy') && dealerLoginMethod === 'password')
         ) {
           const res = await authApi.loginWithPassword(loginPhone, role, loginPass);
           finishLogin(res.user);
@@ -1408,7 +1447,7 @@ export function OnboardingScreen({
       if (mode === 'login') {
         if (
           (role === 'electrician' && electricianLoginMethod === 'password') ||
-          (role === 'dealer' && dealerLoginMethod === 'password')
+          ((role === 'dealer' || role === 'counterboy') && dealerLoginMethod === 'password')
         ) {
           setError('loginPass', message);
         } else {
@@ -1432,7 +1471,7 @@ export function OnboardingScreen({
       return setError('loginPhone', 'Please enter a valid 10-digit mobile number.');
     setError('loginPhone');
 
-    const doSendOtp = (userRole: 'electrician' | 'dealer') => {
+    const doSendOtp = (userRole: 'electrician' | 'dealer' | 'counterboy') => {
       setLoading(true);
       authApi.sendOtp(loginPhone, userRole)
         .then((res) => {
@@ -1476,6 +1515,19 @@ export function OnboardingScreen({
       }
       return;
     }
+    if (role === 'counterboy') {
+      if (!dealerLoginMethod) return setError('loginMode', 'Please choose a login option.');
+      setError('loginMode');
+      setLoginOtp('');
+      setLoginPass('');
+      setLoginOtpVerified(false);
+      if (dealerLoginMethod === 'otp') {
+        doSendOtp('counterboy');
+      } else {
+        setLoginStep('password');
+      }
+      return;
+    }
     setLoginStep('otp');
   };
 
@@ -1511,6 +1563,7 @@ export function OnboardingScreen({
       .then((dealer) => {
         setDealerVerified(true);
         setVerifiedDealerName(dealer.name);
+        setVerifiedDealerCode(dealer.dealerCode ?? '');
       })
       .catch(() => {
         setError('signupDealerPhone', 'Dealer not found. Please check the number and try again.');
@@ -1649,9 +1702,28 @@ export function OnboardingScreen({
         colors={phase === 'auth' ? authBackgroundColors : [C.heroA, C.heroB, C.heroC]}
         style={s.bg}
       >
-        {phase === 'auth' ? null : <View style={s.glow1} />}
-        {phase === 'auth' ? null : <View style={s.glow2} />}
-        {phase === 'auth' ? null : <View style={s.glow3} />}
+        {phase === 'auth' ? (
+          <>
+            <View
+              style={[
+                s.authGlow,
+                role === 'electrician' ? s.authGlowElectricianTop : s.authGlowDealerTop,
+              ]}
+            />
+            <View
+              style={[
+                s.authGlow,
+                role === 'electrician' ? s.authGlowElectricianBottom : s.authGlowDealerBottom,
+              ]}
+            />
+          </>
+        ) : (
+          <>
+            <View style={s.glow1} />
+            <View style={s.glow2} />
+            <View style={s.glow3} />
+          </>
+        )}
         <KeyboardAvoidingView
           style={s.kav}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -1742,7 +1814,7 @@ export function OnboardingScreen({
                       colors={
                         phase === 'auth'
                           ? role === 'dealer'
-                            ? ['#F5EBDC', '#FCF6ED']
+                            ? ['#EAF3FF', '#F7FBFF']
                             : ['#E9EFFA', '#F7FAFF']
                           : ['rgba(14,165,233,0.12)', 'rgba(139,92,246,0.12)']
                       }
@@ -1914,21 +1986,96 @@ export function OnboardingScreen({
                   </View>
                 ) : (
                   <View style={[s.card, s.authCard, role === 'electrician' ? s.authCardElectrician : s.authCardDealer]}>
-                    <Text style={s.sectionEyebrow}>{tx('Authentication')}</Text>
-                    <Text style={s.sectionTitle}>
-                      {mode === 'login' ? tx('Welcome back') : tx('Create your account')}
-                    </Text>
-                    <Tabs
-                      mode={mode}
-                      role={role}
-                      onChange={(next) => {
-                        dismissKeyboard();
-                        resetForm();
-                        setMode(next);
-                        setPhase('auth');
-                        setAuthSelectionOpen(true);
-                      }}
-                    />
+                    {role === 'electrician' ? (
+                      <LinearGradient
+                        colors={['#173E80', '#285AB3', '#78AFFF']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={[s.authHeaderPanel, s.authHeaderPanelElectrician]}
+                      >
+                        <Text style={[s.sectionEyebrow, s.sectionEyebrowElectrician]}>
+                          {mode === 'login' ? tx('Authentication') : tx('Create Account')}
+                        </Text>
+                        <Text style={[s.sectionTitleAuth, s.sectionTitleAuthElectrician]}>
+                          {mode === 'login'
+                            ? tx('Electrician Login')
+                            : tx('Create Electrician Account')}
+                        </Text>
+                        <Text style={[s.sectionTextAuth, s.sectionTextAuthElectrician]}>
+                          {mode === 'login'
+                            ? tx('Choose a secure login method and continue with your account.')
+                            : tx('Complete the account setup flow and create your electrician profile.')}
+                        </Text>
+                      </LinearGradient>
+                    ) : role === 'dealer' ? (
+                      <LinearGradient
+                        colors={['#173E80', '#355C95', '#88AEEA']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={[s.authHeaderPanel, s.authHeaderPanelDealer]}
+                      >
+                        <Text style={[s.sectionEyebrow, s.sectionEyebrowElectrician]}>
+                          {mode === 'login' ? tx('Authentication') : tx('Create Account')}
+                        </Text>
+                        <Text style={[s.sectionTitleAuth, s.sectionTitleAuthElectrician]}>
+                          {mode === 'login' ? tx('Dealer Login') : tx('Create Dealer Account')}
+                        </Text>
+                        <Text style={[s.sectionTextAuth, s.sectionTextAuthElectrician]}>
+                          {mode === 'login'
+                            ? tx('Choose a secure login method and continue with your dealer account.')
+                            : tx('Complete the account setup flow and create your dealer profile.')}
+                        </Text>
+                      </LinearGradient>
+                    ) : (
+                      <View style={s.authHeaderPanel}>
+                        <Text style={s.sectionEyebrow}>{mode === 'login' ? tx('Authentication') : tx('Create Account')}</Text>
+                        <Text style={s.sectionTitleAuth}>
+                          {mode === 'login' ? tx('Welcome back') : tx('Create your account')}
+                        </Text>
+                        <Text style={s.sectionTextAuth}>
+                          {mode === 'login'
+                            ? tx('Choose a secure login method and continue with your account.')
+                            : tx('Complete the account setup flow and create your profile.')}
+                        </Text>
+                      </View>
+                    )}
+                    {directAuthEntry ? (
+                      <View
+                        style={[
+                          s.entryPill,
+                          role === 'electrician'
+                            ? s.entryPillElectrician
+                            : role === 'dealer'
+                              ? s.entryPillDealer
+                              : null,
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            s.entryPillText,
+                            role === 'electrician'
+                              ? s.entryPillTextElectrician
+                              : role === 'dealer'
+                                ? s.entryPillTextDealer
+                                : null,
+                          ]}
+                        >
+                          {mode === 'login' ? tx('Login flow selected') : tx('Create account flow selected')}
+                        </Text>
+                      </View>
+                    ) : (
+                      <Tabs
+                        mode={mode}
+                        role={role}
+                        onChange={(next) => {
+                          dismissKeyboard();
+                          resetForm();
+                          setMode(next);
+                          setPhase('auth');
+                          setAuthSelectionOpen(true);
+                        }}
+                      />
+                    )}
 
                     {!authSelectionOpen ? null : mode === 'login' ? (
                       <View style={s.form}>
@@ -2065,7 +2212,8 @@ export function OnboardingScreen({
                                     onPress={verifyLoginOtp}
                                     disabled={loginOtp.length !== 4}
                                     testID="onboarding-login-verify-otp"
-                                    secondary
+                                    colors={['#173E80', '#355C95']}
+                                    shadowColor="#173E80"
                                   />
                                 ) : null}
                                 {electricianLoginMethod === 'otp' && loginOtpVerified ? (
@@ -2077,6 +2225,8 @@ export function OnboardingScreen({
                                     onPress={submitAuth}
                                     disabled={!canContinue || loading}
                                     testID="onboarding-login-submit"
+                                    colors={['#173E80', '#355C95']}
+                                    shadowColor="#173E80"
                                   />
                                 ) : null}
                                 {electricianLoginMethod === 'password' &&
@@ -2100,6 +2250,8 @@ export function OnboardingScreen({
                                     label={loading ? tx('Logging In...') : tx('Login')}
                                     onPress={submitAuth}
                                     disabled={!canContinue || loading}
+                                    colors={['#173E80', '#355C95']}
+                                    shadowColor="#173E80"
                                   />
                                 ) : null}
                               </>
@@ -2743,6 +2895,7 @@ export function OnboardingScreen({
                                   handlePhone(setSignupDealerPhone)(value);
                                   setDealerVerified(false);
                                   setVerifiedDealerName('');
+                                  setVerifiedDealerCode('');
                                   setError('signupDealerPhone');
                                 }}
                                 placeholder={tx('Enter dealer mobile number')}
@@ -2763,10 +2916,24 @@ export function OnboardingScreen({
                               />
                             ) : null}
                             {signupStep === 'dealer' && dealerVerified ? (
-                              <Info
-                                text={`${verifiedDealerName} ${tx('verification successfully done.')}`}
-                                kind="success"
-                              />
+                              <>
+                                <Info
+                                  text={`${verifiedDealerName} ${tx('verification successfully done.')}`}
+                                  kind="success"
+                                />
+                                <View style={s.verifiedDealerCard}>
+                                  <View style={s.verifiedDealerCardMain}>
+                                    <Text style={s.verifiedDealerCardLabel}>{tx('Dealer Name')}</Text>
+                                    <Text style={s.verifiedDealerCardValue}>{verifiedDealerName}</Text>
+                                  </View>
+                                  {verifiedDealerCode ? (
+                                    <View style={s.verifiedDealerCodeChip}>
+                                      <Text style={s.verifiedDealerCodeLabel}>{tx('Dealer Code')}</Text>
+                                      <Text style={s.verifiedDealerCodeValue}>{verifiedDealerCode}</Text>
+                                    </View>
+                                  ) : null}
+                                </View>
+                              </>
                             ) : null}
                             {dealerVerified && signupStep === 'dealer' ? (
                               <Button
@@ -2888,6 +3055,8 @@ export function OnboardingScreen({
                                     submitAuth();
                                   }}
                                   disabled={!canContinue || loading}
+                                  colors={['#173E80', '#355C95']}
+                                  shadowColor="#173E80"
                                 />
                               </>
                             ) : null}
@@ -3141,7 +3310,7 @@ const s = StyleSheet.create({
     borderColor: '#BFDBFE',
   },
   welcomeBadgeFillDealer: {
-    borderColor: '#FCD34D',
+    borderColor: '#BFDBFE',
   },
   eyebrow: {
     color: C.muted2,
@@ -3155,7 +3324,7 @@ const s = StyleSheet.create({
   bigTitleLanguage: { fontSize: 27, letterSpacing: -0.3 },
   bigTitleNeutral: { color: C.title },
   bigTitleElectrician: { color: '#274C77' },
-  bigTitleDealer: { color: '#7A4B22' },
+  bigTitleDealer: { color: '#173E80' },
   subtext: {
     color: C.muted,
     fontSize: 13.5,
@@ -3193,8 +3362,15 @@ const s = StyleSheet.create({
     letterSpacing: 1.1,
     marginBottom: 6,
   },
+  sectionEyebrowElectrician: {
+    color: 'rgba(236,244,255,0.84)',
+  },
   sectionTitle: { color: C.title, fontSize: 13, fontWeight: '900', marginBottom: 6 },
   sectionText: { color: C.muted, fontSize: 12, lineHeight: 18 },
+  sectionTitleAuth: { color: C.title, fontSize: 20, fontWeight: '900', marginBottom: 6, letterSpacing: -0.3 },
+  sectionTitleAuthElectrician: { color: '#FFFFFF' },
+  sectionTextAuth: { color: C.muted2, fontSize: 12.5, lineHeight: 18, marginBottom: 0 },
+  sectionTextAuthElectrician: { color: 'rgba(239,246,255,0.88)' },
   languageOptionList: { marginTop: 12, marginBottom: 10 },
   languageOptionCard: {
     flexDirection: 'row',
@@ -3265,67 +3441,146 @@ const s = StyleSheet.create({
   roleSubtitleCompact: { fontSize: 11, lineHeight: 16 },
   roleSubtitleDefault: { color: C.muted2 },
   roleSubtitleActive: { color: C.muted2 },
+  authGlow: {
+    position: 'absolute',
+    borderRadius: 999,
+    opacity: 0.9,
+  },
+  authGlowElectricianTop: {
+    top: 108,
+    right: -36,
+    width: 190,
+    height: 190,
+    backgroundColor: 'rgba(87,142,255,0.18)',
+  },
+  authGlowElectricianBottom: {
+    bottom: 108,
+    left: -48,
+    width: 220,
+    height: 220,
+    backgroundColor: 'rgba(23,62,128,0.1)',
+  },
+  authGlowDealerTop: {
+    top: 100,
+    right: -42,
+    width: 190,
+    height: 190,
+    backgroundColor: 'rgba(83,139,233,0.18)',
+  },
+  authGlowDealerBottom: {
+    bottom: 108,
+    left: -44,
+    width: 220,
+    height: 220,
+    backgroundColor: 'rgba(23,62,128,0.12)',
+  },
   tabs: {
     flexDirection: 'row',
-    backgroundColor: '#EEF2F7',
-    borderRadius: 18,
-    padding: 4,
+    backgroundColor: '#E4EEFF',
+    borderRadius: 20,
+    padding: 5,
     marginTop: 18,
     marginBottom: 18,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: '#D1E3FF',
+    ...createShadow({ color: '#7CA9F1', offsetY: 8, blur: 16, opacity: 0.12, elevation: 3 }),
   },
-  tab: { flex: 1, height: 42, alignItems: 'center', justifyContent: 'center', borderRadius: 14 },
+  tab: { flex: 1, height: 46, alignItems: 'center', justifyContent: 'center', borderRadius: 16 },
   tabElectricianActive: {
-    backgroundColor: '#E8EEF9',
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#B8CAE8',
-    ...createShadow({ color: '#355C95', offsetY: 4, blur: 10, opacity: 0.1, elevation: 2 }),
+    borderColor: '#9DBDF0',
+    ...createShadow({ color: '#2757AA', offsetY: 6, blur: 14, opacity: 0.16, elevation: 3 }),
   },
   tabDealerActive: {
-    backgroundColor: '#F5ECE0',
+    backgroundColor: '#EDF4FF',
     borderWidth: 1,
-    borderColor: '#D8BEA1',
-    ...createShadow({ color: '#8A5A2F', offsetY: 4, blur: 10, opacity: 0.1, elevation: 2 }),
+    borderColor: '#BFD7FB',
+    ...createShadow({ color: '#355C95', offsetY: 8, blur: 14, opacity: 0.14, elevation: 3 }),
   },
   tabText: { color: C.muted, fontSize: 14, fontWeight: '700' },
   tabTextActive: { color: C.text },
-  loginChoiceRow: { flexDirection: 'row', gap: 10, marginTop: 4, marginBottom: 2 },
+  authHeaderPanel: {
+    borderRadius: 24,
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 16,
+    marginBottom: 14,
+    backgroundColor: '#F8FBFF',
+    borderWidth: 1,
+    borderColor: '#DCE8F8',
+  },
+  authHeaderPanelElectrician: {
+    borderColor: 'rgba(207,227,255,0.34)',
+    ...createShadow({ color: '#173E80', offsetY: 12, blur: 20, opacity: 0.18, elevation: 4 }),
+  },
+  authHeaderPanelDealer: {
+    borderColor: 'rgba(207,227,255,0.34)',
+    ...createShadow({ color: '#173E80', offsetY: 12, blur: 20, opacity: 0.18, elevation: 4 }),
+  },
+  entryPill: {
+    alignSelf: 'flex-start',
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    marginTop: 2,
+    marginBottom: 14,
+    backgroundColor: '#EEF3FA',
+  },
+  entryPillElectrician: {
+    backgroundColor: '#E7F0FF',
+    borderWidth: 1,
+    borderColor: '#CEE0FF',
+  },
+  entryPillDealer: {
+    backgroundColor: '#EDF4FF',
+    borderWidth: 1,
+    borderColor: '#CEE0FF',
+  },
+  entryPillText: { color: '#5C6F91', fontSize: 11, fontWeight: '800' },
+  entryPillTextElectrician: { color: '#173E80' },
+  entryPillTextDealer: { color: '#173E80' },
+  loginChoiceRow: { flexDirection: 'row', gap: 12, marginTop: 8, marginBottom: 6 },
   loginChoiceCard: {
     flex: 1,
-    minHeight: 48,
-    borderRadius: 16,
+    minHeight: 58,
+    borderRadius: 20,
     borderWidth: 1.2,
-    borderColor: '#D8E2EE',
-    backgroundColor: '#FFFFFF',
+    borderColor: '#D7E8FF',
+    backgroundColor: '#F9FBFF',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 10,
+    paddingHorizontal: 14,
+    ...createShadow({ color: '#84AAF0', offsetY: 6, blur: 14, opacity: 0.08, elevation: 2 }),
   },
-  loginChoiceCardActive: { borderColor: '#355C95', backgroundColor: '#EEF3FA' },
+  loginChoiceCardActive: {
+    borderColor: '#2A5CB4',
+    backgroundColor: '#EDF4FF',
+    ...createShadow({ color: '#2A5CB4', offsetY: 10, blur: 18, opacity: 0.16, elevation: 4 }),
+  },
   loginChoiceText: { color: C.text, fontSize: 12, fontWeight: '800', textAlign: 'center' },
-  loginChoiceTextActive: { color: '#355C95' },
+  loginChoiceTextActive: { color: '#173E80' },
   form: { gap: 12 },
   authCard: {
-    borderRadius: 24,
+    borderRadius: 30,
     paddingTop: 18,
-    paddingBottom: 18,
+    paddingBottom: 22,
     borderWidth: 1.4,
   },
   authCardElectrician: {
-    backgroundColor: 'rgba(255,255,255,0.92)',
-    borderColor: '#D7E1F0',
-    ...createShadow({ color: '#355C95', offsetY: 12, blur: 20, opacity: 0.1, elevation: 5 }),
+    backgroundColor: 'rgba(255,255,255,0.985)',
+    borderColor: '#D2E3FF',
+    ...createShadow({ color: '#173E80', offsetY: 18, blur: 30, opacity: 0.14, elevation: 7 }),
   },
   authCardDealer: {
-    backgroundColor: 'rgba(255,255,255,0.94)',
-    borderColor: '#E3D7C8',
-    ...createShadow({ color: '#8A5A2F', offsetY: 12, blur: 20, opacity: 0.1, elevation: 5 }),
+    backgroundColor: 'rgba(255,255,255,0.97)',
+    borderColor: '#D2E3FF',
+    ...createShadow({ color: '#173E80', offsetY: 16, blur: 28, opacity: 0.13, elevation: 6 }),
   },
   formIntroCard: {
     borderRadius: 20,
     padding: 14,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F7FBFF',
     borderWidth: 1.2,
     borderColor: '#D8E7FB',
     gap: 6,
@@ -3342,10 +3597,10 @@ const s = StyleSheet.create({
     borderRadius: 999,
     paddingHorizontal: 10,
     paddingVertical: 5,
-    backgroundColor: '#E3EEFF',
+    backgroundColor: '#EEF3FA',
   },
   formStepChipText: {
-    color: '#2C6BE7',
+    color: '#355C95',
     fontSize: 11,
     fontWeight: '800',
     letterSpacing: 0.4,
@@ -3416,6 +3671,7 @@ const s = StyleSheet.create({
     overflow: 'hidden',
   },
   shellError: { borderColor: C.error, backgroundColor: C.errorSoft },
+  shellHint: { borderColor: '#9FC0F4', backgroundColor: '#EEF5FF' },
   prefixWrap: {
     height: '100%',
     justifyContent: 'center',
@@ -3464,10 +3720,47 @@ const s = StyleSheet.create({
   infoError: { backgroundColor: C.errorSoft },
   infoSuccess: { backgroundColor: C.successSoft },
   infoWarning: { backgroundColor: C.warningSoft },
+  infoHint: { backgroundColor: '#EEF5FF' },
   infoText: { fontSize: 12, lineHeight: 18, fontWeight: '700' },
   infoErrorText: { color: C.error },
   infoSuccessText: { color: C.success },
   infoWarningText: { color: C.warning },
+  infoHintText: { color: C.accentA },
+  verifiedDealerCard: {
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#D8E7FB',
+    backgroundColor: '#F8FBFF',
+    padding: 14,
+    gap: 10,
+  },
+  verifiedDealerCardMain: { gap: 4 },
+  verifiedDealerCardLabel: {
+    color: C.muted2,
+    fontSize: 11,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+  },
+  verifiedDealerCardValue: { color: C.text, fontSize: 14, fontWeight: '900' },
+  verifiedDealerCodeChip: {
+    alignSelf: 'flex-start',
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: '#E7F0FF',
+    borderWidth: 1,
+    borderColor: '#C9DBFB',
+  },
+  verifiedDealerCodeLabel: {
+    color: C.accentA,
+    fontSize: 10,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: 0.7,
+    marginBottom: 2,
+  },
+  verifiedDealerCodeValue: { color: C.accentA, fontSize: 13, fontWeight: '900' },
   checkboxCard: {
     flexDirection: 'row',
     alignItems: 'flex-start',

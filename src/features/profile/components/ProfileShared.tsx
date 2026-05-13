@@ -752,10 +752,17 @@ export function PageHeader({ title, onBack }: { title: string; onBack: () => voi
     <View
       style={[
         shared.header,
-        { backgroundColor: theme.surface, borderBottomColor: theme.border, paddingTop: 12 },
+        { backgroundColor: theme.bg, borderBottomColor: theme.border, paddingTop: 12 },
       ]}
     >
-      <TouchableOpacity onPress={onBack} style={shared.backBtn} activeOpacity={0.75}>
+      <TouchableOpacity
+        onPress={onBack}
+        style={[
+          shared.backBtn,
+          { backgroundColor: theme.surface, borderColor: theme.border },
+        ]}
+        activeOpacity={0.75}
+      >
         <AppIcon name="backArrow" size={22} color={theme.textPrimary} />
       </TouchableOpacity>
       <Text style={[shared.title, { color: theme.textPrimary }]}>{title}</Text>
@@ -765,20 +772,26 @@ export function PageHeader({ title, onBack }: { title: string; onBack: () => voi
 }
 
 export function PrimaryBtn({ label, onPress }: { label: string; onPress: () => void }) {
+  const { theme } = usePreferenceContext();
   return (
-    <TouchableOpacity style={shared.primaryBtn} onPress={onPress} activeOpacity={0.85}>
+    <TouchableOpacity
+      style={[shared.primaryBtn, { backgroundColor: theme.accent }]}
+      onPress={onPress}
+      activeOpacity={0.85}
+    >
       <Text style={shared.primaryLabel}>{label}</Text>
     </TouchableOpacity>
   );
 }
 
 export function EmptyState({ emoji, message }: { emoji: string; message: string }) {
+  const { theme } = usePreferenceContext();
   return (
     <View style={shared.emptyWrap}>
-      <View style={shared.emptyCircle}>
+      <View style={[shared.emptyCircle, { backgroundColor: theme.accentSoft }]}>
         <Text style={shared.emptyEmoji}>{emoji}</Text>
       </View>
-      <Text style={shared.emptyText}>{message}</Text>
+      <Text style={[shared.emptyText, { color: theme.textMuted }]}>{message}</Text>
     </View>
   );
 }
@@ -799,6 +812,7 @@ export const shared = StyleSheet.create({
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
   },
   title: { fontSize: 18, fontWeight: '800' },
   primaryBtn: {
@@ -822,4 +836,3 @@ export const shared = StyleSheet.create({
   emptyEmoji: { fontSize: 40 },
   emptyText: { fontSize: 15, color: C.muted, fontWeight: '600', textAlign: 'center' },
 });
-

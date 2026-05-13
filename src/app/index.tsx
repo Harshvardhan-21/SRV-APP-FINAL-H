@@ -63,7 +63,7 @@ function AppContent() {
   const [showOnboarding, setShowOnboarding] = useState(true);
   const [currentRole, setCurrentRole] = useState<UserRole>('electrician');
   const [authResolved, setAuthResolved] = useState(false);
-  const [selectedProductCategory, setSelectedProductCategory] = useState('fanbox');
+  const [selectedProductCategory, setSelectedProductCategory] = useState('all');
   const [language, setLanguage] = useState<AppLanguage>('English');
   const [darkMode, setDarkMode] = useState(false);
   const [passwordConfiguredByRole, setPasswordConfiguredByRole] = useState<
@@ -176,7 +176,7 @@ function AppContent() {
       }
 
       if (screen === 'product') {
-        setSelectedProductCategory((current) => current || 'fanbox');
+        setSelectedProductCategory((current) => current || 'all');
       }
 
       setCurrentScreen(screen);
@@ -213,7 +213,7 @@ function AppContent() {
       setShowOnboarding(true);
       setCurrentRole('electrician');
       setCurrentScreen('home');
-      setSelectedProductCategory('fanbox');
+      setSelectedProductCategory('all');
       setElectricianRewardPoints(0);
       setElectricianRewardScans(0);
       setElectricianRewardHistory([]);
@@ -382,6 +382,7 @@ function AppContent() {
               onLanguageChange={setLanguage}
               darkMode={darkMode}
               onDarkModeChange={setDarkMode}
+              currentRole="dealer"
             />
           );
         case 'dealer_bonus':
@@ -392,6 +393,7 @@ function AppContent() {
               onLanguageChange={setLanguage}
               darkMode={darkMode}
               onDarkModeChange={setDarkMode}
+              currentRole="dealer"
             />
           );
         case 'transfer_points':
@@ -403,6 +405,7 @@ function AppContent() {
               onLanguageChange={setLanguage}
               darkMode={darkMode}
               onDarkModeChange={setDarkMode}
+              currentRole="dealer"
             />
           );
         default:
@@ -522,10 +525,11 @@ function AppContent() {
           return <CounterBoyProductScreen onNavigate={handleNavigate} />;
         case 'scan':
           return (
-            <CounterBoyScanScreen
+            <CounterBoyHomeScreen
               onNavigate={handleNavigate}
-              rewardHistory={electricianRewardHistory}
-              onCommitRewards={handleElectricianRewardCommit}
+              onOpenProductCategory={handleOpenProductCategory}
+              profilePhotoUri={profilePhotoByRole.counterboy}
+              hasUnreadNotif={hasUnreadNotif}
             />
           );
         case 'notification':
@@ -579,6 +583,7 @@ function AppContent() {
               onLanguageChange={setLanguage}
               darkMode={darkMode}
               onDarkModeChange={setDarkMode}
+              currentRole="counterboy"
             />
           );
         case 'transfer_points':
@@ -590,6 +595,7 @@ function AppContent() {
               onLanguageChange={setLanguage}
               darkMode={darkMode}
               onDarkModeChange={setDarkMode}
+              currentRole="counterboy"
             />
           );
         default:
@@ -617,7 +623,12 @@ function AppContent() {
           />
         );
       case 'product':
-        return <ElectricianProductScreen onNavigate={handleNavigate} />;
+        return (
+          <ElectricianProductScreen
+            onNavigate={handleNavigate}
+            initialCategory={selectedProductCategory}
+          />
+        );
       case 'notification':
         return <ElectricianNotificationScreen onNavigate={handleNavigate} role="electrician" onNotificationsSeen={handleNotificationsSeen} />;
       case 'scan':
@@ -675,7 +686,12 @@ function AppContent() {
           />
         );
       case 'electrician_tier':
-        return <ElectricianTierScreen onBack={() => setCurrentScreen('home')} />;
+        return (
+          <ElectricianTierScreen
+            onBack={() => setCurrentScreen('home')}
+            totalPoints={electricianRewardPoints}
+          />
+        );
       case 'bank_details':
         return (
           <WalletBankDetailsScreen
@@ -684,6 +700,7 @@ function AppContent() {
             onLanguageChange={setLanguage}
             darkMode={darkMode}
             onDarkModeChange={setDarkMode}
+            currentRole="electrician"
           />
         );
       case 'transfer_points':
@@ -695,6 +712,7 @@ function AppContent() {
             onLanguageChange={setLanguage}
             darkMode={darkMode}
             onDarkModeChange={setDarkMode}
+            currentRole="electrician"
           />
         );
       default:

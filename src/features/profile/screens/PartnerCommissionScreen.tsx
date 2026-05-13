@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { LinearGradient } from 'expo-linear-gradient';
 import {
   Alert,
   Animated,
@@ -75,25 +76,31 @@ export function PartnerCommissionPage({ onBack }: { onBack: () => void }) {
     <View style={{ flex: 1, backgroundColor: theme.bg }}>
       <PageHeader title={tx('Dealer Bonus')} onBack={onBack} />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <Animated.View style={[styles.heroCard, { backgroundColor: '#0F1B3D', transform: [{ translateY: floatY }] }]}>
+        <Animated.View style={{ transform: [{ translateY: floatY }] }}>
+          <LinearGradient
+            colors={theme.textPrimary === '#F8FAFC' ? theme.heroGradientDark : theme.heroGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={[styles.heroCard, { borderColor: theme.border }]}
+          >
           <Animated.View style={[styles.heroGlow, { opacity: glowOpacity }]} />
           <View style={styles.heroTop}>
-            <View style={styles.heroBadge}>
-              <AppIcon name="transfer" size={18} color="#93C5FD" />
-              <Text style={styles.heroBadgeText}>{tx('5% Auto Bonus')}</Text>
+            <View style={[styles.heroBadge, { backgroundColor: theme.textPrimary === '#F8FAFC' ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.62)' }]}>
+              <AppIcon name="transfer" size={18} color={theme.accent} />
+              <Text style={[styles.heroBadgeText, { color: theme.textPrimary }]}>{tx('5% Auto Bonus')}</Text>
             </View>
-            <Text style={styles.heroTitle}>{tx('GET YOUR BONUS')}</Text>
-            <Text style={styles.heroSub}>
+            <Text style={[styles.heroTitle, { color: theme.textPrimary }]}>{tx('GET YOUR BONUS')}</Text>
+            <Text style={[styles.heroSub, { color: theme.textSecondary }]}>
               {tx('5% of the points redeemed by any electrician will be credited to your dealer wallet. 1 point = 1 INR, and you can withdraw it directly to your bank account.')}
             </Text>
           </View>
           <View style={styles.heroFooter}>
             <View>
-              <Text style={styles.heroAmountLabel}>{tx('Available to withdraw')}</Text>
-              <Text style={styles.heroAmount}>Rs. {availableBalance.toLocaleString('en-IN')}</Text>
+              <Text style={[styles.heroAmountLabel, { color: theme.accentDeep }]}>{tx('Available to withdraw')}</Text>
+              <Text style={[styles.heroAmount, { color: theme.textPrimary }]}>Rs. {availableBalance.toLocaleString('en-IN')}</Text>
             </View>
-            <View style={styles.heroRateChip}>
-              <Text style={styles.heroRateText}>{tx('1 Point = 1 INR')}</Text>
+            <View style={[styles.heroRateChip, { backgroundColor: theme.textPrimary === '#F8FAFC' ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.52)' }]}>
+              <Text style={[styles.heroRateText, { color: theme.textPrimary }]}>{tx('1 Point = 1 INR')}</Text>
               <View style={styles.flagBadge}>
                 <View style={[styles.flagStripe, { backgroundColor: '#FF9933' }]} />
                 <View style={[styles.flagStripe, styles.flagWhite]}><View style={styles.flagWheel} /></View>
@@ -101,19 +108,20 @@ export function PartnerCommissionPage({ onBack }: { onBack: () => void }) {
               </View>
             </View>
           </View>
+          </LinearGradient>
         </Animated.View>
 
         <View style={styles.statsRow}>
           <View style={[styles.statCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-            <View style={[styles.statIcon, { backgroundColor: '#DBEAFE' }]}>
-              <AppIcon name="refer" size={18} color={C.blue} />
+            <View style={[styles.statIcon, { backgroundColor: C.blueLight }]}>
+              <AppIcon name="refer" size={18} color={theme.accent} />
             </View>
             <Text style={[styles.statValue, { color: theme.textPrimary }]}>{totalElectricians}</Text>
             <Text style={[styles.statLabel, { color: theme.textMuted }]}>{tx('Active electricians')}</Text>
           </View>
           <View style={[styles.statCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-            <View style={[styles.statIcon, { backgroundColor: '#FEF3C7' }]}>
-              <AppIcon name="gift" size={18} color={C.gold} />
+            <View style={[styles.statIcon, { backgroundColor: C.goldLight }]}>
+              <AppIcon name="gift" size={18} color={theme.accentDeep} />
             </View>
             <Text style={[styles.statValue, { color: theme.textPrimary }]}>{(dealerBonus?.totalBonus ?? 0).toLocaleString('en-IN')}</Text>
             <Text style={[styles.statLabel, { color: theme.textMuted }]}>{tx('Total bonus earned')}</Text>
@@ -130,8 +138,8 @@ export function PartnerCommissionPage({ onBack }: { onBack: () => void }) {
         <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
           <Text style={[styles.cardTitle, { color: theme.textPrimary }]}>{tx('How it works')}</Text>
           {[
-            { num: '1', bg: '#DBEAFE', color: C.blue, text: tx('Electrician points redeem hote hi 5% dealer bonus auto-credit ho jata hai.') },
-            { num: '2', bg: '#FEF3C7', color: C.gold, text: tx('Bonus balance update hota rahega and 1 point ki value 1 INR rahegi.') },
+            { num: '1', bg: theme.accentSoft, color: theme.accent, text: tx('Electrician points redeem hote hi 5% dealer bonus auto-credit ho jata hai.') },
+            { num: '2', bg: theme.soft, color: theme.accentDeep, text: tx('Bonus balance update hota rahega and 1 point ki value 1 INR rahegi.') },
             { num: '3', bg: '#DCFCE7', color: C.success, text: tx('Aap bank transfer request karke amount withdraw kar sakte hain.') },
           ].map((step) => (
             <View key={step.num} style={styles.stepRow}>
@@ -173,7 +181,7 @@ export function PartnerCommissionPage({ onBack }: { onBack: () => void }) {
             ))}
           </View>
           <TouchableOpacity
-            style={[styles.withdrawButton, { opacity: submitting ? 0.7 : 1 }]}
+            style={[styles.withdrawButton, { backgroundColor: theme.accent, opacity: submitting ? 0.7 : 1 }]}
             activeOpacity={0.85}
             onPress={handleWithdraw}
             disabled={submitting}
@@ -191,22 +199,22 @@ export function PartnerCommissionPage({ onBack }: { onBack: () => void }) {
 
 const styles = StyleSheet.create({
   content: { padding: 16, gap: 16, paddingBottom: 34 },
-  heroCard: { borderRadius: 30, padding: 22, overflow: 'hidden' },
-  heroGlow: { position: 'absolute', top: -40, right: -20, width: 180, height: 180, borderRadius: 90, backgroundColor: 'rgba(96,165,250,0.28)' },
+  heroCard: { borderRadius: 30, padding: 22, overflow: 'hidden', borderWidth: 1 },
+  heroGlow: { position: 'absolute', top: -40, right: -20, width: 180, height: 180, borderRadius: 90, backgroundColor: 'rgba(255,255,255,0.18)' },
   heroTop: { gap: 10 },
   heroBadge: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, backgroundColor: 'rgba(147,197,253,0.14)' },
-  heroBadgeText: { color: '#BFDBFE', fontSize: 12, fontWeight: '800' },
-  heroTitle: { color: '#FFFFFF', fontSize: 26, lineHeight: 33, fontWeight: '900', maxWidth: '86%' },
-  heroSub: { color: '#CBD5E1', fontSize: 14, lineHeight: 22, maxWidth: '94%' },
+  heroBadgeText: { fontSize: 12, fontWeight: '800' },
+  heroTitle: { fontSize: 26, lineHeight: 33, fontWeight: '900', maxWidth: '86%' },
+  heroSub: { fontSize: 14, lineHeight: 22, maxWidth: '94%' },
   heroFooter: { marginTop: 20, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', gap: 14 },
-  heroAmountLabel: { color: '#93C5FD', fontSize: 12, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.6 },
-  heroAmount: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', marginTop: 6 },
-  heroRateChip: { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.12)', paddingHorizontal: 14, paddingVertical: 10 },
+  heroAmountLabel: { fontSize: 12, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.6 },
+  heroAmount: { fontSize: 18, fontWeight: '900', marginTop: 6 },
+  heroRateChip: { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 18, paddingHorizontal: 14, paddingVertical: 10 },
   flagBadge: { width: 18, height: 12, borderRadius: 3, overflow: 'hidden', backgroundColor: '#fff' },
   flagStripe: { flex: 1 },
   flagWhite: { alignItems: 'center', justifyContent: 'center' },
   flagWheel: { width: 4, height: 4, borderRadius: 2, borderWidth: 0.8, borderColor: '#1A56DB' },
-  heroRateText: { color: '#FFFFFF', fontSize: 10, fontWeight: '800' },
+  heroRateText: { fontSize: 10, fontWeight: '800' },
   statsRow: { flexDirection: 'row', gap: 10 },
   statCard: { flex: 1, borderWidth: 1, borderRadius: 22, padding: 14 },
   statIcon: { width: 42, height: 42, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
@@ -224,6 +232,6 @@ const styles = StyleSheet.create({
   quickAmounts: { flexDirection: 'row', gap: 10 },
   quickChip: { flex: 1, borderRadius: 16, borderWidth: 1, paddingVertical: 12, alignItems: 'center' },
   quickChipText: { fontSize: 13, fontWeight: '800' },
-  withdrawButton: { height: 56, borderRadius: 18, backgroundColor: C.primary, alignItems: 'center', justifyContent: 'center' },
+  withdrawButton: { height: 56, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
   withdrawButtonText: { color: '#FFFFFF', fontSize: 15, fontWeight: '900' },
 });

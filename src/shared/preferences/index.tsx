@@ -1998,36 +1998,69 @@ export type ThemePalette = {
   accentSoft: string;
   accentDeep: string;
   accentContrast: string;
+  heroGradient: [string, string, string];
+  heroGradientDark: [string, string, string];
+  heroGlowPrimary: string;
+  heroGlowSecondary: string;
 };
 
-const roleAccents: Record<UserRole, { accent: string; accentSoft: string; accentDeep: string; lightBg: string; lightHero: string }> = {
+const roleAccents: Record<
+  UserRole,
+  {
+    accent: string;
+    accentSoft: string;
+    accentDeep: string;
+    lightBg: string;
+    lightHero: string;
+    heroGradient: [string, string, string];
+    heroGradientDark: [string, string, string];
+    heroGlowPrimary: string;
+    heroGlowSecondary: string;
+  }
+> = {
   dealer: {
-    accent: '#D97706',
-    accentSoft: '#FEF3C7',
-    accentDeep: '#92400E',
-    lightBg: '#FFF9F1',
-    lightHero: '#FFFBEB',
+    accent: '#214D99',
+    accentSoft: '#E3EEFF',
+    accentDeep: '#173E80',
+    lightBg: '#F4F8FF',
+    lightHero: '#EDF4FF',
+    heroGradient: ['#F8FBFF', '#E5EFFF', '#C7DBFF'],
+    heroGradientDark: ['#0B1220', '#173E80', '#35538E'],
+    heroGlowPrimary: 'rgba(53,83,142,0.22)',
+    heroGlowSecondary: 'rgba(23,62,128,0.16)',
   },
   electrician: {
-    accent: '#2563EB',
-    accentSoft: '#DBEAFE',
-    accentDeep: '#1E40AF',
-    lightBg: '#F5F9FF',
-    lightHero: '#EFF6FF',
+    accent: '#102A63',
+    accentSoft: '#EAF3FF',
+    accentDeep: '#1D458F',
+    lightBg: '#EEF3F8',
+    lightHero: '#F7FBFF',
+    heroGradient: ['#102A63', '#1D458F', '#F0A43A'],
+    heroGradientDark: ['#0B1220', '#102A63', '#1D458F'],
+    heroGlowPrimary: 'rgba(29,69,143,0.18)',
+    heroGlowSecondary: 'rgba(240,164,58,0.16)',
   },
   user: {
-    accent: '#6B7C2D',
-    accentSoft: '#EAF0C4',
-    accentDeep: '#4A5520',
-    lightBg: '#FAFCF4',
-    lightHero: '#F5F7EB',
+    accent: '#6A2F12',
+    accentSoft: '#FBF1E7',
+    accentDeep: '#8D4A1E',
+    lightBg: '#F5EDE6',
+    lightHero: '#FBF1E7',
+    heroGradient: ['#FBF1E7', '#F5E8DC', '#F0DEC9'],
+    heroGradientDark: ['#0B1220', '#3D1A08', '#6A2F12'],
+    heroGlowPrimary: 'rgba(106,47,18,0.22)',
+    heroGlowSecondary: 'rgba(141,74,30,0.16)',
   },
   counterboy: {
     accent: '#E8453C',
-    accentSoft: '#FFE4E4',
-    accentDeep: '#B91C1C',
-    lightBg: '#FFF5F5',
-    lightHero: '#FFF0EE',
+    accentSoft: '#FEE2E2',
+    accentDeep: '#991B1B',
+    lightBg: '#FFF6F6',
+    lightHero: '#FFF1F2',
+    heroGradient: ['#FFF6F6', '#FFE4E6', '#FECACA'],
+    heroGradientDark: ['#0B1220', '#7F1D1D', '#E8453C'],
+    heroGlowPrimary: 'rgba(232,69,60,0.22)',
+    heroGlowSecondary: 'rgba(127,29,29,0.16)',
   },
 };
 
@@ -2049,6 +2082,10 @@ export const getThemePalette = (isDark: boolean, role: UserRole = 'electrician')
     accentSoft: isDark ? roleTheme.accentDeep + '44' : roleTheme.accentSoft,
     accentDeep: roleTheme.accentDeep,
     accentContrast: '#FFFFFF',
+    heroGradient: roleTheme.heroGradient,
+    heroGradientDark: roleTheme.heroGradientDark,
+    heroGlowPrimary: roleTheme.heroGlowPrimary,
+    heroGlowSecondary: roleTheme.heroGlowSecondary,
   };
 };
 
@@ -2099,9 +2136,3 @@ export function usePreferenceValue({
     [currentRole, darkMode, language, setDarkMode, setLanguage, theme]
   );
 }
-
-
-
-
-
-

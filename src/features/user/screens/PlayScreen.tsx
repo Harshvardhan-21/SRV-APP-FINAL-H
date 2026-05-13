@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { LinearGradient } from 'expo-linear-gradient';
 import {
   ActivityIndicator,
   FlatList,
@@ -34,9 +35,9 @@ const VIDEO_FILTERS: { id: VideoCategoryKey; label: string }[] = [
 ];
 
 const CAT_COLORS: Record<Exclude<VideoCategoryKey, 'all'>, { bg: string; text: string; label: string }> = {
-  reels: { bg: '#FCE7F3', text: '#BE185D', label: 'Quick Reel' },
-  guides: { bg: '#DBEAFE', text: '#1D4ED8', label: 'Video Guide' },
-  tips: { bg: '#DCFCE7', text: '#15803D', label: 'Helpful Tip' },
+  reels: { bg: '#FBF1E7', text: '#8D4A1E', label: 'Quick Reel' },
+  guides: { bg: '#F5E8DC', text: '#6A2F12', label: 'Video Guide' },
+  tips: { bg: '#F0DEC9', text: '#6A2F12', label: 'Helpful Tip' },
 };
 
 function getYouTubeVideoId(url: string): string | null {
@@ -131,7 +132,7 @@ function CloseIcon({ size = 20, color = '#fff' }: { size?: number; color?: strin
   );
 }
 
-function SendIcon({ size = 18, color = '#6B7C2D' }: { size?: number; color?: string }) {
+function SendIcon({ size = 18, color = '#6A2F12' }: { size?: number; color?: string }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path d="M21.5 3.5 10 15l-1.5 5.5L21.5 3.5Zm0 0L14 20l-2-7-7-2 16.5-7.5Z" stroke={color} strokeWidth={1.8} strokeLinejoin="round" />
@@ -261,6 +262,16 @@ function VideoCard({
     <Pressable style={styles.card} onPress={onOpen}>
       <View style={styles.videoFrame}>
         <VideoPreview video={video} onPress={onOpen} />
+        <LinearGradient
+          colors={['transparent', 'rgba(32,17,10,0.64)']}
+          start={{ x: 0.5, y: 0.12 }}
+          end={{ x: 0.5, y: 1 }}
+          style={styles.videoFrameShade}
+        />
+        <View style={styles.videoFrameMeta}>
+          <Text style={styles.videoFrameKicker}>{palette.label}</Text>
+          <Text style={styles.videoFrameOpen}>SRV Play</Text>
+        </View>
       </View>
 
       <View style={styles.cardBody}>
@@ -592,12 +603,30 @@ export function PlayScreen({ onNavigate }: { onNavigate: (screen: Screen) => voi
 
   return (
     <View style={[styles.screen, { backgroundColor: darkMode ? '#081018' : '#F8FAFC', paddingTop: insets.top + 8 }]}>
-      <View style={styles.header}>
-        <Text style={[styles.headerTitle, { color: darkMode ? '#F8FAFC' : '#0F172A' }]}>{tx('Play Zone')}</Text>
-        <Text style={[styles.headerSubtitle, { color: darkMode ? '#A8B3C7' : '#64748B' }]}>
-          {tx('Choose a category first, then open any video in a rich full-screen experience.')}
-        </Text>
-      </View>
+      <LinearGradient
+        colors={darkMode ? ['#2A1810', '#3D2418', '#4D2E1E'] : ['#FBF1E7', '#F5E8DC', '#F0DEC9']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.heroCard}
+      >
+        <View style={styles.header}>
+          <Text style={[styles.headerEyebrow, darkMode ? styles.headerEyebrowDark : null]}>{tx('SRV Videos')}</Text>
+          <Text style={[styles.headerTitle, { color: darkMode ? '#F8FAFC' : '#0F172A' }]}>{tx('Play Zone')}</Text>
+          <Text style={[styles.headerSubtitle, { color: darkMode ? 'rgba(255,255,255,0.78)' : '#6E5947' }]}>
+            {tx('Choose a category first, then open any video in a rich full-screen experience.')}
+          </Text>
+          <View style={styles.heroStatsRow}>
+            <View style={[styles.heroStatPill, darkMode ? styles.heroStatPillDark : null]}>
+              <Text style={[styles.heroStatValue, darkMode ? styles.heroStatValueDark : null]}>{videos.length}</Text>
+              <Text style={[styles.heroStatLabel, darkMode ? styles.heroStatLabelDark : null]}>{tx('videos')}</Text>
+            </View>
+            <View style={[styles.heroStatPill, darkMode ? styles.heroStatPillDark : null]}>
+              <Text style={[styles.heroStatValue, darkMode ? styles.heroStatValueDark : null]}>{filteredVideos.length}</Text>
+              <Text style={[styles.heroStatLabel, darkMode ? styles.heroStatLabelDark : null]}>{tx('visible')}</Text>
+            </View>
+          </View>
+        </View>
+      </LinearGradient>
 
       <ScrollView
         horizontal
@@ -614,8 +643,8 @@ export function PlayScreen({ onNavigate }: { onNavigate: (screen: Screen) => voi
               style={[
                 styles.filterChip,
                 isActive
-                  ? { backgroundColor: '#6B7C2D', borderColor: '#6B7C2D' }
-                  : { backgroundColor: darkMode ? '#132031' : '#FFFFFF', borderColor: darkMode ? '#233248' : '#D7E0D2' },
+                  ? { backgroundColor: '#6A2F12', borderColor: '#6A2F12' }
+                  : { backgroundColor: darkMode ? '#132031' : '#FFFFFF', borderColor: darkMode ? '#233248' : '#E5D4C1' },
               ]}
             >
               <Text style={[styles.filterChipText, { color: isActive ? '#FFFFFF' : darkMode ? '#DCE4EE' : '#475569' }]}>
@@ -673,8 +702,24 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: 18,
-    paddingBottom: 12,
+    paddingBottom: 4,
   },
+  heroCard: {
+    marginHorizontal: 16,
+    marginBottom: 12,
+    borderRadius: 28,
+    paddingVertical: 18,
+    overflow: 'hidden',
+  },
+  headerEyebrow: {
+    color: '#8D4A1E',
+    fontSize: 11,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: 1.1,
+    marginBottom: 6,
+  },
+  headerEyebrowDark: { color: 'rgba(255,255,255,0.68)' },
   headerTitle: {
     fontSize: 26,
     fontWeight: '900',
@@ -684,6 +729,32 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 20,
   },
+  heroStatsRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 16,
+  },
+  heroStatPill: {
+    backgroundColor: 'rgba(255,255,255,0.62)',
+    borderRadius: 18,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    minWidth: 92,
+  },
+  heroStatPillDark: { backgroundColor: 'rgba(255,255,255,0.12)' },
+  heroStatValue: {
+    color: '#6A2F12',
+    fontSize: 18,
+    fontWeight: '900',
+  },
+  heroStatValueDark: { color: '#FFFFFF' },
+  heroStatLabel: {
+    color: '#8B6A52',
+    fontSize: 11,
+    fontWeight: '700',
+    marginTop: 2,
+  },
+  heroStatLabelDark: { color: 'rgba(255,255,255,0.72)' },
   filtersScroller: {
     minHeight: 64,
   },
@@ -715,6 +786,11 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: '#E5EAF0',
+    shadowColor: '#8D4A1E',
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 4,
   },
   videoFrame: {
     width: '100%',
@@ -722,6 +798,30 @@ const styles = StyleSheet.create({
     backgroundColor: '#0F172A',
     position: 'relative',
     overflow: 'hidden',
+  },
+  videoFrameShade: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  videoFrameMeta: {
+    position: 'absolute',
+    left: 14,
+    right: 14,
+    bottom: 14,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  videoFrameKicker: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  videoFrameOpen: {
+    color: 'rgba(255,255,255,0.82)',
+    fontSize: 11.5,
+    fontWeight: '700',
   },
   previewButton: {
     flex: 1,
@@ -872,7 +972,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   browseBtn: {
-    backgroundColor: '#6B7C2D',
+    backgroundColor: '#6A2F12',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 999,

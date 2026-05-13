@@ -15,8 +15,8 @@ type NavControlConfig = {
   accessibilityLabel: string;
 };
 
-const DEALER_PRIMARY = '#D97706';
-const DEALER_PRIMARY_DARK = '#92400E';
+const DEALER_PRIMARY = '#173E80';
+const DEALER_PRIMARY_DARK = '#214D99';
 
 function HomeIcon({ color, size = 24 }: { color: string; size?: number }) {
   return (
@@ -237,7 +237,7 @@ const centerStyles = StyleSheet.create({
     ...createShadow({ color: DEALER_PRIMARY, offsetY: 6, blur: 10, opacity: 0.45, elevation: 12 }),
   },
   buttonActive: { backgroundColor: DEALER_PRIMARY },
-  label: { fontSize: 10, fontWeight: '800', color: '#B89A77', marginTop: 1 },
+  label: { fontSize: 10, fontWeight: '800', color: '#8AA0C4', marginTop: 1 },
   labelCompact: { fontSize: 8 },
   labelActive: { color: DEALER_PRIMARY_DARK },
 });

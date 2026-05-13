@@ -1,4 +1,4 @@
-import { CategoriesScreen } from '@/features/user/screens/CategoriesScreen';
+import { ProductScreen as ElectricianProductScreen } from '@/features/electrician/screens/ProductScreen';
 import type { Screen } from '@/shared/types/navigation';
 
 export function ProductScreen({
@@ -6,5 +6,5 @@ export function ProductScreen({
 }: {
   onNavigate: (screen: Screen) => void;
 }) {
-  return <CategoriesScreen onNavigate={onNavigate} theme="counterboy" actionMode="scan" />;
+  return <ElectricianProductScreen onNavigate={onNavigate} />;
 }

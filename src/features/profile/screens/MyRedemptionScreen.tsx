@@ -130,7 +130,7 @@ export function RedemptionPage({
             <Text style={[styles.summaryLabel, { color: theme.textMuted }]}>
               {tx('Completed')}
             </Text>
-            <Text style={[styles.summaryValue, { color: C.primary }]}>
+            <Text style={[styles.summaryValue, { color: theme.accent }]}>
               {loading ? '...' : totalRedeemed}
             </Text>
           </View>
@@ -139,7 +139,7 @@ export function RedemptionPage({
         <View
           style={[styles.pointsCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
         >
-          <Text style={[styles.pointsSub, { color: C.primary }]}>{tx('Redemption History')}</Text>
+          <Text style={[styles.pointsSub, { color: theme.accent }]}>{tx('Redemption History')}</Text>
           <View style={styles.tabRow}>
             {tabs.map((tab) => {
               const isActive = activeTab === tab;
@@ -149,8 +149,8 @@ export function RedemptionPage({
                   style={[
                     styles.tab,
                     {
-                      backgroundColor: isActive ? C.primaryLight : theme.soft,
-                      borderColor: isActive ? C.primary : 'transparent',
+                      backgroundColor: isActive ? theme.accentSoft : theme.soft,
+                      borderColor: isActive ? theme.accent : 'transparent',
                     },
                   ]}
                   onPress={() => openTabDestination(tab)}
@@ -168,7 +168,7 @@ export function RedemptionPage({
                     resizeMode="contain"
                   />
                   <Text
-                    style={[styles.tabText, { color: isActive ? C.primary : theme.textSecondary }]}
+                    style={[styles.tabText, { color: isActive ? theme.accent : theme.textSecondary }]}
                   >
                     {tx(tab)}
                   </Text>
@@ -190,7 +190,7 @@ export function RedemptionPage({
                   key={filter}
                   style={[
                     styles.filterChip,
-                    { backgroundColor: isActive ? C.primary : theme.soft },
+                    { backgroundColor: isActive ? theme.accent : theme.soft },
                   ]}
                   onPress={() => setActiveFilter(filter)}
                   activeOpacity={0.8}
@@ -210,7 +210,7 @@ export function RedemptionPage({
         </View>
 
         {loading ? (
-          <ActivityIndicator color={C.primary} style={{ marginTop: 32 }} />
+          <ActivityIndicator color={theme.accent} style={{ marginTop: 32 }} />
         ) : filteredItems.length > 0 ? (
           filteredItems.map((item, index) => (
             <View
@@ -258,7 +258,7 @@ export function RedemptionPage({
                   </Text>
                   <Text style={[styles.historyDate, { color: theme.textMuted }]}>{item.date}</Text>
                 </View>
-                <Text style={styles.pointsText}>{item.points}</Text>
+            <Text style={styles.pointsText}>{item.points}</Text>
               </View>
               <View style={[styles.statusRow, { backgroundColor: theme.soft }]}>
                 <Text style={[styles.statusText, { color: theme.textSecondary }]}>

@@ -195,6 +195,7 @@ export function BannerCarousel({
 const styles = StyleSheet.create({
   card: {
     overflow: 'hidden',
+    backgroundColor: '#173E80',
   },
   slide: {
     alignItems: 'center',

@@ -136,96 +136,96 @@ const ROLE_THEME: Record<string, {
   storeIconWrapBg: string;
 }> = {
   dealer: {
-    heroGradient: ['#7C3A00', '#B45309', '#D97706'],
-    heroShadow: '#7C3A00',
-    eyebrowColor: '#FDE3B8',
-    screenBg: '#FBF5EC',
-    cardBorder: '#EDD9B8',
-    cardShadow: '#B45309',
-    sectionEyebrow: '#B45309',
-    sectionIconBg: '#FFF1D6',
-    actionTileBg: '#FFF8EE',
-    actionTileBorder: '#F0DDB8',
-    timelineCardBg: '#FBF5EC',
-    timelineCardBorder: '#EDD9B8',
-    emptyStateBg: '#FFF8EE',
-    emptyStateBorder: '#F0DDB8',
-    emptyIconBg: '#FDE8C0',
-    emptyTitleColor: '#92400E',
-    paginationBtnBg: '#B45309',
-    paginationBtnDisabledBg: '#EDD9B8',
-    paginationBtnDisabledText: '#B45309',
-    paginationInfoBg: '#FBF5EC',
-    storeIconWrapBg: '#FFF0DA',
+    heroGradient: ['#173E80', '#355C95', '#88AEEA'],
+    heroShadow: '#173E80',
+    eyebrowColor: '#EAF3FF',
+    screenBg: '#F4F8FF',
+    cardBorder: '#D7E7FF',
+    cardShadow: '#173E80',
+    sectionEyebrow: '#173E80',
+    sectionIconBg: '#EAF3FF',
+    actionTileBg: '#F7FBFF',
+    actionTileBorder: '#D7E7FF',
+    timelineCardBg: '#F7FBFF',
+    timelineCardBorder: '#D7E7FF',
+    emptyStateBg: '#F7FBFF',
+    emptyStateBorder: '#D7E7FF',
+    emptyIconBg: '#DCE8FF',
+    emptyTitleColor: '#173E80',
+    paginationBtnBg: '#173E80',
+    paginationBtnDisabledBg: '#D7E7FF',
+    paginationBtnDisabledText: '#355C95',
+    paginationInfoBg: '#EEF5FF',
+    storeIconWrapBg: '#EAF3FF',
   },
   electrician: {
-    heroGradient: ['#1E3A8A', '#2563EB', '#60A5FA'],
-    heroShadow: '#1E3A8A',
-    eyebrowColor: '#BFDBFE',
-    screenBg: '#EFF4FB',
-    cardBorder: '#DBEAFE',
-    cardShadow: '#2563EB',
-    sectionEyebrow: '#2563EB',
-    sectionIconBg: '#EFF6FF',
-    actionTileBg: '#F0F7FF',
-    actionTileBorder: '#DBEAFE',
-    timelineCardBg: '#F0F7FF',
-    timelineCardBorder: '#DBEAFE',
-    emptyStateBg: '#EFF6FF',
-    emptyStateBorder: '#DBEAFE',
-    emptyIconBg: '#DBEAFE',
-    emptyTitleColor: '#1D4ED8',
-    paginationBtnBg: '#2563EB',
-    paginationBtnDisabledBg: '#DBEAFE',
-    paginationBtnDisabledText: '#2563EB',
-    paginationInfoBg: '#EFF6FF',
-    storeIconWrapBg: '#DBEAFE',
+    heroGradient: ['#18345B', '#355C95', '#E18D4E'],
+    heroShadow: '#193357',
+    eyebrowColor: '#FDE3B8',
+    screenBg: '#F4EFE8',
+    cardBorder: '#E9DED3',
+    cardShadow: '#734E2A',
+    sectionEyebrow: '#B57846',
+    sectionIconBg: '#FFF1E2',
+    actionTileBg: '#FFF7F0',
+    actionTileBorder: '#F1E0CF',
+    timelineCardBg: '#FBF5EF',
+    timelineCardBorder: '#EEE0D5',
+    emptyStateBg: '#FFF8F2',
+    emptyStateBorder: '#F0E1D3',
+    emptyIconBg: '#FBE9D8',
+    emptyTitleColor: '#B04D2E',
+    paginationBtnBg: '#B57846',
+    paginationBtnDisabledBg: '#E9DED3',
+    paginationBtnDisabledText: '#B57846',
+    paginationInfoBg: '#FBF5EF',
+    storeIconWrapBg: '#FFF0DA',
   },
   user: {
-    heroGradient: ['#3D4A1A', '#6B7C2D', '#8FA83C'],
-    heroShadow: '#3D4A1A',
-    eyebrowColor: '#E4EDB8',
-    screenBg: '#F5F7EC',
-    cardBorder: '#D8E4A8',
-    cardShadow: '#6B7C2D',
-    sectionEyebrow: '#6B7C2D',
-    sectionIconBg: '#EEF3D0',
-    actionTileBg: '#F5F8E8',
-    actionTileBorder: '#D8E4A8',
-    timelineCardBg: '#F5F8E8',
-    timelineCardBorder: '#D8E4A8',
-    emptyStateBg: '#EEF3D0',
-    emptyStateBorder: '#D8E4A8',
-    emptyIconBg: '#D8E4A8',
-    emptyTitleColor: '#4A5A1A',
-    paginationBtnBg: '#6B7C2D',
-    paginationBtnDisabledBg: '#D8E4A8',
-    paginationBtnDisabledText: '#6B7C2D',
-    paginationInfoBg: '#EEF3D0',
-    storeIconWrapBg: '#EEF3D0',
+    heroGradient: ['#18345B', '#355C95', '#E18D4E'],
+    heroShadow: '#193357',
+    eyebrowColor: '#FDE3B8',
+    screenBg: '#F4EFE8',
+    cardBorder: '#E9DED3',
+    cardShadow: '#734E2A',
+    sectionEyebrow: '#B57846',
+    sectionIconBg: '#FFF1E2',
+    actionTileBg: '#FFF7F0',
+    actionTileBorder: '#F1E0CF',
+    timelineCardBg: '#FBF5EF',
+    timelineCardBorder: '#EEE0D5',
+    emptyStateBg: '#FFF8F2',
+    emptyStateBorder: '#F0E1D3',
+    emptyIconBg: '#FBE9D8',
+    emptyTitleColor: '#B04D2E',
+    paginationBtnBg: '#B57846',
+    paginationBtnDisabledBg: '#E9DED3',
+    paginationBtnDisabledText: '#B57846',
+    paginationInfoBg: '#FBF5EF',
+    storeIconWrapBg: '#FFF0DA',
   },
   counterboy: {
-    heroGradient: ['#7F1D1D', '#B91C1C', '#E8453C'],
-    heroShadow: '#7F1D1D',
-    eyebrowColor: '#FECACA',
-    screenBg: '#FFF5F5',
-    cardBorder: '#FFE4E4',
-    cardShadow: '#E8453C',
-    sectionEyebrow: '#E8453C',
-    sectionIconBg: '#FFF0EE',
+    heroGradient: ['#B91C1C', '#E8453C', '#FF8A80'],
+    heroShadow: '#991B1B',
+    eyebrowColor: '#FFE4E6',
+    screenBg: '#FFF6F6',
+    cardBorder: '#FECACA',
+    cardShadow: '#B91C1C',
+    sectionEyebrow: '#C2413A',
+    sectionIconBg: '#FFF1F2',
     actionTileBg: '#FFF5F5',
-    actionTileBorder: '#FFE4E4',
-    timelineCardBg: '#FFF5F5',
-    timelineCardBorder: '#FFE4E4',
-    emptyStateBg: '#FFF0EE',
-    emptyStateBorder: '#FFE4E4',
-    emptyIconBg: '#FFCECE',
-    emptyTitleColor: '#B91C1C',
+    actionTileBorder: '#FECACA',
+    timelineCardBg: '#FFF8F8',
+    timelineCardBorder: '#FEE2E2',
+    emptyStateBg: '#FFF5F5',
+    emptyStateBorder: '#FECACA',
+    emptyIconBg: '#FEE2E2',
+    emptyTitleColor: '#C2413A',
     paginationBtnBg: '#E8453C',
-    paginationBtnDisabledBg: '#FFE4E4',
-    paginationBtnDisabledText: '#E8453C',
-    paginationInfoBg: '#FFF5F5',
-    storeIconWrapBg: '#FFE4E4',
+    paginationBtnDisabledBg: '#FECACA',
+    paginationBtnDisabledText: '#B91C1C',
+    paginationInfoBg: '#FFF1F2',
+    storeIconWrapBg: '#FFE4E6',
   },
 };
 
@@ -308,7 +308,7 @@ export function WalletScreen({
       label: 'Dealer Bonus',
       detail: '5% electrician bonus',
       icon: SparkIcon,
-      tint: '#FFE0DA',
+      tint: '#EAF3FF',
       target: 'dealer_bonus' as Screen,
     },
   ];
@@ -341,6 +341,21 @@ export function WalletScreen({
   ];
 
   const actions = isDealer ? dealerActions : electricianActions;
+  const walletTitle = isDealer
+    ? 'SRV Dealer Wallet'
+    : role === 'user'
+    ? 'SRV User Wallet'
+    : role === 'counterboy'
+    ? 'SRV Counter Boy Wallet'
+    : 'SRV Premium Wallet';
+  const walletSubtitle = isDealer
+    ? 'Dealer wallet for schemes, bank payouts, and dealer bonus tracking.'
+    : role === 'user'
+    ? 'Your rewards dashboard for redemptions and loyalty growth.'
+    : role === 'counterboy'
+    ? 'Counter boy wallet for transfers, payouts, and complete reward activity.'
+    : 'Premium rewards dashboard for redemptions, transfers, and loyalty growth.';
+  const quickActionTitle = isDealer ? 'Manage dealer payouts' : role === 'counterboy' ? 'Manage counter rewards' : 'Move your wallet faster';
 
   return (
     <ScrollView
@@ -368,19 +383,13 @@ export function WalletScreen({
         </View>
 
         <Text style={[styles.eyebrow, { color: t.eyebrowColor }]}>
-          {tx(isDealer ? 'SRV Dealer Wallet' : role === 'user' ? 'SRV User Wallet' : 'SRV Premium Wallet')}
+          {tx(walletTitle)}
         </Text>
         <Text style={styles.heroTitle}>
           {totalPoints} {tx(isDealer ? 'Dealer Bonus Points' : 'Total Points')}
         </Text>
         <Text style={styles.heroSub}>
-          {tx(
-            isDealer
-              ? 'Dealer wallet for schemes, bank payouts, and dealer bonus tracking.'
-              : role === 'user'
-              ? 'Your rewards dashboard for redemptions and loyalty growth.'
-              : 'Premium rewards dashboard for redemptions, transfers, and loyalty growth.'
-          )}
+          {tx(walletSubtitle)}
         </Text>
 
         <View style={styles.heroStats}>
@@ -401,14 +410,14 @@ export function WalletScreen({
         </View>
       </LinearGradient>
 
-      <View style={[styles.card, { borderColor: darkMode ? '#243043' : t.cardBorder, backgroundColor: darkMode ? '#111827' : '#FFFDFC' }, createShadow({ color: darkMode ? '#020617' : t.cardShadow, offsetY: 8, blur: 18, opacity: 0.08, elevation: 4 })]}>
+      <View style={[styles.card, { borderColor: darkMode ? '#243043' : t.cardBorder, backgroundColor: darkMode ? '#111827' : '#FFFFFF' }, createShadow({ color: darkMode ? '#020617' : t.cardShadow, offsetY: 8, blur: 18, opacity: 0.08, elevation: 4 })]}>
         <View style={styles.sectionHeader}>
           <View>
             <Text style={[styles.sectionEyebrow, { color: darkMode ? t.eyebrowColor : t.sectionEyebrow }]}>
               {tx('Quick Actions')}
             </Text>
             <Text style={[styles.sectionTitle, darkMode ? styles.sectionTitleDark : null]}>
-              {tx(isDealer ? 'Manage dealer payouts' : 'Move your wallet faster')}
+              {tx(quickActionTitle)}
             </Text>
           </View>
           <View style={[styles.sectionIconWrap, { backgroundColor: darkMode ? '#1E293B' : t.sectionIconBg }]}>
@@ -440,7 +449,7 @@ export function WalletScreen({
         </View>
       </View>
 
-      <View style={[styles.card, { borderColor: darkMode ? '#243043' : t.cardBorder, backgroundColor: darkMode ? '#111827' : '#FFFDFC' }, createShadow({ color: darkMode ? '#020617' : t.cardShadow, offsetY: 8, blur: 18, opacity: 0.08, elevation: 4 })]}>
+      <View style={[styles.card, { borderColor: darkMode ? '#243043' : t.cardBorder, backgroundColor: darkMode ? '#111827' : '#FFFFFF' }, createShadow({ color: darkMode ? '#020617' : t.cardShadow, offsetY: 8, blur: 18, opacity: 0.08, elevation: 4 })]}>
         <View style={styles.sectionHeader}>
           <View>
             <Text style={[styles.sectionEyebrow, { color: darkMode ? t.eyebrowColor : t.sectionEyebrow }]}>

@@ -12,20 +12,20 @@ import { SRV_LOGO_URI } from '@/shared/data/logoBase64';
 import { createShadow } from '@/shared/theme/shadows';
 import { authApi } from '@/shared/api';
 
-// Role-based color themes
+// Role-based color themes - Customer theme updated
 const THEMES = {
-  user:        { p1: '#6B7C2D', p2: '#4D5F1F', soft: '#EEF4D7', orb: '#B7CC74' },
-  dealer:      { p1: '#1D4ED8', p2: '#1E3A8A', soft: '#DBEAFE', orb: '#93C5FD' },
-  electrician: { p1: '#DE3B30', p2: '#991B1B', soft: '#FEE2E2', orb: '#FCA5A5' },
-  counterboy:  { p1: '#E8453C', p2: '#B91C1C', soft: '#FFE4E4', orb: '#FCA5A5' },
+  user:        { p1: '#6A2F12', p2: '#8D4A1E', soft: '#FBF1E7', orb: '#F0DEC9' },
+  dealer:      { p1: '#D97706', p2: '#F59E0B', soft: '#FEF3C7', orb: '#FDE68A' },
+  electrician: { p1: '#173E80', p2: '#355C95', soft: '#EAF3FF', orb: '#BFDBFE' },
+  counterboy:  { p1: '#E8453C', p2: '#FF6B6B', soft: '#FFF3F3', orb: '#FECACA' },
 };
 
 
 // â”€â”€ Icons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-const UserIcon  = ({ c = '#6B7C2D', s = 20 }) => <Svg width={s} height={s} viewBox="0 0 24 24" fill="none"><Circle cx="12" cy="8" r="4" stroke={c} strokeWidth={1.8}/><Path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke={c} strokeWidth={1.8} strokeLinecap="round"/></Svg>;
-const PhoneIcon = ({ c = '#6B7C2D', s = 20 }) => <Svg width={s} height={s} viewBox="0 0 24 24" fill="none"><Path d="M7.2 4.8h2.4l1.1 3.4-1.5 1.5a14.8 14.8 0 005.1 5.1l1.5-1.5 3.4 1.1v2.4a1.5 1.5 0 01-1.5 1.5A14.9 14.9 0 014.2 6.3 1.5 1.5 0 015.7 4.8h1.5z" stroke={c} strokeWidth={1.8} strokeLinejoin="round"/></Svg>;
-const MailIcon  = ({ c = '#6B7C2D', s = 20 }) => <Svg width={s} height={s} viewBox="0 0 24 24" fill="none"><Rect x="3" y="5" width="18" height="14" rx="3" stroke={c} strokeWidth={1.8}/><Path d="M5 8l7 5 7-5" stroke={c} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"/></Svg>;
-const LockIcon  = ({ c = '#6B7C2D', s = 20 }) => <Svg width={s} height={s} viewBox="0 0 24 24" fill="none"><Rect x="5" y="11" width="14" height="10" rx="2.5" stroke={c} strokeWidth={1.8}/><Path d="M8 11V8.5A4 4 0 0112 4.5a4 4 0 014 4V11" stroke={c} strokeWidth={1.8} strokeLinecap="round"/><Circle cx="12" cy="16" r="1.3" fill={c}/></Svg>;
+const UserIcon  = ({ c = '#6A2F12', s = 20 }) => <Svg width={s} height={s} viewBox="0 0 24 24" fill="none"><Circle cx="12" cy="8" r="4" stroke={c} strokeWidth={1.8}/><Path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke={c} strokeWidth={1.8} strokeLinecap="round"/></Svg>;
+const PhoneIcon = ({ c = '#6A2F12', s = 20 }) => <Svg width={s} height={s} viewBox="0 0 24 24" fill="none"><Path d="M7.2 4.8h2.4l1.1 3.4-1.5 1.5a14.8 14.8 0 005.1 5.1l1.5-1.5 3.4 1.1v2.4a1.5 1.5 0 01-1.5 1.5A14.9 14.9 0 014.2 6.3 1.5 1.5 0 015.7 4.8h1.5z" stroke={c} strokeWidth={1.8} strokeLinejoin="round"/></Svg>;
+const MailIcon  = ({ c = '#6A2F12', s = 20 }) => <Svg width={s} height={s} viewBox="0 0 24 24" fill="none"><Rect x="3" y="5" width="18" height="14" rx="3" stroke={c} strokeWidth={1.8}/><Path d="M5 8l7 5 7-5" stroke={c} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"/></Svg>;
+const LockIcon  = ({ c = '#6A2F12', s = 20 }) => <Svg width={s} height={s} viewBox="0 0 24 24" fill="none"><Rect x="5" y="11" width="14" height="10" rx="2.5" stroke={c} strokeWidth={1.8}/><Path d="M8 11V8.5A4 4 0 0112 4.5a4 4 0 014 4V11" stroke={c} strokeWidth={1.8} strokeLinecap="round"/><Circle cx="12" cy="16" r="1.3" fill={c}/></Svg>;
 const EyeIcon   = ({ c = '#9CA3AF', s = 18 }) => <Svg width={s} height={s} viewBox="0 0 24 24" fill="none"><Path d="M2.5 12s3.3-5 9.5-5 9.5 5 9.5 5-3.3 5-9.5 5-9.5-5-9.5-5z" stroke={c} strokeWidth={1.8}/><Circle cx="12" cy="12" r="3" stroke={c} strokeWidth={1.8}/></Svg>;
 const EyeOffIcon= ({ c = '#9CA3AF', s = 18 }) => <Svg width={s} height={s} viewBox="0 0 24 24" fill="none"><Path d="M3 3l18 18" stroke={c} strokeWidth={1.8} strokeLinecap="round"/><Path d="M10.6 5.2c.5-.1.9-.2 1.4-.2 6.2 0 9.5 5 9.5 5a15.5 15.5 0 01-3.4 3.6M6.3 6.3A15.7 15.7 0 002.5 12s3.3 5 9.5 5c1 0 1.9-.1 2.7-.4" stroke={c} strokeWidth={1.8} strokeLinecap="round"/></Svg>;
 const ChevronLeft = ({ c = '#fff', s = 20 }) => <Svg width={s} height={s} viewBox="0 0 24 24" fill="none"><Path d="M15 6l-6 6 6 6" stroke={c} strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round"/></Svg>;
@@ -60,7 +60,7 @@ function Orbs({ color }: { color: string }) {
 function Input({
   label, value, onChange, placeholder, icon, keyboard = 'default',
   secure = false, toggleSecure, autoCap = 'none', ref: inputRef,
-  onSubmit, returnKey = 'next', darkMode, accentColor = '#6B7C2D',
+  onSubmit, returnKey = 'next', darkMode, accentColor = '#6A2F12',
 }: {
   label: string; value: string; onChange: (v: string) => void;
   placeholder: string; icon: React.ReactNode;
@@ -83,7 +83,7 @@ function Input({
           ref={inputRef as any}
           style={[S.inputText, { color: darkMode ? '#F1F5F9' : '#111827' }]}
           value={value} onChangeText={onChange} placeholder={placeholder}
-          placeholderTextColor={darkMode ? '#475569' : '#A3B56A'}
+          placeholderTextColor={darkMode ? '#475569' : '#9CA3AF'}
           keyboardType={keyboard} secureTextEntry={secure}
           autoCapitalize={autoCap} onFocus={focus} onBlur={blur}
           onSubmitEditing={onSubmit} returnKeyType={returnKey}
@@ -130,44 +130,186 @@ export function UserAuthScreen({
 
   const [lPhone, setLPhone] = useState('');
   const [lPwd,   setLPwd]   = useState('');
+  const [lOtp,   setLOtp]   = useState('');
   const [showLP, setShowLP] = useState(false);
+  const [useOtpLogin, setUseOtpLogin] = useState(false);
+  const [otpSentLogin, setOtpSentLogin] = useState(false);
   const lPwdRef = useRef<TextInput>(null);
+  const lOtpRef = useRef<TextInput>(null);
 
   const [sName,  setSName]  = useState('');
   const [sPhone, setSPhone] = useState('');
   const [sEmail, setSEmail] = useState('');
+  const [sOtp,   setSOtp]   = useState('');
   const [sPwd,   setSPwd]   = useState('');
   const [showSP, setShowSP] = useState(false);
+  const [otpSentSignup, setOtpSentSignup] = useState(false);
   const sPhoneRef = useRef<TextInput>(null);
   const sEmailRef = useRef<TextInput>(null);
+  const sOtpRef   = useRef<TextInput>(null);
   const sPwdRef   = useRef<TextInput>(null);
 
-  const bg   = darkMode ? '#0F172A' : '#F6F8EE';
+  const bg   = darkMode ? '#0F172A' : '#EEF3F8';
   const card = darkMode ? '#1E293B' : '#FFFFFF';
-  const bdr  = darkMode ? '#334155' : '#E5E7EB';
+  const bdr  = darkMode ? '#334155' : '#D7E7FF';
   const tp   = darkMode ? '#F1F5F9' : '#111827';
   const tm   = darkMode ? '#94A3B8' : '#6B7280';
+  const statCardStyle =
+    role === 'electrician'
+      ? {
+          backgroundColor: '#EEF5FF',
+          borderColor: '#D3E3FF',
+        }
+      : role === 'user'
+        ? {
+            backgroundColor: '#FBF1E7',
+            borderColor: '#E5D4C1',
+          }
+      : {
+          backgroundColor: '#FFF7EF',
+          borderColor: '#F2DEC5',
+        };
 
-  const login = async () => {
+  const sendOtpLogin = async () => {
     if (!lPhone.trim()) { Alert.alert('', tx('Please enter your phone number')); return; }
     setLoading(true);
     try {
-      const res = await authApi.login({ phone: lPhone.trim(), password: lPwd.trim(), role });
-      (globalThis as typeof globalThis & { __srvLoginUser?: unknown }).__srvLoginUser = res.user;
-      onAuthenticated(role, { passwordConfigured: !!lPwd, passwordValue: lPwd });
-    } catch (e: any) { Alert.alert(tx('Login Failed'), e?.message ?? tx('Check your credentials')); }
+      // Real API call to send OTP
+      const response = await fetch(`${authApi.baseUrl}/mobile/auth/send-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: lPhone.trim(), role }),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to send OTP');
+      }
+      
+      setOtpSentLogin(true);
+      Alert.alert(
+        tx('OTP Sent'), 
+        data.devOtp ? `${tx('OTP sent successfully')}. Dev OTP: ${data.devOtp}` : tx('Please check your phone for the OTP')
+      );
+    } catch (e: any) { 
+      Alert.alert(tx('Error'), e?.message ?? tx('Failed to send OTP')); 
+    }
     finally { setLoading(false); }
+  };
+
+  const sendOtpSignup = async () => {
+    if (!sPhone.trim()) { Alert.alert('', tx('Please enter your phone number')); return; }
+    setLoading(true);
+    try {
+      // Real API call to send signup OTP
+      const response = await fetch(`${authApi.baseUrl}/mobile/auth/signup/send-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: sPhone.trim(), role }),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to send OTP');
+      }
+      
+      setOtpSentSignup(true);
+      Alert.alert(
+        tx('OTP Sent'), 
+        data.devOtp ? `${tx('OTP sent successfully')}. Dev OTP: ${data.devOtp}` : tx('Please check your phone for the OTP')
+      );
+    } catch (e: any) { 
+      Alert.alert(tx('Error'), e?.message ?? tx('Failed to send OTP')); 
+    }
+    finally { setLoading(false); }
+  };
+
+  const login = async () => {
+    if (!lPhone.trim()) { Alert.alert('', tx('Please enter your phone number')); return; }
+    
+    if (useOtpLogin) {
+      // Login with OTP - Real API
+      if (!lOtp.trim()) { Alert.alert('', tx('Please enter the OTP')); return; }
+      
+      setLoading(true);
+      try {
+        const response = await fetch(`${authApi.baseUrl}/mobile/auth/verify-otp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone: lPhone.trim(), role, otp: lOtp.trim() }),
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.message || 'Invalid OTP');
+        }
+        
+        (globalThis as typeof globalThis & { __srvLoginUser?: unknown }).__srvLoginUser = data.user;
+        onAuthenticated(role, { passwordConfigured: false, passwordValue: '' });
+      } catch (e: any) { 
+        Alert.alert(tx('Login Failed'), e?.message ?? tx('Invalid OTP')); 
+      }
+      finally { setLoading(false); }
+    } else {
+      // Login with password (password is optional)
+      setLoading(true);
+      try {
+        const res = await authApi.login({ phone: lPhone.trim(), password: lPwd.trim(), role });
+        (globalThis as typeof globalThis & { __srvLoginUser?: unknown }).__srvLoginUser = res.user;
+        onAuthenticated(role, { passwordConfigured: !!lPwd, passwordValue: lPwd });
+      } catch (e: any) { 
+        Alert.alert(tx('Login Failed'), e?.message ?? tx('Check your credentials')); 
+      }
+      finally { setLoading(false); }
+    }
   };
 
   const signup = async () => {
     if (!sName.trim())  { Alert.alert('', tx('Please enter your name')); return; }
     if (!sPhone.trim()) { Alert.alert('', tx('Please enter your phone number')); return; }
+    if (!sOtp.trim())   { Alert.alert('', tx('Please enter the OTP')); return; }
+    
     setLoading(true);
     try {
-      const res = await authApi.register({ name: sName.trim(), phone: sPhone.trim(), email: sEmail.trim(), password: sPwd.trim(), role });
-      (globalThis as typeof globalThis & { __srvLoginUser?: unknown }).__srvLoginUser = res.user;
+      // First verify OTP
+      const verifyResponse = await fetch(`${authApi.baseUrl}/mobile/auth/signup/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: sPhone.trim(), role, otp: sOtp.trim() }),
+      });
+      
+      const verifyData = await verifyResponse.json();
+      
+      if (!verifyResponse.ok) {
+        throw new Error(verifyData.message || 'Invalid OTP');
+      }
+      
+      // Then register user
+      const registerResponse = await fetch(`${authApi.baseUrl}/mobile/auth/signup/${role}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: sName.trim(),
+          phone: sPhone.trim(),
+          email: sEmail.trim() || undefined,
+          password: sPwd.trim() || undefined,
+        }),
+      });
+      
+      const registerData = await registerResponse.json();
+      
+      if (!registerResponse.ok) {
+        throw new Error(registerData.message || 'Registration failed');
+      }
+      
+      (globalThis as typeof globalThis & { __srvLoginUser?: unknown }).__srvLoginUser = registerData.user;
       onAuthenticated(role, { passwordConfigured: !!sPwd, passwordValue: sPwd });
-    } catch (e: any) { Alert.alert(tx('Signup Failed'), e?.message ?? tx('Something went wrong')); }
+    } catch (e: any) { 
+      Alert.alert(tx('Signup Failed'), e?.message ?? tx('Invalid OTP or registration failed')); 
+    }
     finally { setLoading(false); }
   };
 
@@ -175,7 +317,7 @@ export function UserAuthScreen({
   if (mode === 'landing') {
     return (
       <View style={[S.screen, { backgroundColor: bg }]}>
-        <LinearGradient colors={[P1, P2, '#364815']} style={[S.hero, { paddingTop: insets.top + 12 }]}>
+          <LinearGradient colors={[P1, P2, theme.orb]} style={[S.hero, { paddingTop: insets.top + 12 }]}>
           <Orbs color={theme.orb} />
           <Animated.View style={[S.heroContent, { transform: [{ translateY: slideY }], opacity: fadeO }]}>
             <View style={S.logoWrap}>
@@ -198,13 +340,17 @@ export function UserAuthScreen({
             </LinearGradient>
           </Pressable>
 
-          <Pressable onPress={() => setMode('signup')} style={[S.btnOutline, { borderColor: P1 }]} android_ripple={{ color: `${P1}15` }}>
+          <Pressable
+            onPress={() => setMode('signup')}
+            style={[S.btnOutline, { borderColor: `${P1}28`, backgroundColor: SOFT }]}
+            android_ripple={{ color: `${P1}15` }}
+          >
             <Text style={[S.btnOutlineText, { color: P1 }]}>{tx('Create New Account')}</Text>
           </Pressable>
 
-          <View style={[S.statsRow, { borderTopColor: bdr }]}>
+          <View style={[S.statsRow, { borderTopColor: `${P1}22` }]}>
             {[['25+', tx('Years')], ['250+', tx('Products')], ['50K+', tx('Customers')]].map(([n, l], i) => (
-              <View key={i} style={S.statItem}>
+              <View key={i} style={[S.statItem, statCardStyle]}>
                 <Text style={[S.statN, { color: P1 }]}>{n}</Text>
                 <Text style={[S.statL, { color: tm }]}>{l}</Text>
               </View>
@@ -216,7 +362,7 @@ export function UserAuthScreen({
         {onBack && (
           <Pressable onPress={onBack} style={S.backToOnboarding} android_ripple={{ color: `${P1}15` }}>
             <LinearGradient
-              colors={[SOFT, '#F6F8EE']}
+              colors={[SOFT, theme.orb]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={[S.backToOnboardingInner, { borderColor: `${P1}40` }]}
@@ -254,44 +400,113 @@ export function UserAuthScreen({
             {!isLogin && (
               <Input label={tx('Full Name')} value={sName} onChange={setSName}
                 placeholder={tx('Your full name')} icon={<UserIcon c={P1} />}
-                autoCap="words" onSubmit={() => sPhoneRef.current?.focus()} darkMode={darkMode} />
+                autoCap="words" onSubmit={() => sPhoneRef.current?.focus()} darkMode={darkMode} accentColor={P1} />
             )}
+            
             <Input label={tx('Phone Number')} value={isLogin ? lPhone : sPhone}
               onChange={isLogin ? setLPhone : setSPhone}
               placeholder={tx('10-digit mobile number')} icon={<PhoneIcon c={P1} />}
               keyboard="phone-pad"
               ref={isLogin ? undefined : sPhoneRef}
-              onSubmit={isLogin ? () => lPwdRef.current?.focus() : () => sEmailRef.current?.focus()}
-              darkMode={darkMode} />
-            {!isLogin && (
+              onSubmit={isLogin ? (useOtpLogin ? () => {} : () => lPwdRef.current?.focus()) : () => sEmailRef.current?.focus()}
+              darkMode={darkMode} accentColor={P1} />
+            
+            {/* Signup: Send OTP Button */}
+            {!isLogin && !otpSentSignup && (
+              <Pressable onPress={sendOtpSignup} disabled={loading || !sPhone.trim()}
+                android_ripple={{ color: 'rgba(255,255,255,0.2)' }} 
+                style={[S.btnShell, { marginTop: 8 }, (loading || !sPhone.trim()) && { opacity: 0.5 }]}>
+                <LinearGradient colors={[P1, P2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={[S.btnPrimary, { height: 44 }]}>
+                  <Text style={[S.btnPrimaryText, { fontSize: 13 }]}>{loading ? tx('Sending...') : tx('Send OTP')}</Text>
+                </LinearGradient>
+              </Pressable>
+            )}
+            
+            {/* Signup: OTP Input */}
+            {!isLogin && otpSentSignup && (
+              <Input label={tx('Enter OTP')} value={sOtp} onChange={setSOtp}
+                placeholder={tx('6-digit OTP')} icon={<LockIcon c={P1} />}
+                keyboard="number-pad" ref={sOtpRef}
+                onSubmit={() => sEmailRef.current?.focus()} darkMode={darkMode} accentColor={P1} />
+            )}
+            
+            {!isLogin && otpSentSignup && (
               <Input label={`${tx('Email')} (${tx('optional')})`} value={sEmail} onChange={setSEmail}
                 placeholder={tx('your@email.com')} icon={<MailIcon c={P1} />}
                 keyboard="email-address" ref={sEmailRef}
-                onSubmit={() => sPwdRef.current?.focus()} darkMode={darkMode} />
+                onSubmit={() => sPwdRef.current?.focus()} darkMode={darkMode} accentColor={P1} />
             )}
-            <Input
-              label={isLogin ? tx('Password') : `${tx('Password')} (${tx('optional')})`}
-              value={isLogin ? lPwd : sPwd}
-              onChange={isLogin ? setLPwd : setSPwd}
-              placeholder={isLogin ? tx('Enter password') : tx('Create a password')}
-              icon={<LockIcon c={P1} />}
-              secure={isLogin ? !showLP : !showSP}
-              toggleSecure={isLogin ? () => setShowLP(v => !v) : () => setShowSP(v => !v)}
-              ref={isLogin ? lPwdRef : sPwdRef}
-              onSubmit={isLogin ? login : signup}
-              returnKey="done" darkMode={darkMode} />
+            
+            {!isLogin && otpSentSignup && (
+              <Input
+                label={`${tx('Password')} (${tx('optional')})`}
+                value={sPwd}
+                onChange={setSPwd}
+                placeholder={tx('Create a password')}
+                icon={<LockIcon c={P1} />}
+                secure={!showSP}
+                toggleSecure={() => setShowSP(v => !v)}
+                ref={sPwdRef}
+                onSubmit={signup}
+                returnKey="done" darkMode={darkMode} accentColor={P1} />
+            )}
+            
+            {/* Login: Toggle between Password and OTP */}
+            {isLogin && (
+              <Pressable onPress={() => setUseOtpLogin(v => !v)} style={{ marginTop: 8, marginBottom: 8 }}>
+                <Text style={[S.switchText, { color: P1, textAlign: 'center', fontSize: 12, fontWeight: '700' }]}>
+                  {useOtpLogin ? tx('Login with Password instead') : tx('Login with OTP instead')}
+                </Text>
+              </Pressable>
+            )}
+            
+            {/* Login: Password Input */}
+            {isLogin && !useOtpLogin && (
+              <Input
+                label={`${tx('Password')} (${tx('optional')})`}
+                value={lPwd}
+                onChange={setLPwd}
+                placeholder={tx('Enter password or leave empty')}
+                icon={<LockIcon c={P1} />}
+                secure={!showLP}
+                toggleSecure={() => setShowLP(v => !v)}
+                ref={lPwdRef}
+                onSubmit={login}
+                returnKey="done" darkMode={darkMode} accentColor={P1} />
+            )}
+            
+            {/* Login: OTP Section */}
+            {isLogin && useOtpLogin && !otpSentLogin && (
+              <Pressable onPress={sendOtpLogin} disabled={loading || !lPhone.trim()}
+                android_ripple={{ color: 'rgba(255,255,255,0.2)' }} 
+                style={[S.btnShell, { marginTop: 8 }, (loading || !lPhone.trim()) && { opacity: 0.5 }]}>
+                <LinearGradient colors={[P1, P2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={[S.btnPrimary, { height: 44 }]}>
+                  <Text style={[S.btnPrimaryText, { fontSize: 13 }]}>{loading ? tx('Sending...') : tx('Send OTP')}</Text>
+                </LinearGradient>
+              </Pressable>
+            )}
+            
+            {isLogin && useOtpLogin && otpSentLogin && (
+              <Input label={tx('Enter OTP')} value={lOtp} onChange={setLOtp}
+                placeholder={tx('6-digit OTP')} icon={<LockIcon c={P1} />}
+                keyboard="number-pad" ref={lOtpRef}
+                onSubmit={login}
+                returnKey="done" darkMode={darkMode} accentColor={P1} />
+            )}
           </View>
 
-          {/* Submit */}
-          <Pressable onPress={isLogin ? login : signup} disabled={loading}
-            android_ripple={{ color: 'rgba(255,255,255,0.2)' }} style={[S.btnShell, loading && { opacity: 0.7 }]}>
-            <LinearGradient colors={[P1, P2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={S.btnPrimary}>
-              <Text style={S.btnPrimaryText}>
-                {loading ? (isLogin ? tx('Logging in...') : tx('Creating...')) : (isLogin ? tx('Login') : tx('Create Account'))}
-              </Text>
-              {!loading && <ArrowRight s={18} />}
-            </LinearGradient>
-          </Pressable>
+          {/* Submit - Only show when ready */}
+          {((isLogin && (!useOtpLogin || otpSentLogin)) || (!isLogin && otpSentSignup)) && (
+            <Pressable onPress={isLogin ? login : signup} disabled={loading}
+              android_ripple={{ color: 'rgba(255,255,255,0.2)' }} style={[S.btnShell, loading && { opacity: 0.7 }]}>
+              <LinearGradient colors={[P1, P2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={S.btnPrimary}>
+                <Text style={S.btnPrimaryText}>
+                  {loading ? (isLogin ? tx('Logging in...') : tx('Creating...')) : (isLogin ? tx('Login') : tx('Create Account'))}
+                </Text>
+                {!loading && <ArrowRight s={18} />}
+              </LinearGradient>
+            </Pressable>
+          )}
 
           {/* Switch */}
           <Pressable onPress={() => setMode(isLogin ? 'signup' : 'login')} style={S.switchRow}>
@@ -316,8 +531,10 @@ const S = StyleSheet.create({
   // Hero (landing)
   hero: {
     paddingHorizontal: 20,
-    paddingBottom: 24,
+    paddingBottom: 30,
     overflow: 'hidden',
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
   },
   backRow: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
@@ -349,21 +566,35 @@ const S = StyleSheet.create({
     padding: 20,
     gap: 10,
     elevation: 5,
+    shadowColor: '#734E2A',
+    shadowOpacity: 0.08,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
   },
   landTitle: { fontSize: 20, fontWeight: '900' },
   landSub: { fontSize: 13, lineHeight: 18, marginBottom: 4 },
-  statsRow: { flexDirection: 'row', justifyContent: 'space-around', paddingTop: 14, borderTopWidth: 1, marginTop: 4 },
-  statItem: { alignItems: 'center', gap: 2 },
+  statsRow: { flexDirection: 'row', justifyContent: 'space-around', paddingTop: 14, borderTopWidth: 1, marginTop: 6 },
+  statItem: {
+    alignItems: 'center',
+    gap: 2,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+    minWidth: 84,
+    borderWidth: 1,
+  },
   statN: { fontSize: 17, fontWeight: '900' },
   statL: { fontSize: 11, fontWeight: '600' },
 
   // Form header
   formHeader: {
     paddingHorizontal: 16,
-    paddingBottom: 16,
+    paddingBottom: 18,
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 6,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
   },
   formHeaderLogoWrap: {
     width: 56, height: 56, borderRadius: 16,
@@ -377,13 +608,17 @@ const S = StyleSheet.create({
   formHeaderSub: { fontSize: 12, color: 'rgba(255,255,255,0.75)', textAlign: 'center', marginTop: 2 },
 
   // Form body
-  formBody: { padding: 16, paddingTop: 20, gap: 14 },
+  formBody: { padding: 16, paddingTop: 22, gap: 14 },
   formWelcome: { gap: 4, alignItems: 'center' },
   formWelcomeTitle: { fontSize: 22, fontWeight: '900', textAlign: 'center' },
   formWelcomeSub: { fontSize: 13, lineHeight: 18, textAlign: 'center' },
   formCard: {
     borderRadius: 20, borderWidth: 1, padding: 18, gap: 14,
     elevation: 3,
+    shadowColor: '#734E2A',
+    shadowOpacity: 0.07,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
   },
 
   // Input
@@ -413,7 +648,7 @@ const S = StyleSheet.create({
   },
   btnOutlineText: { fontSize: 15, fontWeight: '900' },
   switchRow: { alignItems: 'center', paddingVertical: 8 },
-  switchText: { fontSize: 13 },
+  switchText: { fontSize: 13, color: '#7D6B5D' },
 
   // Back to onboarding â€” landing bottom
   backToOnboarding: {

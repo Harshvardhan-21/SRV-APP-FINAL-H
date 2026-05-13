@@ -22,25 +22,26 @@ import { scanApi } from '@/shared/api';
 import { clearShadow, createShadow } from '@/shared/theme/shadows';
 import type { RewardHistoryItem, ScanMode } from '@/shared/types/rewards';
 import type { Screen } from '@/shared/types/navigation';
+import { counterboyTheme as cb } from '@/features/counterboy/theme';
 
 const Colors = {
-  primary: '#2563EB',
-  primaryLight: '#60A5FA',
-  primaryDark: '#1D4ED8',
-  background: '#EEF4FF',
-  backgroundDark: '#0A0F1A',
+  primary: cb.primary,
+  primaryLight: '#D98A7F',
+  primaryDark: cb.primaryDeep,
+  background: cb.bg,
+  backgroundDark: cb.darkBg,
   surface: '#FFFFFF',
-  surfaceDark: '#141B2D',
-  border: '#D7E4FF',
-  borderDark: '#2A3548',
-  textDark: '#1A1D2E',
-  textMuted: '#6B7280',
-  success: '#10B981',
-  successLight: '#D1FAE5',
-  warning: '#F59E0B',
-  warningLight: '#FEF3C7',
-  accent: '#1E40AF',
-  accentLight: '#DBEAFE',
+  surfaceDark: cb.darkSurface,
+  border: cb.border,
+  borderDark: cb.darkBorder,
+  textDark: cb.text,
+  textMuted: cb.muted,
+  success: cb.success,
+  successLight: cb.successSoft,
+  warning: cb.warning,
+  warningLight: cb.warningSoft,
+  accent: cb.slate,
+  accentLight: cb.slateSoft,
 };
 
 type PendingRewardItem = Omit<RewardHistoryItem, 'id' | 'time'>;
@@ -1297,9 +1298,9 @@ const styles = StyleSheet.create({
     width: '50%',
     borderRadius: 16,
   },
-  modeHighlightSingle: { left: 6, backgroundColor: '#FFF0EE' },
+  modeHighlightSingle: { left: 6, backgroundColor: cb.soft },
   modeHighlightMulti: { right: 6, backgroundColor: Colors.accentLight },
-  modeHighlightDark: { backgroundColor: 'rgba(99, 102, 241, 0.2)' },
+  modeHighlightDark: { backgroundColor: 'rgba(74,100,125,0.24)' },
   modeTab: {
     flex: 1,
     flexDirection: 'row',
@@ -1338,7 +1339,7 @@ const styles = StyleSheet.create({
     gap: 12,
     backgroundColor: '#FEF8F7',
   },
-  cameraFallbackDark: { backgroundColor: '#0F172A' },
+  cameraFallbackDark: { backgroundColor: cb.darkBg },
   cameraFallbackScanned: { backgroundColor: 'rgba(0,0,0,0.5)' },
   cameraFallbackText: { fontSize: 16, fontWeight: '700', color: Colors.primary },
   cameraFallbackTextDark: { color: '#F8FAFC' },
@@ -1431,7 +1432,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#A7F3D0',
   },
-  successBoxDark: { backgroundColor: '#064E3B', borderColor: '#065F46' },
+  successBoxDark: { backgroundColor: '#12372B', borderColor: '#1F5A45' },
   successBoxHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1484,7 +1485,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
     borderRadius: 12,
   },
-  batchItemDark: { backgroundColor: '#1E293B' },
+  batchItemDark: { backgroundColor: '#2A2321' },
   batchItemLeft: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
   batchItemDot: { width: 8, height: 8, borderRadius: 4 },
   batchItemLabel: { fontSize: 13, color: Colors.textDark, flex: 1 },
@@ -1509,7 +1510,7 @@ const styles = StyleSheet.create({
     gap: 10,
     ...createShadow({ color: Colors.primary, offsetY: 6, blur: 12, opacity: 0.4, elevation: 8 }),
   },
-  primaryBtnDisabled: { backgroundColor: '#C0C0CC', ...clearShadow() },
+  primaryBtnDisabled: { backgroundColor: '#CBB8B0', ...clearShadow() },
   primaryBtnText: { color: '#fff', fontSize: 16, fontWeight: '800' },
   doneBtn: {
     width: '100%',
@@ -1520,7 +1521,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.accent,
     ...createShadow({ color: Colors.accent, offsetY: 4, blur: 8, opacity: 0.3, elevation: 6 }),
   },
-  doneBtnDisabled: { backgroundColor: '#475569', ...clearShadow() },
+  doneBtnDisabled: { backgroundColor: '#6E7D8A', ...clearShadow() },
   doneBtnText: { color: '#fff', fontSize: 15, fontWeight: '800' },
 
   secondaryActions: { flexDirection: 'row', gap: 12, width: '100%' },
@@ -1707,7 +1708,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     marginBottom: 10,
   },
-  allItemsRowDark: { backgroundColor: '#1E293B' },
+  allItemsRowDark: { backgroundColor: '#2A2321' },
   allItemsRowLeft: { flexDirection: 'row', alignItems: 'center', gap: 14, flex: 1 },
   allItemsDot: { width: 10, height: 10, borderRadius: 5 },
   allItemsRowInfo: { flex: 1 },

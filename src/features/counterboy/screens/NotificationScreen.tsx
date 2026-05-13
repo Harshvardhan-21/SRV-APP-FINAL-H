@@ -8,9 +8,10 @@ import type { Screen, UserRole } from '@/shared/types/navigation';
 import { notificationsApi } from '@/shared/api';
 import { storage } from '@/shared/api/storage';
 import { useAuth } from '@/shared/context/AuthContext';
+import { counterboyTheme as cb } from '@/features/counterboy/theme';
 
-const CB_PRIMARY = '#E8453C';
-const CB_DARK    = '#B91C1C';
+const CB_PRIMARY = cb.primary;
+const CB_DARK = cb.primaryDeep;
 
 function BellIcon({ color = '#0F172A', size = 22 }: { color?: string; size?: number }) {
   return (
@@ -61,12 +62,9 @@ function WalletIcon({ color = '#0F172A', size = 22 }: { color?: string; size?: n
 const ICON_CYCLE = [OfferIcon, ScanIcon, WalletIcon, BellIcon];
 
 // Counter Boy notification card color cycles — red theme
-const CB_CYCLES: [string, string][] = [
-  ['#FFE4E4', '#FFCECE'],
-  ['#FFF0EE', '#FFE0DC'],
-  ['#FFF5F5', '#FFE4E4'],
-  ['#FFE8E8', '#FFD4D4'],
-];
+const CB_CYCLES: [string, string][] = cb.notificationCycles.map(
+  (cycle) => [cycle[0], cycle[1]] as [string, string]
+);
 
 function formatNotifTime(dateStr?: string): string {
   if (!dateStr) return 'Recent';
@@ -149,8 +147,8 @@ export function NotificationScreen({
       {/* Hero */}
       <LinearGradient
         colors={darkMode
-          ? ['#1A0000', '#2D0A0A', '#3D1010']
-          : [CB_DARK, CB_PRIMARY, '#FF6B6B']}
+          ? cb.heroDark
+          : [cb.primaryDeep, cb.primary, '#D98A7F']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.hero}
@@ -207,7 +205,7 @@ export function NotificationScreen({
         return (
           <LinearGradient
             key={item.id}
-            colors={darkMode ? ['#1A0000', '#2D0A0A'] : item.colors}
+            colors={darkMode ? cb.darkHeroCard : item.colors}
             style={[styles.card, darkMode ? styles.cardDark : null]}
           >
             <View style={styles.cardTop}>
@@ -229,8 +227,8 @@ export function NotificationScreen({
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#FFF5F5' },
-  screenDark: { backgroundColor: '#0F0000' },
+  screen: { flex: 1, backgroundColor: cb.bg },
+  screenDark: { backgroundColor: cb.darkBg },
   content: { padding: 14, gap: 14, paddingBottom: 120 },
   hero: {
     borderRadius: 28, padding: 18, overflow: 'hidden',
@@ -248,8 +246,8 @@ const styles = StyleSheet.create({
   heroGhostBtn: { backgroundColor: 'rgba(255,255,255,0.12)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.16)', paddingHorizontal: 14, paddingVertical: 10, borderRadius: 14 },
   heroGhostText: { color: '#FFFFFF', fontWeight: '800', fontSize: 12.5 },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 6 },
-  sectionTitle: { color: '#1F0000', fontSize: 20, fontWeight: '900' },
-  sectionTitleDark: { color: '#F8FAFC' },
+  sectionTitle: { color: cb.text, fontSize: 20, fontWeight: '900' },
+  sectionTitleDark: { color: cb.darkText },
   unreadPill: { backgroundColor: CB_PRIMARY, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 },
   unreadText: { color: '#FFFFFF', fontSize: 11, fontWeight: '800' },
   card: {
@@ -261,19 +259,19 @@ const styles = StyleSheet.create({
   iconWrap: { width: 46, height: 46, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.72)', alignItems: 'center', justifyContent: 'center' },
   iconWrapDark: { backgroundColor: 'rgba(255,255,255,0.08)' },
   meta: { flex: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 8 },
-  cardType: { color: '#1F0000', fontSize: 12.5, fontWeight: '800' },
-  cardTime: { color: '#7A4040', fontSize: 11.5, fontWeight: '700' },
-  cardTitle: { color: '#1F0000', fontSize: 17, fontWeight: '900' },
-  cardBody: { color: '#5A2020', fontSize: 12.5, lineHeight: 19, marginTop: 8 },
-  cardTypeDark: { color: '#E2E8F0' },
-  cardTimeDark: { color: '#94A3B8' },
-  cardTitleDark: { color: '#F8FAFC' },
-  cardBodyDark: { color: '#CBD5E1' },
+  cardType: { color: cb.text, fontSize: 12.5, fontWeight: '800' },
+  cardTime: { color: cb.muted, fontSize: 11.5, fontWeight: '700' },
+  cardTitle: { color: cb.text, fontSize: 17, fontWeight: '900' },
+  cardBody: { color: cb.primaryInk, fontSize: 12.5, lineHeight: 19, marginTop: 8 },
+  cardTypeDark: { color: cb.darkText },
+  cardTimeDark: { color: cb.darkMuted },
+  cardTitleDark: { color: cb.darkText },
+  cardBodyDark: { color: '#D8CEC8' },
   emptyWrap: { alignItems: 'center', paddingVertical: 48, paddingHorizontal: 24 },
-  emptyIconWrap: { width: 72, height: 72, borderRadius: 24, backgroundColor: '#FFE4E4', alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
+  emptyIconWrap: { width: 72, height: 72, borderRadius: 24, backgroundColor: cb.soft, alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
   emptyIconWrapDark: { backgroundColor: 'rgba(255,255,255,0.06)' },
   emptyTitle: { fontSize: 18, fontWeight: '800', color: CB_DARK, marginBottom: 8 },
-  emptyTitleDark: { color: '#F1F5F9' },
-  emptySub: { fontSize: 13, color: '#9B6060', textAlign: 'center', lineHeight: 20 },
-  emptySubDark: { color: '#94A3B8' },
+  emptyTitleDark: { color: cb.darkText },
+  emptySub: { fontSize: 13, color: cb.muted, textAlign: 'center', lineHeight: 20 },
+  emptySubDark: { color: cb.darkMuted },
 });

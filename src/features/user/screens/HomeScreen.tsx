@@ -22,11 +22,18 @@ import type { Screen } from '@/shared/types/navigation';
 import { formatCountText, usePreferenceContext } from '@/shared/preferences';
 import ProfileFlipCard from '@/shared/components/ProfileFlipCard';
 import { createShadow } from '@/shared/theme/shadows';
-import { TestimonialShowcase, type TestimonialItem } from '@/shared/components/TestimonialShowcase';
+import {
+  TESTIMONIAL_FALLBACK_COPY,
+  getTestimonialTheme,
+  TestimonialShowcase,
+  type TestimonialItem,
+} from '@/shared/components/TestimonialShowcase';
 import { WebsitePromoSection } from '@/shared/components/WebsitePromoSection';
-import { BannerCarousel } from '@/shared/components/BannerCarousel';
+import { BannerCarousel, type BannerSlide as CarouselSlide } from '@/shared/components/BannerCarousel';
 import { ElectricianTierIcon, getElectricianTier } from './ElectricianTierScreen';
 import { useCatalogDownload } from '@/shared/hooks';
+import { API_BASE_URL } from '@/shared/api/config';
+import { bannersApi } from '@/shared/api';
 
 // ── Category color system (same as ProductScreen) ─────────────────────
 type CatColorScheme = {
@@ -208,6 +215,19 @@ function getCatImage(id: string, apiImageUrl?: string | null): string {
   return apiImageUrl || CAT_IMAGES[id] || CAT_IMAGES.fanbox;
 }
 
+const CUSTOMER_THEME = {
+  heroLight: ['#FBF1E7', '#F5E8DC', '#F0DEC9'] as const,
+  heroDark: ['#2A1810', '#3D2418', '#4D2E1E'] as const,
+  heroGlowOne: 'rgba(141,74,30,0.24)',
+  heroGlowTwo: 'rgba(166,93,46,0.32)',
+  heroGlowThree: 'rgba(106,47,18,0.18)',
+  statLight: ['#FBF1E7', '#F5E8DC', '#F0DEC9'] as const,
+  quickBrowse: ['#F5E8DC', '#F0DEC9'] as const,
+  quickBrowseTint: '#6A2F12',
+  quickRewards: ['#FBF1E7', '#F0DEC9'] as const,
+  quickRewardsTint: '#8D4A1E',
+};
+
 // ── Animated Category Image (float + breathe — same as ProductScreen) ─
 function AnimatedCatImage({ uri, size }: { uri: string; size: number }) {
   const floatY = useRef(new Animated.Value(0)).current;
@@ -254,54 +274,78 @@ function HomeCategoryCard({
   darkMode: boolean;
   onPress: () => void;
 }) {
-  const cc = getCatColor(cat.id, index);
   const pressScale = useRef(new Animated.Value(1)).current;
   const tiltX = useRef(new Animated.Value(0)).current;
+  const tiltY = useRef(new Animated.Value(0)).current;
+  const entryY = useRef(new Animated.Value(50)).current;
+  const entryOp = useRef(new Animated.Value(0)).current;
   const imgUri = getCatImage(cat.id, cat.imageUrl);
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(
+        entryY,
+        withWebSafeNativeDriver({
+          toValue: 0,
+          duration: 500,
+          delay: index * 60,
+          easing: Easing.out(Easing.back(1.3)),
+        })
+      ),
+      Animated.timing(
+        entryOp,
+        withWebSafeNativeDriver({
+          toValue: 1,
+          duration: 400,
+          delay: index * 60,
+          easing: Easing.out(Easing.ease),
+        })
+      ),
+    ]).start();
+  }, [entryOp, entryY, index]);
 
   const handlePressIn = () => {
     Animated.parallel([
-      Animated.spring(pressScale, withWebSafeNativeDriver({ toValue: 0.96, tension: 100, friction: 6 })),
-      Animated.spring(tiltX, withWebSafeNativeDriver({ toValue: 1, tension: 100, friction: 6 })),
+      Animated.spring(pressScale, withWebSafeNativeDriver({ toValue: 0.94, tension: 120, friction: 6 })),
+      Animated.spring(tiltX, withWebSafeNativeDriver({ toValue: 1, tension: 120, friction: 6 })),
+      Animated.spring(tiltY, withWebSafeNativeDriver({ toValue: 1, tension: 120, friction: 6 })),
     ]).start();
   };
   const handlePressOut = () => {
     Animated.parallel([
-      Animated.spring(pressScale, withWebSafeNativeDriver({ toValue: 1, tension: 100, friction: 6 })),
-      Animated.spring(tiltX, withWebSafeNativeDriver({ toValue: 0, tension: 100, friction: 6 })),
+      Animated.spring(pressScale, withWebSafeNativeDriver({ toValue: 1, tension: 90, friction: 6 })),
+      Animated.spring(tiltX, withWebSafeNativeDriver({ toValue: 0, tension: 90, friction: 6 })),
+      Animated.spring(tiltY, withWebSafeNativeDriver({ toValue: 0, tension: 90, friction: 6 })),
     ]).start();
   };
-  const rotate = tiltX.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '4deg'] });
+  const rotateY = tiltX.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '8deg'] });
+  const rotateX = tiltY.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '-5deg'] });
 
   return (
     <Pressable onPress={onPress} onPressIn={handlePressIn} onPressOut={handlePressOut}>
-      <Animated.View
-        style={[
-          homeCatStyles.card,
-          darkMode ? homeCatStyles.cardDark : null,
-          { width: cardW, transform: [{ scale: pressScale }, { perspective: 900 }, { rotateY: rotate }] },
-        ]}
-      >
-        {/* Gradient image zone with floating animated product image */}
-        <LinearGradient
-          colors={darkMode ? ['#1E293B', '#243B55', '#1E293B'] : cc.cardGradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={homeCatStyles.imgZone}
+      <Animated.View style={{ opacity: entryOp, transform: [{ translateY: entryY }] }}>
+        <Animated.View
+          style={[
+            homeCatStyles.card,
+            darkMode ? homeCatStyles.cardDark : null,
+            { width: cardW, transform: [{ scale: pressScale }, { perspective: 800 }, { rotateY }, { rotateX }] },
+          ]}
         >
-          <AnimatedCatImage uri={imgUri} size={homeCatStyles.imgZone.height - 10} />
-        </LinearGradient>
-        {/* Label zone */}
-        <View style={[homeCatStyles.infoZone, darkMode ? homeCatStyles.infoZoneDark : null]}>
-          <Text style={[homeCatStyles.label, darkMode ? homeCatStyles.labelDark : null]} numberOfLines={2}>
-            {cat.label}
-          </Text>
-          <View style={[homeCatStyles.pill, { backgroundColor: darkMode ? 'rgba(255,255,255,0.08)' : cc.scanBg }]}>
-            <Text style={[homeCatStyles.pillText, { color: darkMode ? '#94A3B8' : cc.scanText }]}>
-              View Products
-            </Text>
+          <View style={[homeCatStyles.imgZone, { backgroundColor: darkMode ? '#1E293B' : '#FFFFFF' }]}>
+            <AnimatedCatImage uri={imgUri} size={142} />
           </View>
-        </View>
+          <View style={[homeCatStyles.accentLine, { backgroundColor: '#4A637B' }]} />
+          <View style={[homeCatStyles.infoZone, darkMode ? homeCatStyles.infoZoneDark : null]}>
+            <Text style={[homeCatStyles.label, darkMode ? homeCatStyles.labelDark : null]} numberOfLines={2}>
+              {cat.label}
+            </Text>
+            <View style={[homeCatStyles.pill, { backgroundColor: darkMode ? 'rgba(255,255,255,0.08)' : '#F5F8FB' }]}>
+              <Text style={[homeCatStyles.pillText, { color: darkMode ? '#94A3B8' : '#4A637B' }]}>
+                View Products
+              </Text>
+            </View>
+          </View>
+        </Animated.View>
       </Animated.View>
     </Pressable>
   );
@@ -318,6 +362,7 @@ const homeCatStyles = StyleSheet.create({
   },
   cardDark: { backgroundColor: '#111827', borderColor: '#1E293B' },
   imgZone: { height: 150, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  accentLine: { height: 4, width: '100%' },
   iconWrap: { width: 64, height: 64, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   infoZone: { padding: 10, backgroundColor: '#FFFFFF' },
   infoZoneDark: { backgroundColor: '#111827' },
@@ -334,6 +379,59 @@ type BannerSlide = {
   resizeMode: 'cover' | 'contain';
   backgroundColor: string;
 };
+
+const API_BASE_HOST = API_BASE_URL.replace(/\/api\/v1\/?$/, '');
+
+function resolveRemoteImageUrl(value?: string | null): string | null {
+  if (!value) return null;
+  let normalized = value.trim();
+  if (!normalized) return null;
+  normalized = normalized.replace(/\\/g, '/');
+  if (normalized.startsWith('//')) return `http:${normalized}`;
+  if (normalized.startsWith('/')) return `${API_BASE_HOST}${normalized}`;
+  if (/^www\./i.test(normalized)) return `http://${normalized}`;
+  if (/^https?:\/\//i.test(normalized)) {
+    try {
+      const current = new URL(API_BASE_HOST);
+      const remote = new URL(normalized);
+      const localLike = /^(localhost|127\.0\.0\.1|10\.|192\.168\.|172\.(1[6-9]|2\d|3[0-1])\.)/;
+      if (localLike.test(remote.hostname) && remote.hostname !== current.hostname) {
+        return `${current.protocol}//${current.host}${remote.pathname}${remote.search}`;
+      }
+      return normalized;
+    } catch {
+      return normalized;
+    }
+  }
+  return `${API_BASE_HOST}/${normalized.replace(/^\.?\//, '')}`;
+}
+
+function mapBannerSlides(items: any[]): CarouselSlide[] {
+  const filtered = items
+    .filter((b) => {
+      const imageUrl = resolveRemoteImageUrl(
+        b.imageUrl ||
+          b.image ||
+          b.imagePath ||
+          b.bannerImage,
+      );
+      return b.isActive !== false && b.status !== 'inactive' && !!imageUrl;
+    })
+    .sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
+
+  return filtered.map((b) => ({
+    image: {
+      uri: resolveRemoteImageUrl(
+        b.imageUrl ||
+          b.image ||
+          b.imagePath ||
+          b.bannerImage,
+      )!,
+    },
+    resizeMode: 'cover' as const,
+    backgroundColor: b.bgColor ?? '#192F67',
+  }));
+}
 
 type HomeProduct = {
   id: string;
@@ -499,7 +597,7 @@ function WalletIcon({ color = '#10254A', size = 22 }: { color?: string; size?: n
   );
 }
 
-function DownloadIcon({ color = '#1D4ED8', size = 22 }: { color?: string; size?: number }) {
+function DownloadIcon({ color = '#6A2F12', size = 22 }: { color?: string; size?: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       {/* Book/catalog body */}
@@ -628,7 +726,8 @@ export function HomeScreen({
   const [slide, setSlide] = useState(0);
   const productFilters = ['All', 'Boxes', 'Fans'] as const;
   const [selectedFilter, setSelectedFilter] = useState<(typeof productFilters)[number]>('All');
-  const [apiBannerSlides, setApiBannerSlides] = useState<{ image: { uri: string }; resizeMode: 'cover' | 'contain'; backgroundColor: string }[]>([]);
+  const [apiBannerSlides, setApiBannerSlides] = useState<CarouselSlide[]>([]);
+  const [bannerLoading, setBannerLoading] = useState(true);
   const [testimonials, setTestimonials] = useState<TestimonialItem[]>([]);
   const statsPulse = useRef(new Animated.Value(1)).current;
   const cardW = (width - 28 - 12) / 2;
@@ -693,37 +792,80 @@ export function HomeScreen({
   // Map testimonials from context
   useEffect(() => {
     if (ctxTestimonials.length > 0) {
-      setTestimonials(ctxTestimonials.map((t) => ({
-        initials: t.initials ?? t.personName.slice(0, 2).toUpperCase(),
-        name: t.personName,
-        location: t.location ?? '',
-        tier: t.tier ?? '',
-        yearsWithUs: `Connected for ${t.yearsConnected} year${t.yearsConnected !== 1 ? 's' : ''}`,
-        quote: t.quote,
-        highlight: t.highlight ?? '',
-        colors: (t.gradientColors?.slice(0, 3) ?? ['#EEF2FF','#D9D6FE','#C4B5FD']) as [string,string,string],
-        ring: t.ringColor ?? '#7C3AED',
-        glow: t.gradientColors?.[0] ?? '#DDD6FE',
-      })));
+      setTestimonials(
+        ctxTestimonials.map((t, index) => {
+          const themed = getTestimonialTheme(index);
+          const fallback = TESTIMONIAL_FALLBACK_COPY[index % TESTIMONIAL_FALLBACK_COPY.length];
+          return {
+            initials: t.initials ?? t.personName.slice(0, 2).toUpperCase() ?? fallback.initials,
+            name: t.personName || fallback.name,
+            location: t.location || fallback.location,
+            tier: t.tier || fallback.tier,
+            yearsWithUs:
+              t.yearsConnected != null
+                ? `Connected for ${t.yearsConnected} year${t.yearsConnected !== 1 ? 's' : ''}`
+                : fallback.yearsWithUs,
+            quote: t.quote?.trim() || fallback.quote,
+            highlight: t.highlight?.trim() || fallback.highlight,
+            colors: themed.colors,
+            ring: themed.ring,
+            glow: themed.glow,
+          };
+        })
+      );
+      return;
     }
+
+    setTestimonials(
+      TESTIMONIAL_FALLBACK_COPY.map((item, index) => {
+        const themed = getTestimonialTheme(index);
+        return { ...item, colors: themed.colors, ring: themed.ring, glow: themed.glow };
+      })
+    );
   }, [ctxTestimonials]);
 
   // Map banners from context — set immediately, prefetch in background
   useEffect(() => {
-    const filtered = ctxBanners.filter(
-      (b) => b.isActive !== false && (b as any).status !== 'inactive' && b.imageUrl,
-    );
-    const mapped = filtered.map((b) => ({
-      image: { uri: b.imageUrl! },
-      resizeMode: 'cover' as const,
-      backgroundColor: b.bgColor ?? '#192F67',
-    }));
+    const mapped = mapBannerSlides(ctxBanners as any[]);
     // Set slides immediately so banner shows right away
     setApiBannerSlides(mapped as any);
+    if (mapped.length > 0) setBannerLoading(false);
     // Prefetch in background for smoother experience
-    const uris = mapped.map((b) => b.image.uri);
+    const uris = mapped
+      .map((b) => (typeof b.image === 'object' && 'uri' in b.image ? b.image.uri : null))
+      .filter((uri): uri is string => !!uri);
     uris.forEach((uri) => Image.prefetch(uri).catch(() => null));
   }, [ctxBanners]);
+
+  // Customer screen direct DB fallback for banners in case shared public context misses them.
+  useEffect(() => {
+    if (apiBannerSlides.length > 0) return;
+    let cancelled = false;
+
+    const loadBanners = async () => {
+      try {
+        const roleRes = await bannersApi.getAll('user');
+        const roleSlides = mapBannerSlides((roleRes as any).data ?? []);
+        const finalSlides =
+          roleSlides.length > 0
+            ? roleSlides
+            : mapBannerSlides(((await bannersApi.getAll()) as any).data ?? []);
+
+        if (!cancelled && finalSlides.length > 0) {
+          setApiBannerSlides(finalSlides);
+        }
+      } catch {
+        // Keep existing UI if DB banners still fail here.
+      } finally {
+        if (!cancelled) setBannerLoading(false);
+      }
+    };
+
+    void loadBanners();
+    return () => {
+      cancelled = true;
+    };
+  }, [apiBannerSlides.length]);
 
   const activeBannerSlides = apiBannerSlides;
 
@@ -743,8 +885,8 @@ export function HomeScreen({
     return catalogProducts;
   }, [catalogProducts, selectedFilter]);
 
-  // Show only first 6 categories on home screen
-  const displayedCategories = useMemo(() => categories.slice(0, 6), [categories]);
+  // Show only first 4 categories on home screen to match dealer layout
+  const displayedCategories = useMemo(() => categories.slice(0, 4), [categories]);
 
   // 2-column card width (same as ProductScreen)
   const catCardW = Math.floor((width - 28 - 12) / 2);
@@ -768,8 +910,8 @@ export function HomeScreen({
       title: tx('Categories'),
       sub: tx('Browse products'),
       icon: ScanIcon,
-      iconColors: ['#EDE9FE', '#DDD6FE'] as const,
-      iconTint: '#7C3AED',
+      iconColors: CUSTOMER_THEME.quickBrowse,
+      iconTint: CUSTOMER_THEME.quickBrowseTint,
       onPress: () => onNavigate('categories'),
     },
     {
@@ -778,8 +920,8 @@ export function HomeScreen({
       title: tx('Product Catalog'),
       sub: tx('Download PDF for latest updated prices'),
       icon: DownloadIcon,
-      iconColors: ['#DBEAFE', '#BFDBFE'] as const,
-      iconTint: '#1D4ED8',
+      iconColors: ['#FEF3C7', '#FDE68A'] as const,
+      iconTint: '#B45309',
       onPress: () => openCatalog(appSettings?.catalogPdfUrl),
     },
     {
@@ -788,15 +930,15 @@ export function HomeScreen({
       title: tx('Gift Store'),
       sub: tx('Redeem rewards'),
       icon: GiftIcon,
-      iconColors: ['#F3E8FF', '#DDD6FE'] as const,
-      iconTint: '#7C3AED',
+      iconColors: CUSTOMER_THEME.quickRewards,
+      iconTint: CUSTOMER_THEME.quickRewardsTint,
       onPress: () => onNavigate('rewards'),
     },
     {
       testID: 'electrician-home-action-whatsapp',
       accessibilityLabel: 'Electrician home quick action WhatsApp support',
       title: tx('WhatsApp'),
-      sub: tx('Premium support'),
+      sub: tx('Chat with us'),
       icon: WhatsAppIcon,
       iconColors: ['#DCFCE7', '#BBF7D0'] as const,
       iconTint: '#16A34A',
@@ -811,7 +953,7 @@ export function HomeScreen({
       showsVerticalScrollIndicator={false}
     >
       <LinearGradient
-        colors={darkMode ? ['#0B1220', '#101A2F', '#18263E'] : ['#F4F8EE', '#E7F0D4', '#F8FBF1']}
+        colors={darkMode ? CUSTOMER_THEME.heroDark : CUSTOMER_THEME.heroLight}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={[styles.heroShell, { marginTop: -insets.top, paddingTop: 26 + insets.top }]}
@@ -885,7 +1027,7 @@ export function HomeScreen({
             >
               <LinearGradient
                 colors={
-                  darkMode ? ['#0F172A', '#132238', '#1E293B'] : ['#E0F2FE', '#DBEAFE', '#EDE9FE']
+                  darkMode ? CUSTOMER_THEME.heroDark : CUSTOMER_THEME.statLight
                 }
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
@@ -965,10 +1107,10 @@ export function HomeScreen({
         </View>
         </>
         ) : (
-          apiBannerSlides.length > 0 ? (
+          activeBannerSlides.length > 0 ? (
             <View style={styles.heroGuestBannerWrap}>
               <BannerCarousel
-                slides={apiBannerSlides}
+                slides={activeBannerSlides}
                 height={heroImageHeight}
                 darkMode={darkMode}
               />
@@ -978,13 +1120,15 @@ export function HomeScreen({
       </LinearGradient>
 
       <View style={styles.body}>
-        {authUser && apiBannerSlides.length > 0 ? (
-          <BannerCarousel
-            slides={apiBannerSlides}
-            height={heroImageHeight}
-            darkMode={darkMode}
-          />
-        ) : null}
+        {authUser && activeBannerSlides.length > 0 && (
+          <View style={[styles.homeBannerSection, darkMode ? styles.homeBannerSectionDark : null]}>
+            <BannerCarousel
+              slides={activeBannerSlides}
+              height={heroImageHeight}
+              darkMode={darkMode}
+            />
+          </View>
+        )}
 
         <View style={styles.quickGrid}>
           {quickActions.map((item) => {
@@ -1026,7 +1170,7 @@ export function HomeScreen({
                   {tx('Browse Categories')}
                 </Text>
               </View>
-              {categories.length > 6 && (
+              {categories.length > 4 && (
                 <TouchableOpacity onPress={() => onNavigate('product')} style={styles.inlineAction} activeOpacity={0.85}>
                   <Text style={styles.viewAllText}>{tx('View all')}</Text>
                   <ChevronRight color="#E8453C" />
@@ -1066,7 +1210,7 @@ export function HomeScreen({
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F4F8EE' },
+  container: { flex: 1, backgroundColor: '#EEF3F8' },
   containerDark: { backgroundColor: '#08111F' },
   heroShell: {
     paddingTop: 26,
@@ -1077,16 +1221,48 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   heroGuestBannerWrap: {
-    marginTop: 8,
-    borderRadius: 16,
-    overflow: 'hidden',
+    marginTop: 12,
+    marginBottom: 8,
   },
+  homeBannerSection: {
+    marginBottom: 14,
+  },
+  homeBannerSectionDark: {},
+  bannerFallbackCard: {
+    borderRadius: 18,
+    backgroundColor: '#FFF7EF',
+    borderWidth: 1,
+    borderColor: '#EFD8C1',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 18,
+  },
+  bannerFallbackCardDark: {
+    backgroundColor: '#111827',
+    borderColor: '#243043',
+  },
+  bannerFallbackTitle: {
+    color: '#6A2F12',
+    fontSize: 16,
+    fontWeight: '900',
+    textAlign: 'center',
+  },
+  bannerFallbackTitleDark: { color: '#F8FAFC' },
+  bannerFallbackText: {
+    color: '#8B6A52',
+    fontSize: 12.5,
+    lineHeight: 19,
+    textAlign: 'center',
+    marginTop: 8,
+    maxWidth: '92%',
+  },
+  bannerFallbackTextDark: { color: '#CBD5E1' },
   heroGlowOne: {
     position: 'absolute',
     width: 220,
     height: 220,
     borderRadius: 110,
-    backgroundColor: 'rgba(107,124,45,0.18)',
+    backgroundColor: CUSTOMER_THEME.heroGlowOne,
     top: -60,
     right: -35,
   },
@@ -1095,7 +1271,7 @@ const styles = StyleSheet.create({
     width: 160,
     height: 160,
     borderRadius: 80,
-    backgroundColor: 'rgba(166,180,86,0.16)',
+    backgroundColor: CUSTOMER_THEME.heroGlowTwo,
     bottom: 18,
     left: -28,
   },
@@ -1104,7 +1280,7 @@ const styles = StyleSheet.create({
     width: 180,
     height: 180,
     borderRadius: 90,
-    backgroundColor: 'rgba(107,124,45,0.12)',
+    backgroundColor: CUSTOMER_THEME.heroGlowThree,
     top: 72,
     left: '34%',
   },
@@ -1287,7 +1463,7 @@ const styles = StyleSheet.create({
   quickSub: { color: '#74829D', fontSize: 11.5, marginTop: 3 },
   quickSubDark: { color: '#CBD5E1' },
   inlineAction: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  viewAllText: { color: '#6B7C2D', fontSize: 13, fontWeight: '800' },
+  viewAllText: { color: '#173E80', fontSize: 13, fontWeight: '800' },
   productsTopBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -1312,10 +1488,10 @@ const styles = StyleSheet.create({
     borderColor: '#243043',
   },
   filterChipActive: {
-    backgroundColor: '#6B7C2D',
-    borderColor: '#6B7C2D',
+    backgroundColor: '#6A2F12',
+    borderColor: '#6A2F12',
   },
-  filterChipText: { color: '#6B7C2D', fontSize: 11.5, fontWeight: '800' },
+  filterChipText: { color: '#6A2F12', fontSize: 11.5, fontWeight: '800' },
   filterChipTextDark: { color: '#CBD5E1' },
   filterChipTextActive: { color: '#FFFFFF' },
   productsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 24 },
@@ -1444,11 +1620,11 @@ const styles = StyleSheet.create({
   categoryPrice: {
     fontSize: 9,
     fontWeight: '700',
-    color: '#6B7C2D',
+    color: '#6A2F12',
     textAlign: 'center',
     marginTop: 3,
     paddingHorizontal: 4,
   },
   categoryPriceDark: { color: '#F87171' },
-  notifDot: { position: 'absolute', top: 6, right: 6, width: 8, height: 8, borderRadius: 4, backgroundColor: '#6B7C2D', borderWidth: 1.5, borderColor: '#fff' },
+  notifDot: { position: 'absolute', top: 6, right: 6, width: 8, height: 8, borderRadius: 4, backgroundColor: '#6A2F12', borderWidth: 1.5, borderColor: '#fff' },
 });

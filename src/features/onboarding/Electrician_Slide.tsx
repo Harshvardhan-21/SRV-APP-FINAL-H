@@ -1,23 +1,24 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// Electrician Slide - Blue Theme (#2563EB)
+// Electrician Slide - Teal Theme (image-matched)
 import React, { useRef, useEffect } from 'react';
 import {
   View, Text, StyleSheet, Animated, Easing, TouchableOpacity, Image,
 } from 'react-native';
 import Svg, { Circle, Rect, Path, G, Line, Ellipse } from 'react-native-svg';
 import { ws, hs, rf } from '../../shared/hooks/useResponsive';
-import { electricianURI } from '../../shared/data/roleImages';
-
 const AView = Animated.View as any;
 const CIRCLE_SIZE = ws(240);
+const electricianImage = require('../../../assets/Electrician.png');
 
 const THEME = {
-  primary:   '#2563EB',
-  secondary: '#3B82F6',
-  light:     '#EFF6FF',
-  circle:    '#DBEAFE',
-  tag:       '#BFDBFE',
-  tagText:   '#1E40AF',
+  primary:   '#102A63',
+  secondary: '#1D458F',
+  accent:    '#F0A43A',
+  light:     '#EEF3FB',
+  circle:    '#E6EEF9',
+  tag:       '#D8E4F8',
+  tagText:   '#102A63',
+  shadow:    '#102A63',
 };
 
 const TAGS = ['Install & Demo', 'First Product User', 'Trusted Expert'];
@@ -57,8 +58,8 @@ function BgIcons() {
 function Character() {
   return (
     <Image
-      source={{ uri: electricianURI }}
-      style={{ width: ws(300), height: hs(320) }}
+      source={electricianImage}
+      style={{ width: ws(338), height: ws(338), marginTop: -hs(6) }}
       resizeMode="contain"
     />
   );
@@ -142,14 +143,14 @@ export default function ElectricianSlide({ onBack, onContinue }: Props) {
             <Text style={s.stepText}>Scan QR</Text>
           </View>
           <Text style={s.arrow}>→</Text>
-          <View style={[s.stepBox, { backgroundColor: '#3B82F6' }]}>
+          <View style={[s.stepBox, { backgroundColor: THEME.secondary }]}>
             <Svg width={ws(22)} height={ws(22)} viewBox="0 0 24 24" fill="none">
               <Path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="#FFFFFF" strokeWidth="1.8" fill="none" strokeLinejoin="round"/>
             </Svg>
             <Text style={s.stepText}>Get Points</Text>
           </View>
           <Text style={s.arrow}>→</Text>
-          <View style={[s.stepBox, { backgroundColor: '#60A5FA' }]}>
+          <View style={[s.stepBox, { backgroundColor: THEME.primary }]}>
             <Svg width={ws(22)} height={ws(22)} viewBox="0 0 24 24" fill="none">
               <Path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="#FFFFFF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
             </Svg>
@@ -158,21 +159,21 @@ export default function ElectricianSlide({ onBack, onContinue }: Props) {
         </View>
 
         <View style={s.statsRow}>
-          <View style={[s.statBox, { backgroundColor: THEME.light }]}>
+          <View style={[s.statBox, { backgroundColor: THEME.primary }]}>
             <Svg width={ws(24)} height={ws(24)} viewBox="0 0 24 24" fill="none">
-              <Rect x="2" y="6" width="20" height="14" rx="3" stroke={THEME.primary} strokeWidth="1.8" fill="none"/>
-              <Path d="M2 10h20" stroke={THEME.primary} strokeWidth="1.8" strokeLinecap="round"/>
-              <Circle cx="6" cy="15" r="1.5" fill={THEME.primary}/>
-              <Path d="M16 4H8" stroke={THEME.primary} strokeWidth="1.8" strokeLinecap="round"/>
+              <Rect x="2" y="6" width="20" height="14" rx="3" stroke="#FFFFFF" strokeWidth="1.8" fill="none"/>
+              <Path d="M2 10h20" stroke="#FFFFFF" strokeWidth="1.8" strokeLinecap="round"/>
+              <Circle cx="6" cy="15" r="1.5" fill="#FFFFFF"/>
+              <Path d="M16 4H8" stroke="#FFFFFF" strokeWidth="1.8" strokeLinecap="round"/>
             </Svg>
-            <Text style={[s.statNumber, { color: THEME.primary }]}>₹5L+</Text>
-            <Text style={[s.statLabel, { color: THEME.primary }]}>REWARDS PAID</Text>
+            <Text style={[s.statNumber, { color: '#FFFFFF' }]}>₹5L+</Text>
+            <Text style={[s.statLabel, { color: '#FFFFFF' }]}>REWARDS PAID</Text>
           </View>
           <View style={[s.statBox, { backgroundColor: THEME.light }]}>
             <Svg width={ws(24)} height={ws(24)} viewBox="0 0 24 24" fill="none">
               <Path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke={THEME.primary} strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
             </Svg>
-            <Text style={[s.statNumber, { color: THEME.primary }]}>25K+</Text>
+            <Text style={[s.statNumber, { color: THEME.primary }]}>20K+</Text>
             <Text style={[s.statLabel, { color: THEME.primary }]}>ACTIVE MEMBERS</Text>
           </View>
         </View>
@@ -198,11 +199,11 @@ export default function ElectricianSlide({ onBack, onContinue }: Props) {
 
 const s = StyleSheet.create({
   root:              { flex: 1, alignItems: 'center', justifyContent: 'flex-start', backgroundColor: '#FFFFFF', paddingHorizontal: ws(20), paddingTop: hs(48) },
-  circleWrap:        { marginBottom: hs(28), shadowColor: '#2563EB', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.22, shadowRadius: 24, elevation: 14, marginTop: hs(8) },
+  circleWrap:        { marginBottom: hs(28), shadowColor: THEME.shadow, shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.22, shadowRadius: 24, elevation: 14, marginTop: hs(8) },
   circle:            { width: CIRCLE_SIZE, height: CIRCLE_SIZE, borderRadius: CIRCLE_SIZE / 2, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   glowRing:          { position: 'absolute', width: CIRCLE_SIZE + ws(12), height: CIRCLE_SIZE + ws(12), borderRadius: (CIRCLE_SIZE + ws(12)) / 2, borderWidth: 1.5, opacity: 0.3, top: -ws(6), left: -ws(6) },
   card:              { alignItems: 'center', paddingHorizontal: ws(16), width: '100%' },
-  titleButton:       { paddingHorizontal: ws(32), paddingVertical: hs(8), borderRadius: ws(25), marginBottom: hs(12), shadowColor: '#2563EB', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 },
+  titleButton:       { paddingHorizontal: ws(32), paddingVertical: hs(8), borderRadius: ws(25), marginBottom: hs(12), shadowColor: THEME.shadow, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 8, elevation: 6 },
   titleButtonText:   { fontSize: rf(13, 11, 15), fontWeight: '900', color: '#FFFFFF', textAlign: 'center', letterSpacing: 1 },
   contentCard:       { width: '100%', backgroundColor: '#FFFFFF', paddingHorizontal: ws(18), paddingVertical: hs(16), borderRadius: ws(16), marginBottom: hs(12), borderWidth: 2, borderColor: THEME.light, shadowColor: THEME.primary, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.12, shadowRadius: 16, elevation: 8, position: 'relative', overflow: 'hidden' },
   gradientAccent:    { position: 'absolute', top: 0, left: 0, right: 0, height: 3, backgroundColor: THEME.primary },
@@ -232,6 +233,6 @@ const s = StyleSheet.create({
   switchButton:      { flex: 1, paddingVertical: hs(12), borderRadius: ws(25), borderWidth: 2, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', flexDirection: 'row', gap: ws(8) },
   switchIcon:        { fontSize: rf(18, 16, 20), color: THEME.primary, fontWeight: '900', lineHeight: rf(18, 16, 20), includeFontPadding: false, textAlignVertical: 'center' },
   switchButtonText:  { fontSize: rf(13, 12, 14), fontWeight: '700', letterSpacing: 0.3, lineHeight: rf(18, 16, 20) },
-  continueButton:    { flex: 1, paddingVertical: hs(12), borderRadius: ws(25), alignItems: 'center', justifyContent: 'center', shadowColor: '#2563EB', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 },
+  continueButton:    { flex: 1, paddingVertical: hs(12), borderRadius: ws(25), alignItems: 'center', justifyContent: 'center', shadowColor: THEME.shadow, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 8, elevation: 6 },
   continueButtonText:{ fontSize: rf(13, 12, 14), fontWeight: '700', color: '#FFFFFF', letterSpacing: 0.3 },
 });

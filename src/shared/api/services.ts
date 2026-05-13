@@ -284,17 +284,6 @@ export const settingsApi = {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// FESTIVAL / THEME
-// ─────────────────────────────────────────────────────────────────────────────
-export const festivalApi = {
-  getTheme: async (): Promise<ActiveFestival | null> => {
-    try {
-      return await api.get<ActiveFestival>('/mobile/festival/theme', { timezone: 'Asia/Kolkata' });
-    } catch { return null; }
-  },
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
 // OFFERS / REWARDS
 // ─────────────────────────────────────────────────────────────────────────────
 export const offersApi = {
@@ -482,6 +471,8 @@ export type UserProfile = {
   dealerPhone?: string;
   dealerTown?: string;
   dealerCode?: string;
+  counterboyCode?: string;
+  userCode?: string;
   // Dealer fields
   town?: string;
   electricianCount?: number;
@@ -747,34 +738,6 @@ export type RewardScheme = {
   imageUrl?: string | null;
   mrp?: number | null;
   active: boolean;
-};
-
-export type FestivalTheme = {
-  primaryColor: string;
-  secondaryColor: string;
-  accentColor: string;
-  bgColor: string;
-  cardColor: string;
-  textColor: string;
-};
-
-export type ActiveFestival = {
-  active: boolean;
-  source: string;
-  timezone: string;
-  currentDate: string;
-  serverTime: string;
-  id: string | null;
-  name: string | null;
-  slug: string | null;
-  greeting: string | null;
-  subGreeting: string | null;
-  emoji: string | null;
-  bannerEmojis: string;
-  particleEmojis: string;
-  theme: FestivalTheme;
-  startDate: string | null;
-  endDate: string | null;
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

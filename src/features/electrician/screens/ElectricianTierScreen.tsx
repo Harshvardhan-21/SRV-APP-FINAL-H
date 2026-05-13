@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { withWebSafeNativeDriver } from '@/shared/animations/nativeDriver';
+import { useAuth } from '@/shared/context/AuthContext';
 import { usePreferenceContext } from '@/shared/preferences';
 import { createShadow } from '@/shared/theme/shadows';
 
@@ -147,9 +148,16 @@ export function getElectricianTier(points: number): TierInfo {
   return tierLevels[3];
 }
 
-export function ElectricianTierScreen({ onBack }: { onBack: () => void }) {
+export function ElectricianTierScreen({
+  onBack,
+  totalPoints,
+}: {
+  onBack: () => void;
+  totalPoints?: number;
+}) {
+  const { user } = useAuth();
   const { darkMode, tx } = usePreferenceContext();
-  const points = 7000;
+  const points = totalPoints ?? user?.totalPoints ?? 0;
   const currentTier = useMemo(() => getElectricianTier(points), [points]);
   const pulse = useRef(new Animated.Value(0)).current;
   const floatY = useRef(new Animated.Value(0)).current;

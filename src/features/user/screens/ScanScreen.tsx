@@ -24,23 +24,23 @@ import type { RewardHistoryItem, ScanMode } from '@/shared/types/rewards';
 import type { Screen } from '@/shared/types/navigation';
 
 const Colors = {
-  primary: '#6B7C2D',
-  primaryLight: '#8DA44A',
-  primaryDark: '#556621',
-  background: '#F4F8EE',
+  primary: '#2563EB',
+  primaryLight: '#60A5FA',
+  primaryDark: '#1E40AF',
+  background: '#F4F8FF',
   backgroundDark: '#0A0F1A',
   surface: '#FFFFFF',
   surfaceDark: '#141B2D',
-  border: '#DDE7CF',
+  border: '#C7DBFF',
   borderDark: '#2A3548',
   textDark: '#1A1D2E',
-  textMuted: '#6B7280',
+  textMuted: '#64748B',
   success: '#10B981',
   successLight: '#D1FAE5',
   warning: '#F59E0B',
   warningLight: '#FEF3C7',
-  accent: '#4D6620',
-  accentLight: '#EAF0C4',
+  accent: '#E8453C',
+  accentLight: '#FEE2E2',
 };
 
 type PendingRewardItem = Omit<RewardHistoryItem, 'id' | 'time'>;

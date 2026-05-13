@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { LinearGradient } from 'expo-linear-gradient';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { AppIcon, C, PageHeader } from '../components/ProfileShared';
 import { usePreferenceContext } from '@/shared/preferences';
@@ -91,13 +90,11 @@ export function RateUsPage({ onBack }: { onBack: () => void }) {
         showsVerticalScrollIndicator={false}
       >
         {submitted ? (
-          <LinearGradient
-            colors={
-              theme.textPrimary === '#F8FAFC' ? ['#162033', '#0F172A'] : ['#F7FFF8', '#E8FFF1']
-            }
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={[styles.rateThankYou, { borderColor: theme.border }]}
+          <View
+            style={[
+              styles.rateThankYou,
+              { borderColor: theme.border, backgroundColor: theme.surface },
+            ]}
           >
             <View style={[styles.rateThankYouIcon, { backgroundColor: C.successLight }]}>
               <AppIcon name="star" size={42} color={C.success} />
@@ -122,23 +119,19 @@ export function RateUsPage({ onBack }: { onBack: () => void }) {
                 </View>
               ) : null}
             </View>
-          </LinearGradient>
+          </View>
         ) : (
           <>
-            <LinearGradient
-              colors={
-                theme.textPrimary === '#F8FAFC'
-                  ? ['#221730', '#101827', '#13263E']
-                  : ['#FFF3EF', '#FFE0D2', '#FFD6BE']
-              }
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={[styles.heroCard, { borderColor: theme.border }]}
+            <View
+              style={[
+                styles.heroCard,
+                { borderColor: theme.border, backgroundColor: theme.surface },
+              ]}
             >
               <View style={styles.heroGlowPrimary} />
               <View style={styles.heroGlowSecondary} />
               <View style={styles.heroIconWrap}>
-                <AppIcon name="star" size={24} color={C.gold} />
+                <AppIcon name="star" size={24} color={theme.accent} />
               </View>
               <Text style={[styles.heroEyebrow, { color: theme.textMuted }]}>{tx('Rate Us')}</Text>
               <Text style={[styles.rateTitle, { color: theme.textPrimary }]}>
@@ -159,7 +152,7 @@ export function RateUsPage({ onBack }: { onBack: () => void }) {
                   </View>
                 ))}
               </View>
-            </LinearGradient>
+            </View>
 
             <View
               style={[
@@ -183,15 +176,15 @@ export function RateUsPage({ onBack }: { onBack: () => void }) {
                     style={[
                       styles.starBtn,
                       {
-                        backgroundColor: star <= rating ? '#FFF7DB' : theme.bg,
-                        borderColor: star <= rating ? '#FCD34D' : theme.border,
+                        backgroundColor: star <= rating ? theme.accentSoft : theme.bg,
+                        borderColor: star <= rating ? theme.accent : theme.border,
                       },
                     ]}
                   >
                     <AppIcon
                       name="star"
                       size={30}
-                      color={star <= rating ? '#F59E0B' : theme.border}
+                      color={star <= rating ? theme.accent : theme.border}
                     />
                   </TouchableOpacity>
                 ))}
@@ -249,7 +242,7 @@ export function RateUsPage({ onBack }: { onBack: () => void }) {
       <TouchableOpacity
               style={[
                 styles.rateSubmitBtn,
-                { backgroundColor: rating > 0 ? C.primary : theme.border },
+                { backgroundColor: rating > 0 ? theme.accent : theme.border },
               ]}
               onPress={handleSubmit}
               disabled={rating === 0 || submitting}
