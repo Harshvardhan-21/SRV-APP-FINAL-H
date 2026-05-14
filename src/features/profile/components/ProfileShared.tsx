@@ -45,6 +45,8 @@ export const defaultProfile = {
   panNumber: '',
   dealerCode: '',
   electricianCode: '',
+  counterboyCode: '',
+  userCode: '',
 };
 
 export type Profile = typeof defaultProfile;

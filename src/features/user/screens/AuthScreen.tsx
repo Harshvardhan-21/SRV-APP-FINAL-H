@@ -1,4 +1,4 @@
-﻿// Customer Auth Screen â€” Role-aware account design
+// Customer Auth Screen â€” Role-aware account design
 import { useEffect, useRef, useState } from 'react';
 import {
   Animated, Easing, Image, KeyboardAvoidingView, Platform,
@@ -17,7 +17,7 @@ const THEMES = {
   user:        { p1: '#6A2F12', p2: '#8D4A1E', soft: '#FBF1E7', orb: '#F0DEC9' },
   dealer:      { p1: '#D97706', p2: '#F59E0B', soft: '#FEF3C7', orb: '#FDE68A' },
   electrician: { p1: '#173E80', p2: '#355C95', soft: '#EAF3FF', orb: '#BFDBFE' },
-  counterboy:  { p1: '#E8453C', p2: '#FF6B6B', soft: '#FFF3F3', orb: '#FECACA' },
+  counterboy:  { p1: '#8B3C2A', p2: '#6F4E37', soft: '#F5EDE4', orb: '#EDE0D4' },
 };
 
 

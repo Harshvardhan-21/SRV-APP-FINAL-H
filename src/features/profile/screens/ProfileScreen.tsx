@@ -47,6 +47,8 @@ import { ScanHistoryPage } from './ScanHistoryScreen';
 import { TransferPointsPage } from './TransferPointsScreen';
 import { createShadow } from '@/shared/theme/shadows';
 import { TierIcon } from '@/features/dealer/screens/MemberTierScreen';
+import { counterboyTheme as cbPalette } from '@/features/counterboy/theme';
+import { CUSTOMER_THEME as cuTheme } from '@/features/user/theme';
 import {
   ElectricianTierIcon,
   getElectricianTier,
@@ -55,6 +57,10 @@ import { authApi, storage } from '@/shared/api';
 import { useAuth } from '@/shared/context/AuthContext';
 import { useAppData } from '@/shared/context/AppDataContext';
 import {
+  counterboyDetailRows,
+  counterboyMenuItems,
+  userDetailRows,
+  userMenuItems,
   dealerMenuItems,
   detailRows,
   editRows,
@@ -129,6 +135,8 @@ export function ProfileScreen({
         panNumber: '',
         dealerCode: '',
         electricianCode: '',
+        counterboyCode: '',
+        userCode: '',
       };
     }
     return {
@@ -144,8 +152,10 @@ export function ProfileScreen({
       gstNumber: authUser.gstNumber ?? '',
       panHolderName: '',
       panNumber: '',
-      dealerCode: authUser.dealerCode ?? authUser.dealerCode ?? '',
+      dealerCode: authUser.dealerCode ?? '',
       electricianCode: authUser.electricianCode ?? '',
+      counterboyCode: authUser.counterboyCode ?? '',
+      userCode: authUser.userCode ?? '',
     };
   }, [authUser, currentRole]);
 
@@ -182,8 +192,8 @@ export function ProfileScreen({
     setDarkMode: onDarkModeChange,
     currentRole,
   });
-  const profileTheme = useMemo(
-    () => ({
+  const profileTheme = useMemo(() => {
+    const base = {
       ...preferenceValue.theme,
       bg: darkMode ? '#0B1220' : preferenceValue.theme.bg,
       surface: darkMode ? '#111827' : '#FFFFFF',
@@ -194,24 +204,79 @@ export function ProfileScreen({
       textMuted: darkMode ? '#94A3B8' : '#9898A8',
       heroSurface: darkMode ? '#111827' : preferenceValue.theme.heroSurface,
       heroStrip: darkMode ? '#0F172A' : preferenceValue.theme.heroStrip,
-    }),
-    [darkMode, preferenceValue.theme]
-  );
+    };
+    if (currentRole === 'counterboy') {
+      if (darkMode) {
+        return {
+          ...base,
+          bg: cbPalette.darkBg,
+          surface: cbPalette.darkSurface,
+          soft: '#2D1C14',
+          border: cbPalette.darkBorder,
+          textPrimary: cbPalette.darkText,
+          textSecondary: cbPalette.slate,
+          textMuted: cbPalette.darkMuted,
+          heroSurface: cbPalette.darkSurface,
+          heroStrip: cbPalette.darkBg,
+        };
+      }
+      return {
+        ...base,
+        bg: cbPalette.softBg,
+        surface: cbPalette.surface,
+        soft: cbPalette.soft,
+        border: cbPalette.border,
+        textPrimary: cbPalette.text,
+        textSecondary: cbPalette.primaryInk,
+        textMuted: cbPalette.muted,
+        heroSurface: cbPalette.bg,
+        heroStrip: cbPalette.soft,
+      };
+    }
+    if (currentRole === 'user') {
+      if (darkMode) {
+        return {
+          ...base,
+          bg: '#120A07',
+          surface: cuTheme.surfaceDark,
+          soft: cuTheme.softDark,
+          border: cuTheme.borderDark,
+          textPrimary: '#FBF1E7',
+          textSecondary: '#E8D4C8',
+          textMuted: '#A09088',
+          heroSurface: cuTheme.surfaceDark,
+          heroStrip: '#120A07',
+        };
+      }
+      return {
+        ...base,
+        bg: cuTheme.heroLight[0],
+        surface: cuTheme.surface,
+        soft: cuTheme.soft,
+        border: cuTheme.border,
+        textPrimary: cuTheme.ink,
+        textSecondary: cuTheme.primaryDeep,
+        textMuted: cuTheme.muted,
+        heroSurface: cuTheme.soft,
+        heroStrip: cuTheme.heroLight[1],
+      };
+    }
+    return base;
+  }, [darkMode, preferenceValue.theme, currentRole]);
   const scopedPreferenceValue = useMemo(
     () => ({ ...preferenceValue, theme: profileTheme }),
     [preferenceValue, profileTheme]
   );
   const { t, tx, theme } = scopedPreferenceValue;
-  const menuItems = useMemo(
-    () =>
-      (currentRole === 'dealer' ? dealerMenuItems : electricianMenuItems).filter((item) =>
-        currentRole === 'electrician' ? true : item.screen !== 'Transfer Points'
-      ),
-    [currentRole]
-  );
+  const menuItems = useMemo(() => {
+    if (currentRole === 'dealer') return dealerMenuItems;
+    if (currentRole === 'counterboy') return counterboyMenuItems;
+    if (currentRole === 'user') return userMenuItems;
+    return electricianMenuItems;
+  }, [currentRole]);
   const settingsMenuItems = useMemo(
     () =>
-      currentRole === 'electrician'
+      currentRole === 'electrician' || currentRole === 'counterboy' || currentRole === 'user'
         ? settingsItems
         : settingsItems.filter((item) => item.screen !== 'Scan History'),
     [currentRole]
@@ -549,8 +614,17 @@ export function ProfileScreen({
   const hasCompletedKyc = Boolean(
     getTaxIdentityValue(profile).trim() && getTaxHolderValue(profile).trim()
   );
-  const visibleDetailRows = currentRole === 'dealer' ? detailRows : electricianDetailRows;
-  const isCounterboyProfile = false;
+  const visibleDetailRows =
+    currentRole === 'dealer'
+      ? detailRows
+      : currentRole === 'counterboy'
+        ? counterboyDetailRows
+        : currentRole === 'user'
+          ? userDetailRows
+          : electricianDetailRows;
+  const isCounterboyProfile = currentRole === 'counterboy';
+  const isUserProfile = currentRole === 'user';
+  const usesWarmProfileAccents = isCounterboyProfile || isUserProfile;
   const isElectricianProfile = currentRole === 'electrician';
   const accentAction = theme.accent;
   const accentActionSoft = theme.accentSoft;
@@ -564,7 +638,11 @@ export function ProfileScreen({
     ? 'rgba(248,250,252,0.18)'
     : isElectricianProfile
       ? '#D6E6FA'
-      : 'rgba(255,255,255,0.78)';
+      : isCounterboyProfile
+        ? cbPalette.border
+        : isUserProfile
+          ? cuTheme.border
+          : 'rgba(255,255,255,0.78)';
 
   const heroContent = (
     <>
@@ -606,14 +684,21 @@ export function ProfileScreen({
             style={[
               styles.levelBadge,
               {
-                backgroundColor:
-                  currentRole === 'dealer'
+                backgroundColor: isCounterboyProfile || isUserProfile
+                  ? theme.accentSoft
+                  : currentRole === 'dealer'
                     ? dealerMembership.soft
                     : electricianMembership.soft,
               },
             ]}
           >
-            {currentRole === 'dealer' ? (
+            {isCounterboyProfile ? (
+              <Text style={{ fontSize: 9, fontWeight: '900', color: theme.accent, letterSpacing: 0.6 }}>
+                SRV
+              </Text>
+            ) : isUserProfile ? (
+              <AppIcon name="star" size={14} color={theme.accent} />
+            ) : currentRole === 'dealer' ? (
               <TierIcon tier={dealerMembership.tier} size={15} />
             ) : (
               <ElectricianTierIcon tier={electricianMembership.tier} size={15} />
@@ -638,7 +723,9 @@ export function ProfileScreen({
                   ? profile.electricianCode
                   : currentRole === 'counterboy'
                     ? authUser?.counterboyCode ?? 'Counter Boy'
-                    : profile.dealerCode}
+                    : currentRole === 'user'
+                      ? authUser?.userCode ?? profile.userCode ?? '—'
+                      : profile.dealerCode}
               </Text>
             </View>
           </View>
@@ -761,19 +848,19 @@ export function ProfileScreen({
                 onPress={() => setShowFullProfile((current) => !current)}
                 style={[
                   styles.visibilityBtn,
-                  isCounterboyProfile ? { backgroundColor: accentActionSoft } : null,
+                  usesWarmProfileAccents ? { backgroundColor: accentActionSoft } : null,
                 ]}
                 activeOpacity={0.75}
               >
                 <AppIcon
                   name={showFullProfile ? 'eyeOff' : 'eye'}
                   size={16}
-                  color={isCounterboyProfile ? accentAction : C.blue}
+                  color={usesWarmProfileAccents ? accentAction : C.blue}
                 />
                 <Text
                   style={[
                     styles.visibilityText,
-                    isCounterboyProfile ? { color: accentAction } : null,
+                    usesWarmProfileAccents ? { color: accentAction } : null,
                   ]}
                 >
                   {showFullProfile ? t('hide') : t('show')}
@@ -905,7 +992,7 @@ export function ProfileScreen({
                       <View
                         style={[
                           styles.notifDot,
-                          isCounterboyProfile ? { backgroundColor: accentAction } : null,
+                          usesWarmProfileAccents ? { backgroundColor: accentAction } : null,
                         ]}
                       />
                     ) : null}
@@ -943,7 +1030,7 @@ export function ProfileScreen({
             <View
               style={[
                 styles.signOutIconWrap,
-                isCounterboyProfile ? { backgroundColor: accentActionSoft } : null,
+                usesWarmProfileAccents ? { backgroundColor: accentActionSoft } : null,
               ]}
             >
               <AppIcon name="signOut" size={18} color={accentAction} />
@@ -951,7 +1038,7 @@ export function ProfileScreen({
             <Text
               style={[
                 styles.signOutTxt,
-                isCounterboyProfile ? { color: accentAction } : null,
+                usesWarmProfileAccents ? { color: accentAction } : null,
               ]}
             >
               {t('signOut')}
@@ -1056,7 +1143,7 @@ export function ProfileScreen({
                   onPress={confirmDraftPhoto}
                   style={[
                     styles.signOutActionBtn,
-                    isCounterboyProfile ? { backgroundColor: accentAction } : null,
+                    usesWarmProfileAccents ? { backgroundColor: accentAction } : null,
                   ]}
                 >
                   <Text style={styles.signOutActionTxt}>{tx('Done')}</Text>
@@ -1218,20 +1305,30 @@ export function ProfileScreen({
                   ) : null}
                   <View style={styles.field}>
                     <Text style={[styles.fieldLabel, { color: theme.textMuted }]}>
-                      {currentRole === 'electrician' ? tx('Electrician Code') : tx('Dealer Code')}
+                      {currentRole === 'electrician'
+                        ? tx('Electrician Code')
+                        : currentRole === 'counterboy'
+                          ? tx('Counter Boy ID')
+                          : currentRole === 'user'
+                            ? tx('Customer ID')
+                            : tx('Dealer Code')}
                     </Text>
-                    <View
-                      style={[
-                        styles.readOnlyField,
-                        { borderColor: theme.border, backgroundColor: theme.soft },
-                      ]}
-                    >
-                      <Text style={[styles.readOnlyText, { color: theme.textMuted }]}>
-                        {currentRole === 'electrician'
-                          ? profile.electricianCode
-                          : profile.dealerCode}
-                      </Text>
-                    </View>
+                  <View
+                    style={[
+                      styles.readOnlyField,
+                      { borderColor: theme.border, backgroundColor: theme.soft },
+                    ]}
+                  >
+                    <Text style={[styles.readOnlyText, { color: theme.textMuted }]}>
+                      {currentRole === 'electrician'
+                        ? profile.electricianCode
+                        : currentRole === 'counterboy'
+                          ? profile.counterboyCode || authUser?.counterboyCode || '—'
+                          : currentRole === 'user'
+                            ? profile.userCode || authUser?.userCode || '—'
+                            : profile.dealerCode}
+                    </Text>
+                  </View>
                   </View>
                 </ScrollView>
                 <View style={styles.editActions}>
@@ -1246,7 +1343,7 @@ export function ProfileScreen({
                       {t('discard')}
                     </Text>
                   </Pressable>
-                  <Pressable onPress={saveProfile} style={[styles.saveBtn, isSaving ? { opacity: 0.7 } : null]} disabled={isSaving}>
+                  <Pressable onPress={saveProfile} style={[styles.saveBtn, { backgroundColor: accentAction }, isSaving ? { opacity: 0.7 } : null]} disabled={isSaving}>
                     <Text style={styles.saveTxt}>{isSaving ? tx('Saving...') : t('saveChanges')}</Text>
                   </Pressable>
                 </View>
@@ -1263,7 +1360,7 @@ export function ProfileScreen({
         >
           <View style={styles.overlay}>
             <View style={[styles.confirmCard, { backgroundColor: theme.surface }]}>
-              <View style={styles.confirmIconBg}>
+              <View style={[styles.confirmIconBg, { backgroundColor: theme.accentSoft }]}>
                 <AppIcon name="signOut" size={28} color={accentAction} />
               </View>
               <Text
@@ -1287,7 +1384,7 @@ export function ProfileScreen({
                 <Pressable
                   style={[
                     styles.signOutActionBtn,
-                    isCounterboyProfile ? { backgroundColor: accentAction } : null,
+                    usesWarmProfileAccents ? { backgroundColor: accentAction } : null,
                   ]}
                   onPress={() => {
                     setShowSignOut(false);
@@ -1765,7 +1862,6 @@ const styles = StyleSheet.create({
     flex: 2,
     height: 54,
     borderRadius: 18,
-    backgroundColor: C.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },

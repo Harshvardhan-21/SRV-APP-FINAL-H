@@ -9,8 +9,8 @@ import type { Screen } from '@/shared/types/navigation';
 import { useResponsive } from '@/shared/hooks';
 import { counterboyTheme as cb } from '@/features/counterboy/theme';
 
-const CB_PRIMARY = '#E8453C';
-const CB_DARK = '#991B1B';
+const CB_PRIMARY = cb.primary;
+const CB_DARK = cb.primaryDeep;
 
 type NavControlConfig = {
   id: Screen;
@@ -125,8 +125,8 @@ export function BottomNav({ currentScreen, onNavigate }: { currentScreen: Screen
 const styles = StyleSheet.create({
   wrap: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    backgroundColor: '#FFFDFC', borderTopWidth: 1, borderTopColor: cb.border,
-    ...createShadow({ color: CB_PRIMARY, offsetY: -4, blur: 14, opacity: 0.08, elevation: 12 }),
+    backgroundColor: '#FFFDFC', borderTopWidth: 1, borderTopColor: '#E0D0C0',
+    ...createShadow({ color: '#6F4E37', offsetY: -4, blur: 14, opacity: 0.08, elevation: 12 }),
   },
   wrapDark: { backgroundColor: cb.darkBg, borderTopColor: cb.darkBorder, ...createShadow({ color: '#020617', offsetY: -4, blur: 14, opacity: 0.08, elevation: 12 }) },
   tab: { flex: 1, alignItems: 'center', justifyContent: 'center', minWidth: 50 },

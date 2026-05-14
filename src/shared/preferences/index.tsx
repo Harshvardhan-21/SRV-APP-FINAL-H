@@ -1,4 +1,5 @@
 import { createContext, useContext, useMemo } from 'react';
+import { counterboyTheme as srvCbTheme } from '@/features/counterboy/theme';
 import type { UserRole } from '@/shared/types/navigation';
 
 const palette = {
@@ -355,6 +356,10 @@ const uiText: Record<AppLanguage, Record<string, string>> = {
     'Top Picks': 'Top Picks',
     'Featured products': 'Featured Products',
     'View all': 'View All',
+    'Shop by Category': 'Shop by Category',
+    'Browse Categories': 'Browse Categories',
+    'View Products': 'View Products',
+    'MCB Box': 'MCB Box',
     'Member Tier': 'Member Tier',
     'Current Reward Level': 'Current Reward Level',
     'Current Dealer Level': 'Current Dealer Level',
@@ -452,6 +457,8 @@ const uiText: Record<AppLanguage, Record<string, string>> = {
     'Enter the electrician code': 'Enter the Electrician Code',
     'Dealer Code': 'Dealer Code',
     'Electrician Code': 'Electrician Code',
+    'Counter Boy ID': 'Counter Boy ID',
+    'Customer ID': 'Customer ID',
   },
   Hindi: {
     Home: 'होम',
@@ -626,6 +633,9 @@ const uiText: Record<AppLanguage, Record<string, string>> = {
     Boxes: 'बॉक्स',
     Fans: 'फैन',
     'View all': 'सभी देखें',
+    'Shop by Category': 'श्रेणी अनुसार खरीदें',
+    'Browse Categories': 'श्रेणियाँ ब्राउज़ करें',
+    'View Products': 'प्रोडक्ट देखें',
     'Recent Activity': 'हाल की गतिविधि',
     'Latest actions': 'ताज़ा गतिविधियां',
     'QR scanned successfully': 'QR सफलतापूर्वक स्कैन हुआ',
@@ -705,6 +715,8 @@ const uiText: Record<AppLanguage, Record<string, string>> = {
     'PAN Number': 'PAN नंबर',
     'Dealer Code': 'डीलर कोड',
     'Electrician Code': 'इलेक्ट्रीशियन कोड',
+    'Counter Boy ID': 'काउंटर बॉय आईडी',
+    'Customer ID': 'ग्राहक आईडी',
     'After selecting a photo, review it and tap Done to continue.':
       'फोटो चुनने के बाद उसे देखें और आगे बढ़ने के लिए अपलोड दबाएं।',
     'If the crop looks right, tap Done to update your profile photo.':
@@ -775,6 +787,7 @@ const uiText: Record<AppLanguage, Record<string, string>> = {
     'Fan Box': 'फैन बॉक्स',
     'Concealed Box': 'कन्सील्ड बॉक्स',
     'Modular Box': 'मॉड्यूलर बॉक्स',
+    'MCB Box': 'एमसीबी बॉक्स',
     'MCB DB': 'एमसीबी डीबी',
     'Bus Bar': 'बस बार',
     'Exhaust Fan': 'एग्जॉस्ट फैन',
@@ -1395,6 +1408,9 @@ const uiText: Record<AppLanguage, Record<string, string>> = {
     Boxes: 'ਬਾਕਸ',
     Fans: 'ਫੈਨ',
     'View all': 'ਸਾਰੇ ਵੇਖੋ',
+    'Shop by Category': 'ਸ਼੍ਰੇਣੀ ਅਨੁਸਾਰ',
+    'Browse Categories': 'ਸ਼੍ਰੇਣੀਆਂ ਬ੍ਰਾਊਜ਼ ਕਰੋ',
+    'View Products': 'ਪ੍ਰੋਡਕਟ ਵੇਖੋ',
     'Recent Activity': 'ਹਾਲੀਆ ਗਤੀਵਿਧੀ',
     'Latest actions': 'ਤਾਜ਼ਾ ਕਾਰਵਾਈਆਂ',
     'QR scanned successfully': 'QR ਸਫਲਤਾਪੂਰਵਕ ਸਕੈਨ ਹੋਇਆ',
@@ -1474,10 +1490,13 @@ const uiText: Record<AppLanguage, Record<string, string>> = {
     'PAN Number': 'PAN ਨੰਬਰ',
     'Dealer Code': 'ਡੀਲਰ ਕੋਡ',
     'Electrician Code': 'ਇਲੈਕਟ੍ਰੀਸ਼ੀਅਨ ਕੋਡ',
+    'Counter Boy ID': 'ਕਾਊਂਟਰ ਬੌਆਈ ਆਈਡੀ',
+    'Customer ID': 'ਗ੍ਰਾਹਕ ਆਈਡੀ',
     'All Products': 'ਸਾਰੇ ਪ੍ਰੋਡਕਟ',
     'Fan Box': 'ਫੈਨ ਬਾਕਸ',
     'Concealed Box': 'ਕੰਸੀਲਡ ਬਾਕਸ',
     'Modular Box': 'ਮੋਡੀਊਲਰ ਬਾਕਸ',
+    'MCB Box': 'ਐਮਸੀਬੀ ਬਾਕਸ',
     'MCB DB': 'ਐਮਸੀਬੀ ਡੀਬੀ',
     'Bus Bar': 'ਬਸ ਬਾਰ',
     'Exhaust Fan': 'ਐਗਜ਼ੌਸਟ ਫੈਨ',
@@ -2052,15 +2071,15 @@ const roleAccents: Record<
     heroGlowSecondary: 'rgba(141,74,30,0.16)',
   },
   counterboy: {
-    accent: '#E8453C',
-    accentSoft: '#FEE2E2',
-    accentDeep: '#991B1B',
-    lightBg: '#FFF6F6',
-    lightHero: '#FFF1F2',
-    heroGradient: ['#FFF6F6', '#FFE4E6', '#FECACA'],
-    heroGradientDark: ['#0B1220', '#7F1D1D', '#E8453C'],
-    heroGlowPrimary: 'rgba(232,69,60,0.22)',
-    heroGlowSecondary: 'rgba(127,29,29,0.16)',
+    accent: srvCbTheme.primary,
+    accentSoft: srvCbTheme.soft,
+    accentDeep: srvCbTheme.primaryDeep,
+    lightBg: srvCbTheme.softBg,
+    lightHero: srvCbTheme.bg,
+    heroGradient: [...srvCbTheme.heroLight] as [string, string, string],
+    heroGradientDark: [...srvCbTheme.heroDark] as [string, string, string],
+    heroGlowPrimary: 'rgba(139,60,42,0.18)',
+    heroGlowSecondary: 'rgba(111,78,55,0.14)',
   },
 };
 

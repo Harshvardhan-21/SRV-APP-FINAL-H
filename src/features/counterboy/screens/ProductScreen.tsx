@@ -6,5 +6,5 @@ export function ProductScreen({
 }: {
   onNavigate: (screen: Screen) => void;
 }) {
-  return <ElectricianProductScreen onNavigate={onNavigate} />;
+  return <ElectricianProductScreen onNavigate={onNavigate} role="counterboy" showBottomBanner={false} />;
 }

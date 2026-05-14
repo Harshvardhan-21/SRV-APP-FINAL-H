@@ -148,7 +148,7 @@ export function NotificationScreen({
       <LinearGradient
         colors={darkMode
           ? cb.heroDark
-          : [cb.primaryDeep, cb.primary, '#D98A7F']}
+          : [cb.primaryDeep, cb.primary, '#8B5E4A']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.hero}

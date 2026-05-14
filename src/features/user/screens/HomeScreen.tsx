@@ -30,10 +30,11 @@ import {
 } from '@/shared/components/TestimonialShowcase';
 import { WebsitePromoSection } from '@/shared/components/WebsitePromoSection';
 import { BannerCarousel, type BannerSlide as CarouselSlide } from '@/shared/components/BannerCarousel';
-import { ElectricianTierIcon, getElectricianTier } from './ElectricianTierScreen';
+import { ElectricianTierIcon, getElectricianTier, type ElectricianTierName } from './ElectricianTierScreen';
 import { useCatalogDownload } from '@/shared/hooks';
 import { API_BASE_URL } from '@/shared/api/config';
 import { bannersApi } from '@/shared/api';
+import { CUSTOMER_THEME } from '@/features/user/theme';
 
 // ── Category color system (same as ProductScreen) ─────────────────────
 type CatColorScheme = {
@@ -80,7 +81,7 @@ function getCatColor(id: string, index = 0): CatColorScheme {
 }
 
 // ── Category Icon SVGs (same as ProductScreen) ────────────────────────
-function CatIcon({ id, size = 24, color = '#173E80' }: { id: string; size?: number; color?: string }) {
+function CatIcon({ id, size = 24, color = CUSTOMER_THEME.ink }: { id: string; size?: number; color?: string }) {
   const s = size;
   switch (id) {
     case 'fanbox': return (
@@ -215,19 +216,6 @@ function getCatImage(id: string, apiImageUrl?: string | null): string {
   return apiImageUrl || CAT_IMAGES[id] || CAT_IMAGES.fanbox;
 }
 
-const CUSTOMER_THEME = {
-  heroLight: ['#FBF1E7', '#F5E8DC', '#F0DEC9'] as const,
-  heroDark: ['#2A1810', '#3D2418', '#4D2E1E'] as const,
-  heroGlowOne: 'rgba(141,74,30,0.24)',
-  heroGlowTwo: 'rgba(166,93,46,0.32)',
-  heroGlowThree: 'rgba(106,47,18,0.18)',
-  statLight: ['#FBF1E7', '#F5E8DC', '#F0DEC9'] as const,
-  quickBrowse: ['#F5E8DC', '#F0DEC9'] as const,
-  quickBrowseTint: '#6A2F12',
-  quickRewards: ['#FBF1E7', '#F0DEC9'] as const,
-  quickRewardsTint: '#8D4A1E',
-};
-
 // ── Animated Category Image (float + breathe — same as ProductScreen) ─
 function AnimatedCatImage({ uri, size }: { uri: string; size: number }) {
   const floatY = useRef(new Animated.Value(0)).current;
@@ -331,16 +319,33 @@ function HomeCategoryCard({
             { width: cardW, transform: [{ scale: pressScale }, { perspective: 800 }, { rotateY }, { rotateX }] },
           ]}
         >
-          <View style={[homeCatStyles.imgZone, { backgroundColor: darkMode ? '#1E293B' : '#FFFFFF' }]}>
+          <View
+            style={[
+              homeCatStyles.imgZone,
+              { backgroundColor: darkMode ? CUSTOMER_THEME.surfaceDark : '#FFFFFF' },
+            ]}
+          >
             <AnimatedCatImage uri={imgUri} size={142} />
           </View>
-          <View style={[homeCatStyles.accentLine, { backgroundColor: '#4A637B' }]} />
+          <View style={[homeCatStyles.accentLine, { backgroundColor: CUSTOMER_THEME.primaryDeep }]} />
           <View style={[homeCatStyles.infoZone, darkMode ? homeCatStyles.infoZoneDark : null]}>
             <Text style={[homeCatStyles.label, darkMode ? homeCatStyles.labelDark : null]} numberOfLines={2}>
               {cat.label}
             </Text>
-            <View style={[homeCatStyles.pill, { backgroundColor: darkMode ? 'rgba(255,255,255,0.08)' : '#F5F8FB' }]}>
-              <Text style={[homeCatStyles.pillText, { color: darkMode ? '#94A3B8' : '#4A637B' }]}>
+            <View
+              style={[
+                homeCatStyles.pill,
+                {
+                  backgroundColor: darkMode ? 'rgba(251,241,231,0.1)' : CUSTOMER_THEME.soft,
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  homeCatStyles.pillText,
+                  { color: darkMode ? '#E8D4C8' : CUSTOMER_THEME.primaryDeep },
+                ]}
+              >
                 View Products
               </Text>
             </View>
@@ -357,17 +362,17 @@ const homeCatStyles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#E6ECF5',
-    ...createShadow({ color: '#0F172A', offsetY: 6, blur: 16, opacity: 0.08, elevation: 4 }),
+    borderColor: CUSTOMER_THEME.border,
+    ...createShadow({ color: '#6A2F12', offsetY: 6, blur: 16, opacity: 0.1, elevation: 4 }),
   },
-  cardDark: { backgroundColor: '#111827', borderColor: '#1E293B' },
+  cardDark: { backgroundColor: CUSTOMER_THEME.surfaceDark, borderColor: CUSTOMER_THEME.borderDark },
   imgZone: { height: 150, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   accentLine: { height: 4, width: '100%' },
   iconWrap: { width: 64, height: 64, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   infoZone: { padding: 10, backgroundColor: '#FFFFFF' },
-  infoZoneDark: { backgroundColor: '#111827' },
-  label: { fontSize: 12, fontWeight: '800', color: '#152238', lineHeight: 16, marginBottom: 6 },
-  labelDark: { color: '#F1F5F9' },
+  infoZoneDark: { backgroundColor: CUSTOMER_THEME.surfaceDark },
+  label: { fontSize: 12, fontWeight: '800', color: CUSTOMER_THEME.ink, lineHeight: 16, marginBottom: 6 },
+  labelDark: { color: '#FBF1E7' },
   pill: { alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
   pillText: { fontSize: 10, fontWeight: '700' },
 });
@@ -429,7 +434,7 @@ function mapBannerSlides(items: any[]): CarouselSlide[] {
       )!,
     },
     resizeMode: 'cover' as const,
-    backgroundColor: b.bgColor ?? '#192F67',
+    backgroundColor: b.bgColor ?? '#5C3A28',
   }));
 }
 
@@ -540,7 +545,7 @@ function FeaturedProductCard({
         ]}
       >
         <LinearGradient
-          colors={darkMode ? ['#1E293B', '#243B55', '#1E293B'] : palette.cardGradient}
+          colors={darkMode ? [...CUSTOMER_THEME.heroDark] : palette.cardGradient}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.productImageZone}
@@ -581,7 +586,7 @@ function FeaturedProductCard({
     </Pressable>
   );
 }
-function WalletIcon({ color = '#10254A', size = 22 }: { color?: string; size?: number }) {
+function WalletIcon({ color = CUSTOMER_THEME.ink, size = 22 }: { color?: string; size?: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Rect x="3" y="6" width="18" height="13" rx="2.4" stroke={color} strokeWidth={1.8} />
@@ -613,7 +618,7 @@ function DownloadIcon({ color = '#6A2F12', size = 22 }: { color?: string; size?:
   );
 }
 
-function BellIcon({ color = '#10254A', size = 22 }: { color?: string; size?: number }) {
+function BellIcon({ color = CUSTOMER_THEME.ink, size = 22 }: { color?: string; size?: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
@@ -627,7 +632,7 @@ function BellIcon({ color = '#10254A', size = 22 }: { color?: string; size?: num
   );
 }
 
-function ScanIcon({ color = '#10254A', size = 22 }: { color?: string; size?: number }) {
+function ScanIcon({ color = CUSTOMER_THEME.ink, size = 22 }: { color?: string; size?: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Rect x="4" y="4" width="6" height="6" rx="1.2" stroke={color} strokeWidth={1.8} />
@@ -638,7 +643,7 @@ function ScanIcon({ color = '#10254A', size = 22 }: { color?: string; size?: num
   );
 }
 
-function GiftIcon({ color = '#10254A', size = 22 }: { color?: string; size?: number }) {
+function GiftIcon({ color = CUSTOMER_THEME.ink, size = 22 }: { color?: string; size?: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Rect x="3" y="8" width="18" height="4" rx="1.2" stroke={color} strokeWidth={1.8} />
@@ -654,7 +659,7 @@ function GiftIcon({ color = '#10254A', size = 22 }: { color?: string; size?: num
   );
 }
 
-function WhatsAppIcon({ color = '#10254A', size = 22 }: { color?: string; size?: number }) {
+function WhatsAppIcon({ color = CUSTOMER_THEME.ink, size = 22 }: { color?: string; size?: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
@@ -671,7 +676,7 @@ function WhatsAppIcon({ color = '#10254A', size = 22 }: { color?: string; size?:
   );
 }
 
-function ChevronRight({ color = '#10254A', size = 16 }: { color?: string; size?: number }) {
+function ChevronRight({ color = CUSTOMER_THEME.ink, size = 16 }: { color?: string; size?: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 16 16" fill="none">
       <Path
@@ -685,7 +690,7 @@ function ChevronRight({ color = '#10254A', size = 16 }: { color?: string; size?:
   );
 }
 
-function FilterIcon({ color = '#173E80', size = 16 }: { color?: string; size?: number }) {
+function FilterIcon({ color = CUSTOMER_THEME.ink, size = 16 }: { color?: string; size?: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path d="M4 7h16M7 12h10M10 17h4" stroke={color} strokeWidth={1.9} strokeLinecap="round" />
@@ -694,6 +699,22 @@ function FilterIcon({ color = '#173E80', size = 16 }: { color?: string; size?: n
       <Circle cx="12" cy="17" r="2" fill="#FFFFFF" stroke={color} strokeWidth={1.7} />
     </Svg>
   );
+}
+
+/** Member tier card on customer home — warm creams, no electrician blue/slate */
+function customerHomeTierLightGradient(tierName: ElectricianTierName): [string, string, string] {
+  switch (tierName) {
+    case 'Silver':
+      return ['#FFFBF7', '#FBF1E7', '#F5E8DC'];
+    case 'Gold':
+      return ['#FFF8E6', '#FEF0C7', '#FDE68A'];
+    case 'Platinum':
+      return ['#FDF6F0', '#F5E8DC', '#EFD8C1'];
+    case 'Diamond':
+      return ['#FFF9F3', '#FBF1E7', '#F0DEC9'];
+    default:
+      return ['#FBF1E7', '#F5E8DC', '#F0DEC9'];
+  }
 }
 
 export function HomeScreen({
@@ -1034,7 +1055,7 @@ export function HomeScreen({
                 style={[styles.statCard, darkMode ? styles.statCardDark : null]}
               >
                 <Animated.View
-                  style={[styles.statGlow, styles.statGlowBlue, { opacity: statsPulse }]}
+                  style={[styles.statGlow, styles.statGlowPoints, { opacity: statsPulse }]}
                 />
                 <Text style={[styles.statLabel, darkMode ? styles.statLabelDark : null]}>
                   {tx('Total Points')}
@@ -1064,7 +1085,7 @@ export function HomeScreen({
               accessibilityLabel="Electrician home member tier"
             >
               <LinearGradient
-                colors={darkMode ? ['#111827', '#18263A', '#243B53'] : tier.gradient}
+                colors={darkMode ? [...CUSTOMER_THEME.heroDark] : customerHomeTierLightGradient(tier.tier)}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={[styles.statCard, darkMode ? styles.statCardDark : null]}
@@ -1119,7 +1140,7 @@ export function HomeScreen({
         )}
       </LinearGradient>
 
-      <View style={styles.body}>
+      <View style={[styles.body, darkMode ? styles.bodyDark : null]}>
         {authUser && activeBannerSlides.length > 0 && (
           <View style={[styles.homeBannerSection, darkMode ? styles.homeBannerSectionDark : null]}>
             <BannerCarousel
@@ -1172,8 +1193,15 @@ export function HomeScreen({
               </View>
               {categories.length > 4 && (
                 <TouchableOpacity onPress={() => onNavigate('product')} style={styles.inlineAction} activeOpacity={0.85}>
-                  <Text style={styles.viewAllText}>{tx('View all')}</Text>
-                  <ChevronRight color="#E8453C" />
+                  <Text
+                    style={[
+                      styles.viewAllText,
+                      { color: darkMode ? '#E8D4C8' : CUSTOMER_THEME.primaryDeep },
+                    ]}
+                  >
+                    {tx('View all')}
+                  </Text>
+                  <ChevronRight color={darkMode ? '#E8D4C8' : CUSTOMER_THEME.primaryDeep} />
                 </TouchableOpacity>
               )}
             </View>
@@ -1210,8 +1238,8 @@ export function HomeScreen({
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#EEF3F8' },
-  containerDark: { backgroundColor: '#08111F' },
+  container: { flex: 1, backgroundColor: CUSTOMER_THEME.canvasLight },
+  containerDark: { backgroundColor: CUSTOMER_THEME.canvasDark },
   heroShell: {
     paddingTop: 26,
     paddingHorizontal: 14,
@@ -1238,8 +1266,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
   },
   bannerFallbackCardDark: {
-    backgroundColor: '#111827',
-    borderColor: '#243043',
+    backgroundColor: CUSTOMER_THEME.surfaceDark,
+    borderColor: CUSTOMER_THEME.borderDark,
   },
   bannerFallbackTitle: {
     color: '#6A2F12',
@@ -1256,7 +1284,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     maxWidth: '92%',
   },
-  bannerFallbackTextDark: { color: '#CBD5E1' },
+  bannerFallbackTextDark: { color: '#C4B4A8' },
   heroGlowOne: {
     position: 'absolute',
     width: 220,
@@ -1300,11 +1328,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
-    ...createShadow({ color: '#0F172A', offsetY: 2, blur: 8, opacity: 0.12, elevation: 3 }),
+    ...createShadow({ color: '#6A2F12', offsetY: 2, blur: 8, opacity: 0.1, elevation: 3 }),
   },
   logoWrapDark: {
-    backgroundColor: 'rgba(15,23,42,0.78)',
-    borderColor: 'rgba(148,163,184,0.2)',
+    backgroundColor: 'rgba(61,36,24,0.55)',
+    borderWidth: 1,
+    borderColor: 'rgba(239,216,193,0.25)',
   },
   logoImage: { width: 48, height: 48 },
   topActions: { flexDirection: 'row', gap: 8 },
@@ -1314,15 +1343,15 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: 'rgba(255,255,255,0.96)',
     borderWidth: 1,
-    borderColor: 'rgba(148,163,184,0.24)',
+    borderColor: 'rgba(141,74,30,0.2)',
     alignItems: 'center',
     justifyContent: 'center',
-    ...createShadow({ color: '#0F172A', offsetY: 8, blur: 14, opacity: 0.12, elevation: 4 }),
+    ...createShadow({ color: '#6A2F12', offsetY: 8, blur: 14, opacity: 0.1, elevation: 4 }),
   },
   topActionBtnDark: {
-    backgroundColor: '#0F172A',
-    borderColor: 'rgba(148,163,184,0.24)',
-    ...createShadow({ color: '#020617', offsetY: 8, blur: 14, opacity: 0.12, elevation: 4 }),
+    backgroundColor: CUSTOMER_THEME.surfaceDark,
+    borderColor: 'rgba(239,216,193,0.18)',
+    ...createShadow({ color: '#1A0503', offsetY: 8, blur: 14, opacity: 0.35, elevation: 4 }),
   },
 
   topIconCore: {
@@ -1346,10 +1375,10 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 16,
     overflow: 'hidden',
-    ...createShadow({ color: '#94A3B8', offsetY: 8, blur: 16, opacity: 0.12, elevation: 4 }),
+    ...createShadow({ color: '#8D4A1E', offsetY: 8, blur: 16, opacity: 0.14, elevation: 4 }),
   },
   statCardWrapDark: {
-    ...createShadow({ color: '#020617', offsetY: 8, blur: 16, opacity: 0.26, elevation: 4 }),
+    ...createShadow({ color: '#1A0503', offsetY: 8, blur: 16, opacity: 0.35, elevation: 4 }),
   },
   statCard: {
     flex: 1,
@@ -1361,7 +1390,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.45)',
   },
   statCardDark: {
-    borderColor: 'rgba(148,163,184,0.16)',
+    borderColor: 'rgba(239,216,193,0.14)',
   },
   statGlow: {
     position: 'absolute',
@@ -1371,28 +1400,28 @@ const styles = StyleSheet.create({
     top: -18,
     right: -12,
   },
-  statGlowBlue: {
-    backgroundColor: 'rgba(59,130,246,0.22)',
+  statGlowPoints: {
+    backgroundColor: 'rgba(141,74,30,0.22)',
   },
   statGlowWarm: {
-    backgroundColor: 'rgba(244,114,182,0.2)',
+    backgroundColor: 'rgba(166,93,46,0.22)',
   },
-  statLabel: { color: '#5C6F91', fontSize: 9.5, fontWeight: '700', marginBottom: 4 },
-  statLabelDark: { color: '#BFDBFE' },
-  statValue: { color: '#13294B', fontSize: 16, fontWeight: '900' },
-  statValueDark: { color: '#F8FAFC' },
-  statHint: { color: '#7A8CAA', fontSize: 9.5, marginTop: 2 },
-  statHintDark: { color: '#CBD5E1' },
+  statLabel: { color: '#8A7A6E', fontSize: 9.5, fontWeight: '700', marginBottom: 4 },
+  statLabelDark: { color: '#E8D4C8' },
+  statValue: { color: '#3D2418', fontSize: 16, fontWeight: '900' },
+  statValueDark: { color: '#FBF1E7' },
+  statHint: { color: '#A08F82', fontSize: 9.5, marginTop: 2 },
+  statHintDark: { color: '#C4B4A8' },
   tapHintBadge: {
     position: 'absolute',
     top: 8,
     right: 8,
-    backgroundColor: 'rgba(59,130,246,0.15)',
+    backgroundColor: 'rgba(141,74,30,0.15)',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 10,
   },
-  tapHintText: { color: '#3B82F6', fontSize: 9, fontWeight: '700' },
+  tapHintText: { color: '#8D4A1E', fontSize: 9, fontWeight: '700' },
   tierIconChip: {
     position: 'absolute',
     top: 8,
@@ -1403,7 +1432,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  body: { paddingHorizontal: 14, paddingTop: 18, paddingBottom: 18 },
+  body: {
+    paddingHorizontal: 14,
+    paddingTop: 18,
+    paddingBottom: 18,
+    backgroundColor: CUSTOMER_THEME.canvasLight,
+  },
+  bodyDark: { backgroundColor: CUSTOMER_THEME.canvasDark },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -1411,21 +1446,21 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   sectionEyebrow: {
-    color: '#7D8AA5',
+    color: '#8A7A6E',
     fontSize: 11,
     fontWeight: '800',
     textTransform: 'uppercase',
     letterSpacing: 1.1,
     marginBottom: 5,
   },
-  sectionEyebrowDark: { color: '#94A3B8' },
-  sectionTitle: { color: '#14213D', fontSize: 21, fontWeight: '900' },
-  sectionTitleDark: { color: '#F8FAFC' },
+  sectionEyebrowDark: { color: '#C4B4A8' },
+  sectionTitle: { color: '#3D2418', fontSize: 21, fontWeight: '900' },
+  sectionTitleDark: { color: '#FBF1E7' },
   bannerCard: {
     borderRadius: 28,
     overflow: 'hidden',
-    backgroundColor: '#D9E3F2',
-    ...createShadow({ color: '#0F172A', offsetY: 10, blur: 22, opacity: 0.16, elevation: 9 }),
+    backgroundColor: '#F0DEC9',
+    ...createShadow({ color: '#6A2F12', offsetY: 10, blur: 22, opacity: 0.12, elevation: 9 }),
   },
   bannerImage: { width: '100%', height: '100%' },
   dotsRow: {
@@ -1435,20 +1470,20 @@ const styles = StyleSheet.create({
     marginTop: 14,
     marginBottom: 22,
   },
-  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#C7D2E3' },
-  dotDark: { backgroundColor: '#334155' },
-  dotActive: { width: 28, backgroundColor: '#0F172A' },
-  dotActiveDark: { width: 28, backgroundColor: '#E2E8F0' },
+  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#E8D4C8' },
+  dotDark: { backgroundColor: '#5C4033' },
+  dotActive: { width: 28, backgroundColor: '#6A2F12' },
+  dotActiveDark: { width: 28, backgroundColor: '#E8D4C8' },
   quickGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 22 },
   quickCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 22,
     padding: 14,
-    ...createShadow({ color: '#0F172A', offsetY: 8, blur: 18, opacity: 0.07, elevation: 4 }),
+    ...createShadow({ color: '#6A2F12', offsetY: 8, blur: 18, opacity: 0.08, elevation: 4 }),
   },
   quickCardDark: {
-    backgroundColor: '#111827',
-    ...createShadow({ color: '#020617', offsetY: 8, blur: 18, opacity: 0.07, elevation: 4 }),
+    backgroundColor: CUSTOMER_THEME.surfaceDark,
+    ...createShadow({ color: '#1A0503', offsetY: 8, blur: 18, opacity: 0.28, elevation: 4 }),
   },
   quickIconBox: {
     width: 56,
@@ -1458,12 +1493,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 14,
   },
-  quickTitle: { color: '#152238', fontSize: 14, fontWeight: '800' },
-  quickTitleDark: { color: '#F8FAFC' },
-  quickSub: { color: '#74829D', fontSize: 11.5, marginTop: 3 },
-  quickSubDark: { color: '#CBD5E1' },
+  quickTitle: { color: '#3D2418', fontSize: 14, fontWeight: '800' },
+  quickTitleDark: { color: '#FBF1E7' },
+  quickSub: { color: '#8A7A6E', fontSize: 11.5, marginTop: 3 },
+  quickSubDark: { color: '#C4B4A8' },
   inlineAction: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  viewAllText: { color: '#173E80', fontSize: 13, fontWeight: '800' },
+  viewAllText: { fontSize: 13, fontWeight: '800' },
   productsTopBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -1481,18 +1516,18 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#D9E3F0',
+    borderColor: CUSTOMER_THEME.border,
   },
   filterChipDark: {
-    backgroundColor: '#111827',
-    borderColor: '#243043',
+    backgroundColor: CUSTOMER_THEME.surfaceDark,
+    borderColor: CUSTOMER_THEME.borderDark,
   },
   filterChipActive: {
     backgroundColor: '#6A2F12',
     borderColor: '#6A2F12',
   },
   filterChipText: { color: '#6A2F12', fontSize: 11.5, fontWeight: '800' },
-  filterChipTextDark: { color: '#CBD5E1' },
+  filterChipTextDark: { color: '#E8D4C8' },
   filterChipTextActive: { color: '#FFFFFF' },
   productsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 24 },
   productCard: {
@@ -1500,13 +1535,13 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#E6ECF5',
-    ...createShadow({ color: '#0F172A', offsetY: 10, blur: 18, opacity: 0.08, elevation: 5 }),
+    borderColor: CUSTOMER_THEME.border,
+    ...createShadow({ color: '#6A2F12', offsetY: 10, blur: 18, opacity: 0.08, elevation: 5 }),
   },
   productCardDark: {
-    backgroundColor: '#111827',
-    borderColor: '#243043',
-    ...createShadow({ color: '#020617', offsetY: 10, blur: 18, opacity: 0.08, elevation: 5 }),
+    backgroundColor: CUSTOMER_THEME.surfaceDark,
+    borderColor: CUSTOMER_THEME.borderDark,
+    ...createShadow({ color: '#1A0503', offsetY: 10, blur: 18, opacity: 0.22, elevation: 5 }),
   },
   productImageZone: {
     height: 168,
@@ -1527,10 +1562,10 @@ const styles = StyleSheet.create({
   productBadgeText: { color: '#FFFFFF', fontSize: 10, fontWeight: '800' },
   productImage: { width: 112, height: 112 },
   productInfo: { padding: 13, paddingTop: 11 },
-  productName: { color: '#152238', fontSize: 13, fontWeight: '800', textTransform: 'uppercase' },
-  productNameDark: { color: '#F8FAFC' },
-  productDesc: { color: '#70819C', fontSize: 11, lineHeight: 16, marginTop: 4, minHeight: 32 },
-  productDescDark: { color: '#CBD5E1' },
+  productName: { color: '#3D2418', fontSize: 13, fontWeight: '800', textTransform: 'uppercase' },
+  productNameDark: { color: '#FBF1E7' },
+  productDesc: { color: '#8A7A6E', fontSize: 11, lineHeight: 16, marginTop: 4, minHeight: 32 },
+  productDescDark: { color: '#C4B4A8' },
   productFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -1539,7 +1574,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   productPrice: { color: '#152238', fontSize: 15, fontWeight: '900' },
-  productPriceDark: { color: '#F8FAFC' },
+  productPriceDark: { color: '#FBF1E7' },
   pointsPill: {
     backgroundColor: 'rgba(255,255,255,0.92)',
     borderRadius: 999,
@@ -1585,13 +1620,13 @@ const styles = StyleSheet.create({
     width: '22%',
     minWidth: 80,
     borderWidth: 1,
-    borderColor: '#E6ECF5',
+    borderColor: CUSTOMER_THEME.border,
     paddingBottom: 10,
-    ...createShadow({ color: '#0F172A', offsetY: 4, blur: 12, opacity: 0.07, elevation: 3 }),
+    ...createShadow({ color: '#6A2F12', offsetY: 4, blur: 12, opacity: 0.07, elevation: 3 }),
   },
   categoryCardDark: {
-    backgroundColor: '#111827',
-    borderColor: '#1E293B',
+    backgroundColor: CUSTOMER_THEME.surfaceDark,
+    borderColor: CUSTOMER_THEME.borderDark,
   },
   categoryImgWrap: {
     width: '100%',
@@ -1602,7 +1637,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   categoryImgWrapDark: {
-    backgroundColor: '#1E293B',
+    backgroundColor: '#3D2418',
   },
   categoryImg: {
     width: '86%',
@@ -1616,7 +1651,7 @@ const styles = StyleSheet.create({
     lineHeight: 13,
     paddingHorizontal: 4,
   },
-  categoryLabelDark: { color: '#E2E8F0' },
+  categoryLabelDark: { color: '#E8D4C8' },
   categoryPrice: {
     fontSize: 9,
     fontWeight: '700',

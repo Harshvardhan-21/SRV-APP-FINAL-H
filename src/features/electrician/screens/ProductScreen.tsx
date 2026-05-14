@@ -1,4 +1,4 @@
-﻿import { LinearGradient } from 'expo-linear-gradient';
+import { LinearGradient } from 'expo-linear-gradient';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
@@ -450,7 +450,7 @@ export function ProductScreen({
   onNavigate: (screen: Screen) => void;
   initialCategory?: string;
   showBottomBanner?: boolean;
-  role?: 'electrician' | 'dealer' | 'customer';
+  role?: 'electrician' | 'dealer' | 'customer' | 'counterboy';
 }) {
   const { darkMode, tx } = usePreferenceContext();
   const { products: apiProducts, categories: apiCategories, catalogLoading, refreshAll } = useAppData();
@@ -511,9 +511,10 @@ export function ProductScreen({
 
   const isDealer = role === 'dealer';
   const isCustomer = role === 'customer';
-  const productActionLabel = (isDealer || isCustomer) ? tx('Buy Now') : tx('Scan to Earn');
-  const bannerActionLabel = (isDealer || isCustomer) ? tx('Buy Now') : tx('Scan & Earn').replace(' ', '\n');
-  const handleScan = useCallback(() => onNavigate((isDealer || isCustomer) ? 'rewards' : 'scan'), [onNavigate, isDealer, isCustomer]);
+  const isCounterboy = role === 'counterboy';
+  const productActionLabel = (isDealer || isCustomer || isCounterboy) ? tx('Buy Now') : tx('Scan to Earn');
+  const bannerActionLabel = (isDealer || isCustomer || isCounterboy) ? tx('Buy Now') : tx('Scan & Earn').replace(' ', '\n');
+  const handleScan = useCallback(() => onNavigate((isDealer || isCustomer || isCounterboy) ? 'rewards' : 'scan'), [onNavigate, isDealer, isCustomer, isCounterboy]);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -537,17 +538,17 @@ export function ProductScreen({
   const ListHeader = useMemo(() => (
     <View style={{ gap: 14, paddingBottom: 4 }}>
       {/* Title */}
-      <Text style={[styles.pageTitle, darkMode ? styles.pageTitleDark : null]}>{tx('All Products')}</Text>
+      <Text style={[styles.pageTitle, darkMode ? styles.pageTitleDark : null, isCounterboy && { color: '#5C3D2E' }, isCounterboy && darkMode && { color: '#F5EDE4' }]}>{tx('All Products')}</Text>
 
       {/* Search bar */}
-      <View style={[styles.searchWrap, darkMode ? styles.searchWrapDark : null]}>
+      <View style={[styles.searchWrap, darkMode ? styles.searchWrapDark : null, isCounterboy && { backgroundColor: '#F9F4ED', borderColor: '#E0D0C0' }, isCounterboy && darkMode && { backgroundColor: '#1A0F0A', borderColor: '#2D1C14' }]}>
         <Text style={{ fontSize: 15, color: C.textMuted }}>🔍</Text>
         <TextInput
           value={search}
           onChangeText={setSearch}
           placeholder={tx('Search all products...')}
           placeholderTextColor={C.textMuted}
-          style={[styles.searchInput, darkMode ? styles.searchInputDark : null]}
+          style={[styles.searchInput, darkMode ? styles.searchInputDark : null, isCounterboy && { color: '#2D1A10' }, isCounterboy && darkMode && { color: '#F5EDE4' }]}
         />
         {search.length > 0 && (
           <Pressable onPress={() => setSearch('')}>
@@ -561,7 +562,7 @@ export function ProductScreen({
             showFilters && { backgroundColor: 
               isCustomer ? '#6A2F12' :
               isDealer   ? '#173E80' :
-              role === 'counterboy' ? '#E8453C' :
+              isCounterboy ? '#8B3C2A' :
               '#173E80'
             }
           ]}
@@ -573,14 +574,14 @@ export function ProductScreen({
 
       {/* Filter panel */}
       {showFilters && (
-        <View style={[styles.filterPanel, darkMode ? styles.filterPanelDark : null]}>
+        <View style={[styles.filterPanel, darkMode ? styles.filterPanelDark : null, isCounterboy && { backgroundColor: '#F9F4ED', borderColor: '#E0D0C0' }, isCounterboy && darkMode && { backgroundColor: '#1A0F0A', borderColor: '#2D1C14' }]}>
           <View style={styles.filterPanelHeader}>
             <View style={{ flex: 1 }}>
-              <Text style={[styles.filterPanelTitle, darkMode ? styles.filterPanelTitleDark : null]}>{tx('Filter products')}</Text>
+              <Text style={[styles.filterPanelTitle, darkMode ? styles.filterPanelTitleDark : null, isCounterboy && { color: '#5C3D2E' }, isCounterboy && darkMode && { color: '#F5EDE4' }]}>{tx('Filter products')}</Text>
               <Text style={[styles.filterPanelSub, darkMode ? styles.filterPanelSubDark : null]}>{tx('Choose a category to see matching products.')}</Text>
             </View>
             <TouchableOpacity onPress={() => setShowFilters(false)} activeOpacity={0.8}>
-              <Text style={styles.filterClose}>{tx('Close')}</Text>
+              <Text style={[styles.filterClose, isCounterboy && { color: '#8B3C2A' }]}>{tx('Close')}</Text>
             </TouchableOpacity>
           </View>
           <View style={styles.filterGrid}>
@@ -596,6 +597,14 @@ export function ProductScreen({
               const customerTextColor = active ? '#fff' : '#6A2F12';
               const customerMetaColor = active ? 'rgba(255,255,255,0.86)' : '#8D4A1E';
               
+              // Counterboy theme colors
+              const counterboyBg = active ? '#8B3C2A' : '#F9F4ED';
+              const counterboyBorder = active ? '#8B3C2A' : '#E0D0C0';
+              const counterboyIconBg = active ? 'rgba(255,255,255,0.2)' : '#EDE0D4';
+              const counterboyIconColor = active ? '#fff' : '#8B3C2A';
+              const counterboyTextColor = active ? '#fff' : '#5C3D2E';
+              const counterboyMetaColor = active ? 'rgba(255,255,255,0.86)' : '#8A7A6E';
+              
               return (
                 <TouchableOpacity
                   key={cat.id}
@@ -605,18 +614,20 @@ export function ProductScreen({
                     darkMode ? styles.filterCardDark : null, 
                     isCustomer
                       ? { backgroundColor: customerBg, borderColor: customerBorder }
-                      : active && { backgroundColor: cc2.scanText, borderColor: cc2.scanText }
+                      : isCounterboy
+                        ? { backgroundColor: counterboyBg, borderColor: counterboyBorder }
+                        : active && { backgroundColor: cc2.scanText, borderColor: cc2.scanText }
                   ]}
                   activeOpacity={0.86}
                 >
                   <View style={[
                     styles.filterCardIcon, 
-                    { backgroundColor: isCustomer ? customerIconBg : (active ? 'rgba(255,255,255,0.2)' : cc2.iconBg) }
+                    { backgroundColor: isCustomer ? customerIconBg : isCounterboy ? counterboyIconBg : (active ? 'rgba(255,255,255,0.2)' : cc2.iconBg) }
                   ]}>
                     <CatIcon 
                       id={cat.id} 
                       size={22} 
-                      color={isCustomer ? customerIconColor : (active ? '#fff' : cc2.scanText)} 
+                      color={isCustomer ? customerIconColor : isCounterboy ? counterboyIconColor : (active ? '#fff' : cc2.scanText)} 
                     />
                   </View>
                   <Text style={[
@@ -624,14 +635,18 @@ export function ProductScreen({
                     darkMode && !active ? styles.filterCardTitleDark : null, 
                     isCustomer 
                       ? { color: customerTextColor }
-                      : active && { color: '#fff' }
+                      : isCounterboy
+                        ? { color: counterboyTextColor }
+                        : active && { color: '#fff' }
                   ]} numberOfLines={1}>{cat.label}</Text>
                   <Text style={[
                     styles.filterCardMeta, 
                     darkMode && !active ? styles.filterCardMetaDark : null, 
                     isCustomer
                       ? { color: customerMetaColor }
-                      : active && { color: 'rgba(255,255,255,0.86)' }
+                      : isCounterboy
+                        ? { color: counterboyMetaColor }
+                        : active && { color: 'rgba(255,255,255,0.86)' }
                   ]}>{cat.count} {tx('products')}</Text>
                 </TouchableOpacity>
               );
@@ -647,55 +662,66 @@ export function ProductScreen({
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.tabList}
-        renderItem={({ item: cat }) => {
-          const active = !isSearching && cat.id === category;
-          const cc2 = cat.id === 'all' ? DEFAULT_CAT_COLOR : catColor(cat.id);
-          
-          // Customer theme colors
-          const customerBg = active ? '#6A2F12' : '#FBF1E7';
-          const customerBorder = active ? '#6A2F12' : '#E5D4C1';
-          const customerIconBg = active ? 'rgba(255,255,255,0.2)' : '#F5E8DC';
-          const customerIconColor = active ? '#fff' : '#6A2F12';
-          const customerTextColor = active ? '#fff' : '#6A2F12';
-          
-          return (
-            <TouchableOpacity
-              onPress={() => { setCategory(cat.id); setSearch(''); }}
-              style={[
-                styles.categoryTab, 
-                darkMode ? styles.categoryTabDark : null, 
-                isCustomer 
-                  ? { backgroundColor: customerBg, borderColor: customerBorder }
-                  : active && { backgroundColor: cc2.scanText, borderColor: cc2.scanText }
-              ]}
-              activeOpacity={0.8}
-            >
-              <View style={[
-                styles.tabIconWrap, 
-                { backgroundColor: isCustomer ? customerIconBg : (active ? 'rgba(255,255,255,0.2)' : cc2.iconBg) }
-              ]}>
-                <CatIcon 
-                  id={cat.id} 
-                  size={18} 
-                  color={isCustomer ? customerIconColor : (active ? '#fff' : cc2.scanText)} 
-                />
-              </View>
-              <Text style={[
-                styles.categoryText, 
-                darkMode && !active ? styles.categoryTextDark : null, 
-                isCustomer 
-                  ? { color: customerTextColor }
-                  : active && { color: '#fff' }
-              ]}>{cat.label}</Text>
-            </TouchableOpacity>
+          renderItem={({ item: cat }) => {
+            const active = !isSearching && cat.id === category;
+            const cc2 = cat.id === 'all' ? DEFAULT_CAT_COLOR : catColor(cat.id);
+            
+            // Customer theme colors
+            const customerBg = active ? '#6A2F12' : '#FBF1E7';
+            const customerBorder = active ? '#6A2F12' : '#E5D4C1';
+            const customerIconBg = active ? 'rgba(255,255,255,0.2)' : '#F5E8DC';
+            const customerIconColor = active ? '#fff' : '#6A2F12';
+            const customerTextColor = active ? '#fff' : '#6A2F12';
+            
+            // Counterboy theme colors
+            const counterboyBg = active ? '#8B3C2A' : '#F9F4ED';
+            const counterboyBorder = active ? '#8B3C2A' : '#E0D0C0';
+            const counterboyIconBg = active ? 'rgba(255,255,255,0.2)' : '#EDE0D4';
+            const counterboyIconColor = active ? '#fff' : '#8B3C2A';
+            const counterboyTextColor = active ? '#fff' : '#5C3D2E';
+            
+            return (
+              <TouchableOpacity
+                onPress={() => { setCategory(cat.id); setSearch(''); }}
+                style={[
+                  styles.categoryTab, 
+                  darkMode ? styles.categoryTabDark : null, 
+                  isCustomer 
+                    ? { backgroundColor: customerBg, borderColor: customerBorder }
+                    : isCounterboy
+                      ? { backgroundColor: counterboyBg, borderColor: counterboyBorder }
+                      : active && { backgroundColor: cc2.scanText, borderColor: cc2.scanText }
+                ]}
+                activeOpacity={0.8}
+              >
+                <View style={[
+                  styles.tabIconWrap, 
+                  { backgroundColor: isCustomer ? customerIconBg : isCounterboy ? counterboyIconBg : (active ? 'rgba(255,255,255,0.2)' : cc2.iconBg) }
+                ]}>
+                  <CatIcon 
+                    id={cat.id} 
+                    size={18} 
+                    color={isCustomer ? customerIconColor : isCounterboy ? counterboyIconColor : (active ? '#fff' : cc2.scanText)} 
+                  />
+                </View>
+                <Text style={[
+                  styles.categoryText, 
+                  darkMode && !active ? styles.categoryTextDark : null, 
+                  isCustomer 
+                    ? { color: customerTextColor }
+                    : isCounterboy
+                      ? { color: counterboyTextColor }
+                      : active && { color: '#fff' }
+                ]}>{cat.label}</Text>
+              </TouchableOpacity>
           );
         }}
       />
 
       {/* Banner or search result info */}
       {isSearching ? (
-        <View style={[styles.searchResultBanner, darkMode ? styles.searchResultBannerDark : null]}>
-          <Text style={[styles.searchResultText, darkMode ? styles.searchResultTextDark : null]}>
+        <View style={[styles.searchResultBanner, darkMode ? styles.searchResultBannerDark : null, isCounterboy && { backgroundColor: '#F9F4ED', borderColor: '#E0D0C0' }, isCounterboy && darkMode && { backgroundColor: '#1A0F0A', borderColor: '#2D1C14' }]}>
+          <Text style={[styles.searchResultText, darkMode ? styles.searchResultTextDark : null, isCounterboy && { color: '#5C3D2E' }, isCounterboy && darkMode && { color: '#F5EDE4' }]}>
             {filtered.length > 0
               ? `${filtered.length} ${tx('results for')} "${search}"`
               : `${tx('No results for')} "${search}"`}
@@ -706,23 +732,23 @@ export function ProductScreen({
         </View>
       ) : (
         <LinearGradient 
-          colors={isCustomer ? ['#FBF1E7', '#F5E8DC', '#F0DEC9'] : cc.gradient} 
+          colors={isCustomer ? ['#FBF1E7', '#F5E8DC', '#F0DEC9'] : isCounterboy ? ['#F9F4ED', '#F0DFD0', '#EDE0D4'] : cc.gradient} 
           start={{ x: 0, y: 0 }} 
           end={{ x: 1, y: 0 }} 
           style={styles.catBanner}
         >
           <View style={styles.catBannerLeft}>
             <View style={styles.bannerIconWrap}>
-              <CatIcon id={category} size={32} color={isCustomer ? '#6A2F12' : '#fff'} />
+              <CatIcon id={category} size={32} color={isCustomer ? '#6A2F12' : isCounterboy ? '#8B3C2A' : '#fff'} />
             </View>
             <View style={{ flex: 1, minWidth: 0 }}>
-              <Text style={[styles.catBannerTitle, isCustomer && { color: '#6A2F12' }]} numberOfLines={1} adjustsFontSizeToFit>{currentCat.label}</Text>
-              <Text style={[styles.catBannerSub, isCustomer && { color: '#8D4A1E' }]} numberOfLines={1}>
+              <Text style={[styles.catBannerTitle, isCustomer && { color: '#6A2F12' }, isCounterboy && { color: '#5C3D2E' }]} numberOfLines={1} adjustsFontSizeToFit>{currentCat.label}</Text>
+              <Text style={[styles.catBannerSub, isCustomer && { color: '#8D4A1E' }, isCounterboy && { color: '#8A7A6E' }]} numberOfLines={1}>
                 {catalogLoading && products.length === 0 ? tx('Loading...') : `${filtered.length} ${tx('products available')}`}
               </Text>
             </View>
           </View>
-          {!isDealer && !isCustomer ? (
+          {!isDealer && !isCustomer && !isCounterboy ? (
             <TouchableOpacity onPress={() => onNavigate('scan')} style={styles.catScanBtn}>
               <ScanIcon size={20} color="#fff" />
               <Text style={styles.catScanText}>{bannerActionLabel}</Text>
@@ -731,7 +757,7 @@ export function ProductScreen({
         </LinearGradient>
       )}
     </View>
-  ), [darkMode, tx, search, showFilters, uiCategories, categoryItems, category, isSearching, filtered.length, cc, currentCat, catalogLoading, products.length, isDealer, onNavigate, bannerActionLabel]);
+  ), [darkMode, tx, search, showFilters, uiCategories, categoryItems, category, isSearching, filtered.length, cc, currentCat, catalogLoading, products.length, isDealer, isCounterboy, onNavigate, bannerActionLabel]);
 
   const ListFooter = useMemo(() => (
     <View>
@@ -768,7 +794,7 @@ export function ProductScreen({
 
   return (
     <FlatList
-      style={[styles.screen, darkMode ? styles.screenDark : null]}
+      style={[styles.screen, darkMode ? styles.screenDark : null, isCounterboy && { backgroundColor: '#F9F4ED' }, isCounterboy && darkMode && { backgroundColor: '#120A07' }]}
       contentContainerStyle={styles.content}
       data={rows}
       keyExtractor={keyExtractor}
@@ -785,8 +811,8 @@ export function ProductScreen({
         <RefreshControl
           refreshing={refreshing}
           onRefresh={handleRefresh}
-          colors={['#1A3C8F']}
-          tintColor="#1A3C8F"
+          colors={isCounterboy ? ['#8B3C2A'] : ['#1A3C8F']}
+          tintColor={isCounterboy ? '#8B3C2A' : '#1A3C8F'}
         />
       }
     />

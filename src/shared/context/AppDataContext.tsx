@@ -376,8 +376,8 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Initial load
-  useEffect(() => { void refreshAll(); }, [isAuthenticated, user?.id]);
+  // Initial load — include `role` so banners/offers refetch when session role is available or changes
+  useEffect(() => { void refreshAll(); }, [isAuthenticated, user?.id, role]);
 
   // AppState polling — refresh when app comes to foreground
   useEffect(() => {

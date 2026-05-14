@@ -1,4 +1,4 @@
-﻿import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
   Easing,
@@ -582,10 +582,10 @@ function Button({
     theme.role === 'dealer'
       ? ['#173E80', '#355C95']
       : theme.role === 'counterboy'
-        ? ['#E8453C', '#FF6B6B']
+        ? ['#8B3C2A', '#6F4E37']
         : [C.warmB, C.warmA];
   const rolePrimaryShadow =
-    theme.role === 'dealer' ? '#173E80' : theme.role === 'counterboy' ? '#E8453C' : '#F97316';
+    theme.role === 'dealer' ? '#173E80' : theme.role === 'counterboy' ? '#8B3C2A' : '#F97316';
   const shadowStyle = disabled
     ? clearShadow()
     : createShadow({
@@ -638,7 +638,9 @@ function Tabs({
             mode === item
               ? role === 'electrician'
                 ? s.tabElectricianActive
-                : s.tabDealerActive
+                : role === 'counterboy'
+                  ? s.tabCounterboyActive
+                  : s.tabDealerActive
               : null,
           ]}
           onPress={() => onChange(item)}
@@ -793,7 +795,9 @@ export function OnboardingScreen({
   const authBackgroundColors: [string, string, string] =
     role === 'dealer'
       ? ['#E8F1FF', '#F4F8FF', '#EAF3FF']
-      : ['#E5EEFF', '#F4F8FF', '#EAF2FF'];
+      : role === 'counterboy'
+        ? ['#F9F4ED', '#F5EDE4', '#F0DFD0']
+        : ['#E5EEFF', '#F4F8FF', '#EAF2FF'];
 
   useEffect(() => {
     const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
@@ -1707,13 +1711,21 @@ export function OnboardingScreen({
             <View
               style={[
                 s.authGlow,
-                role === 'electrician' ? s.authGlowElectricianTop : s.authGlowDealerTop,
+                role === 'electrician'
+                  ? s.authGlowElectricianTop
+                  : role === 'counterboy'
+                    ? s.authGlowCounterboyTop
+                    : s.authGlowDealerTop,
               ]}
             />
             <View
               style={[
                 s.authGlow,
-                role === 'electrician' ? s.authGlowElectricianBottom : s.authGlowDealerBottom,
+                role === 'electrician'
+                  ? s.authGlowElectricianBottom
+                  : role === 'counterboy'
+                    ? s.authGlowCounterboyBottom
+                    : s.authGlowDealerBottom,
               ]}
             />
           </>
@@ -1985,7 +1997,7 @@ export function OnboardingScreen({
                     />
                   </View>
                 ) : (
-                  <View style={[s.card, s.authCard, role === 'electrician' ? s.authCardElectrician : s.authCardDealer]}>
+                  <View style={[s.card, s.authCard, role === 'electrician' ? s.authCardElectrician : role === 'counterboy' ? s.authCardCounterboy : s.authCardDealer]}>
                     {role === 'electrician' ? (
                       <LinearGradient
                         colors={['#173E80', '#285AB3', '#78AFFF']}
@@ -2026,6 +2038,25 @@ export function OnboardingScreen({
                             : tx('Complete the account setup flow and create your dealer profile.')}
                         </Text>
                       </LinearGradient>
+                    ) : role === 'counterboy' ? (
+                      <LinearGradient
+                        colors={['#8B3C2A', '#6F4E37', '#A87A66']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={[s.authHeaderPanel, s.authHeaderPanelDealer]}
+                      >
+                        <Text style={[s.sectionEyebrow, s.sectionEyebrowElectrician]}>
+                          {mode === 'login' ? tx('Authentication') : tx('Create Account')}
+                        </Text>
+                        <Text style={[s.sectionTitleAuth, s.sectionTitleAuthElectrician]}>
+                          {mode === 'login' ? tx('Counter Boy Login') : tx('Create Counter Boy Account')}
+                        </Text>
+                        <Text style={[s.sectionTextAuth, s.sectionTextAuthElectrician]}>
+                          {mode === 'login'
+                            ? tx('Choose a secure login method and continue with your counter boy account.')
+                            : tx('Complete the account setup flow and create your counter boy profile.')}
+                        </Text>
+                      </LinearGradient>
                     ) : (
                       <View style={s.authHeaderPanel}>
                         <Text style={s.sectionEyebrow}>{mode === 'login' ? tx('Authentication') : tx('Create Account')}</Text>
@@ -2047,7 +2078,7 @@ export function OnboardingScreen({
                             ? s.entryPillElectrician
                             : role === 'dealer'
                               ? s.entryPillDealer
-                              : null,
+                              : s.entryPillCounterboy,
                         ]}
                       >
                         <Text
@@ -2057,7 +2088,7 @@ export function OnboardingScreen({
                               ? s.entryPillTextElectrician
                               : role === 'dealer'
                                 ? s.entryPillTextDealer
-                                : null,
+                                : s.entryPillTextCounterboy,
                           ]}
                         >
                           {mode === 'login' ? tx('Login flow selected') : tx('Create account flow selected')}
@@ -3474,6 +3505,20 @@ const s = StyleSheet.create({
     height: 220,
     backgroundColor: 'rgba(23,62,128,0.12)',
   },
+  authGlowCounterboyTop: {
+    top: 108,
+    right: -36,
+    width: 190,
+    height: 190,
+    backgroundColor: 'rgba(139,60,42,0.15)',
+  },
+  authGlowCounterboyBottom: {
+    bottom: 108,
+    left: -48,
+    width: 220,
+    height: 220,
+    backgroundColor: 'rgba(111,78,55,0.1)',
+  },
   tabs: {
     flexDirection: 'row',
     backgroundColor: '#E4EEFF',
@@ -3497,6 +3542,12 @@ const s = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#BFD7FB',
     ...createShadow({ color: '#355C95', offsetY: 8, blur: 14, opacity: 0.14, elevation: 3 }),
+  },
+  tabCounterboyActive: {
+    backgroundColor: '#F9F4ED',
+    borderWidth: 1,
+    borderColor: '#E0D0C0',
+    ...createShadow({ color: '#8B3C2A', offsetY: 8, blur: 14, opacity: 0.14, elevation: 3 }),
   },
   tabText: { color: C.muted, fontSize: 14, fontWeight: '700' },
   tabTextActive: { color: C.text },
@@ -3537,9 +3588,15 @@ const s = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#CEE0FF',
   },
+  entryPillCounterboy: {
+    backgroundColor: '#F5EDE4',
+    borderWidth: 1,
+    borderColor: '#E0D0C0',
+  },
   entryPillText: { color: '#5C6F91', fontSize: 11, fontWeight: '800' },
   entryPillTextElectrician: { color: '#173E80' },
   entryPillTextDealer: { color: '#173E80' },
+  entryPillTextCounterboy: { color: '#8B3C2A' },
   loginChoiceRow: { flexDirection: 'row', gap: 12, marginTop: 8, marginBottom: 6 },
   loginChoiceCard: {
     flex: 1,
@@ -3576,6 +3633,11 @@ const s = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.97)',
     borderColor: '#D2E3FF',
     ...createShadow({ color: '#173E80', offsetY: 16, blur: 28, opacity: 0.13, elevation: 6 }),
+  },
+  authCardCounterboy: {
+    backgroundColor: 'rgba(255,255,255,0.985)',
+    borderColor: '#E0D0C0',
+    ...createShadow({ color: '#8B3C2A', offsetY: 18, blur: 30, opacity: 0.14, elevation: 7 }),
   },
   formIntroCard: {
     borderRadius: 20,
