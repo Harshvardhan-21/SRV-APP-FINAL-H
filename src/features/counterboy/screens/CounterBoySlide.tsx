@@ -205,7 +205,7 @@ export default function CounterBoySlide({ onBack, onContinue }: Props) {
           </View>
         </View>
 
-        <Text style={[s.trustLine, { color: COFFEE }]}>25 Years of Trust & Improvement</Text>
+        <Text style={[s.trustLine, { color: COFFEE }]}>✦ 25 Years of Trust & Improvement ✦</Text>
 
         <View style={s.actionButtons}>
           {onBack ? (
@@ -214,10 +214,8 @@ export default function CounterBoySlide({ onBack, onContinue }: Props) {
               <Text style={[s.switchButtonText, { color: THEME.primary }]}>Back</Text>
             </TouchableOpacity>
           ) : null}
-          <TouchableOpacity style={[s.continueButton]} onPress={onContinue}>
-            <LinearGradient colors={[BROWNISH_RED, COFFEE]} style={s.continueGradient}>
-              <Text style={s.continueButtonText}>Continue</Text>
-            </LinearGradient>
+          <TouchableOpacity style={[s.continueButton, { backgroundColor: THEME.primary }]} onPress={onContinue}>
+            <Text style={s.continueButtonText}>Continue</Text>
           </TouchableOpacity>
         </View>
       </AView>
@@ -226,31 +224,30 @@ export default function CounterBoySlide({ onBack, onContinue }: Props) {
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1, alignItems: 'center', justifyContent: 'flex-start', backgroundColor: '#FFFFFF', paddingHorizontal: ws(20), paddingTop: hs(48) },
-  circleWrap: { marginBottom: hs(28), shadowColor: '#6F4E37', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.22, shadowRadius: 24, elevation: 14, marginTop: hs(8) },
+  root: { flex: 1, alignItems: 'center', justifyContent: 'flex-start', backgroundColor: '#FFFFFF', paddingHorizontal: ws(20), paddingTop: hs(48), paddingBottom: hs(20) },
+  circleWrap: { marginBottom: hs(20), shadowColor: '#6F4E37', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.22, shadowRadius: 24, elevation: 14, marginTop: hs(4), alignSelf: 'center' },
   circle: { width: CIRCLE_SIZE, height: CIRCLE_SIZE, borderRadius: CIRCLE_SIZE / 2, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   glowRing: { position: 'absolute', width: CIRCLE_SIZE + ws(12), height: CIRCLE_SIZE + ws(12), borderRadius: (CIRCLE_SIZE + ws(12)) / 2, borderWidth: 1.5, opacity: 0.3, top: -ws(6), left: -ws(6) },
   card: { alignItems: 'center', paddingHorizontal: ws(16), width: '100%' },
-  titleButton: { borderRadius: ws(25), marginBottom: hs(12), overflow: 'hidden', shadowColor: '#6F4E37', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 },
+  titleButton: { borderRadius: ws(25), marginBottom: hs(8), overflow: 'hidden', shadowColor: '#6F4E37', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 },
   titleGradient: { paddingHorizontal: ws(32), paddingVertical: hs(8), alignItems: 'center' },
   titleButtonText: { fontSize: rf(13, 11, 15), fontWeight: '900', color: '#FFFFFF', textAlign: 'center', letterSpacing: 1 },
-  contentCard: { width: '100%', backgroundColor: '#FFFFFF', paddingHorizontal: ws(18), paddingVertical: hs(16), borderRadius: ws(16), marginBottom: hs(12), borderWidth: 2, borderColor: '#D9C0AE', shadowColor: THEME.primary, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.12, shadowRadius: 16, elevation: 8, position: 'relative', overflow: 'hidden' },
+  contentCard: { width: '100%', backgroundColor: '#FFFFFF', paddingHorizontal: ws(18), paddingVertical: hs(12), borderRadius: ws(16), marginBottom: hs(8), borderWidth: 2, borderColor: '#D9C0AE', shadowColor: THEME.primary, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.12, shadowRadius: 16, elevation: 8, position: 'relative', overflow: 'hidden' },
   gradientAccent: { position: 'absolute', top: 0, left: 0, right: 0, height: 3, backgroundColor: BROWNISH_RED },
   contentInner: { gap: hs(6) },
   titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' },
   mainTitle: { fontSize: rf(20, 18, 22), fontWeight: '900', textAlign: 'center', color: BROWNISH_RED },
   mainSubtitle: { fontSize: rf(18, 16, 20), fontWeight: '900', textAlign: 'center', letterSpacing: 0.3 },
   cardDesc: { fontSize: rf(12, 11, 13), color: '#5C3D2E', textAlign: 'center', lineHeight: rf(18, 16, 20), fontWeight: '500' },
-  statsRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', width: '100%', marginBottom: hs(8), gap: ws(8) },
-  statBox: { width: '47%', paddingVertical: hs(14), paddingHorizontal: ws(8), borderRadius: ws(12), alignItems: 'center', gap: hs(6), backgroundColor: '#F8F2EA', borderWidth: 1.5, borderColor: '#D9C0AE', shadowColor: COFFEE, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 10, elevation: 3 },
-  statIconWrap: { width: ws(38), height: ws(38), borderRadius: ws(19), alignItems: 'center', justifyContent: 'center', marginBottom: hs(4), backgroundColor: '#F0E4D4' },
+  statsRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', width: '100%', marginBottom: hs(4), gap: ws(8) },
+  statBox: { width: '47%', paddingVertical: hs(10), paddingHorizontal: ws(8), borderRadius: ws(12), alignItems: 'center', gap: hs(4), backgroundColor: '#F8F2EA', borderWidth: 1.5, borderColor: '#D9C0AE', shadowColor: COFFEE, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 10, elevation: 3 },
+  statIconWrap: { width: ws(34), height: ws(34), borderRadius: ws(17), alignItems: 'center', justifyContent: 'center', marginBottom: hs(2), backgroundColor: '#F0E4D4' },
   statLabel: { fontSize: rf(9, 8, 10), fontWeight: '700', letterSpacing: 0.5 },
-  trustLine: { fontSize: rf(11, 9, 13), fontWeight: '700', textAlign: 'center', letterSpacing: 0.4, marginBottom: hs(16), marginTop: hs(8) },
-  actionButtons: { flexDirection: 'row', width: '100%', gap: ws(12), paddingBottom: hs(24) },
+  trustLine: { fontSize: rf(11, 9, 13), fontWeight: '700', textAlign: 'center', letterSpacing: 0.4, marginBottom: hs(8), marginTop: hs(4) },
+  actionButtons: { flexDirection: 'row', width: '100%', gap: ws(12), paddingBottom: 0, marginTop: hs(12) },
   switchButton: { flex: 1, paddingVertical: hs(12), borderRadius: ws(25), borderWidth: 2, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', flexDirection: 'row', gap: ws(8) },
   switchIcon: { fontSize: rf(18, 16, 20), fontWeight: '900', lineHeight: rf(18, 16, 20), includeFontPadding: false, textAlignVertical: 'center' },
   switchButtonText: { fontSize: rf(13, 12, 14), fontWeight: '700', letterSpacing: 0.3, lineHeight: rf(18, 16, 20) },
-  continueButton: { flex: 1, borderRadius: ws(25), overflow: 'hidden', shadowColor: '#6F4E37', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 },
-  continueGradient: { paddingVertical: hs(12), alignItems: 'center', justifyContent: 'center' },
+  continueButton: { flex: 1, paddingVertical: hs(12), borderRadius: ws(25), alignItems: 'center', justifyContent: 'center', shadowColor: '#6F4E37', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 },
   continueButtonText: { fontSize: rf(13, 12, 14), fontWeight: '700', color: '#FFFFFF', letterSpacing: 0.3 },
 });
