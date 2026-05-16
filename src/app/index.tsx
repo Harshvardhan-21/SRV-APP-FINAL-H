@@ -24,6 +24,7 @@ import { ProfileScreen as CounterBoyProfileScreen } from '@/features/counterboy/
 import { ProductScreen as CounterBoyProductScreen } from '@/features/counterboy/screens/ProductScreen';
 import { NotificationScreen as CounterBoyNotificationScreen } from '@/features/counterboy/screens/NotificationScreen';
 import { ScanScreen as CounterBoyScanScreen } from '@/features/counterboy/screens/ScanScreen';
+import { SupportScreen as CounterBoySupportScreen } from '@/features/counterboy/screens/SupportScreen';
 import { BottomNav as UserBottomNav } from '@/features/user/screens/BottomNav';
 import { HomeScreen as UserHomeScreen } from '@/features/user/screens/HomeScreen';
 import { NotificationScreen as UserNotificationScreen } from '@/features/user/screens/NotificationScreen';
@@ -704,6 +705,8 @@ function AppContent() {
               historyItems={electricianRewardHistory}
             />
           );
+        case 'support':
+          return <CounterBoySupportScreen onNavigate={handleNavigate} />;
         case 'profile':
           return (
             <CounterBoyProfileScreen
