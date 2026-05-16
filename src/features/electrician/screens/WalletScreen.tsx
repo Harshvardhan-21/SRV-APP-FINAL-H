@@ -205,27 +205,27 @@ const ROLE_THEME: Record<string, {
     storeIconWrapBg: '#FFF0DA',
   },
   counterboy: {
-    heroGradient: ['#B91C1C', '#E8453C', '#FF8A80'],
-    heroShadow: '#991B1B',
-    eyebrowColor: '#FFE4E6',
-    screenBg: '#FFF6F6',
-    cardBorder: '#FECACA',
-    cardShadow: '#B91C1C',
-    sectionEyebrow: '#C2413A',
-    sectionIconBg: '#FFF1F2',
-    actionTileBg: '#FFF5F5',
-    actionTileBorder: '#FECACA',
-    timelineCardBg: '#FFF8F8',
-    timelineCardBorder: '#FEE2E2',
-    emptyStateBg: '#FFF5F5',
-    emptyStateBorder: '#FECACA',
-    emptyIconBg: '#FEE2E2',
-    emptyTitleColor: '#C2413A',
-    paginationBtnBg: '#E8453C',
-    paginationBtnDisabledBg: '#FECACA',
-    paginationBtnDisabledText: '#B91C1C',
-    paginationInfoBg: '#FFF1F2',
-    storeIconWrapBg: '#FFE4E6',
+    heroGradient: ['#5C3D2E', '#8B3C2A', '#A87A66'],
+    heroShadow: '#6F4E37',
+    eyebrowColor: '#EDE0D4',
+    screenBg: '#F9F4ED',
+    cardBorder: '#E0D0C0',
+    cardShadow: '#6F4E37',
+    sectionEyebrow: '#8B3C2A',
+    sectionIconBg: '#F5EDE4',
+    actionTileBg: '#FFFFFF',
+    actionTileBorder: '#E0D0C0',
+    timelineCardBg: '#F9F4ED',
+    timelineCardBorder: '#EDE0D4',
+    emptyStateBg: '#F9F4ED',
+    emptyStateBorder: '#E0D0C0',
+    emptyIconBg: '#EDE0D4',
+    emptyTitleColor: '#8B3C2A',
+    paginationBtnBg: '#8B3C2A',
+    paginationBtnDisabledBg: '#EDE0D4',
+    paginationBtnDisabledText: '#8B3C2A',
+    paginationInfoBg: '#F5EDE4',
+    storeIconWrapBg: '#F0DFD0',
   },
 };
 
@@ -340,7 +340,43 @@ export function WalletScreen({
     },
   ];
 
-  const actions = isDealer ? dealerActions : electricianActions;
+  const counterBoyActions = [
+    {
+      id: 'bank',
+      label: 'Bank Transfer',
+      detail: 'Fast withdrawal',
+      icon: TransferIcon,
+      tint: '#DDEAFE',
+      target: 'bank_details' as Screen,
+    },
+  ];
+
+  const userActions = [
+    {
+      id: 'buy',
+      label: 'Buy Schemes',
+      detail: 'Premium offers',
+      icon: GiftIcon,
+      tint: '#FBE4CC',
+      target: 'rewards' as Screen,
+    },
+    {
+      id: 'bank',
+      label: 'Bank Transfer',
+      detail: 'Fast withdrawal',
+      icon: TransferIcon,
+      tint: '#DDEAFE',
+      target: 'bank_details' as Screen,
+    },
+  ];
+
+  const actions = isDealer
+    ? dealerActions
+    : role === 'counterboy'
+    ? counterBoyActions
+    : role === 'user'
+    ? userActions
+    : electricianActions;
   const walletTitle = isDealer
     ? 'SRV Dealer Wallet'
     : role === 'user'

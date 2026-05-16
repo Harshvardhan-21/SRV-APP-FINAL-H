@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { withWebSafeNativeDriver } from '@/shared/animations/nativeDriver';
+import { counterboyTheme as cb } from '@/features/counterboy/theme';
 import { usePreferenceContext } from '@/shared/preferences';
 import { createShadow } from '@/shared/theme/shadows';
 
@@ -99,6 +100,8 @@ function DetailPill({
   lines,
   icon,
   isUser = false,
+  isCounterboy = false,
+  counterboyLight = false,
 }: {
   label: string;
   value: string;
@@ -106,15 +109,38 @@ function DetailPill({
   lines?: number;
   icon?: React.ReactNode;
   isUser?: boolean;
+  isCounterboy?: boolean;
+  /** Light flip-card surface (higher contrast pills/text) */
+  counterboyLight?: boolean;
 }) {
   const { tx } = usePreferenceContext();
   return (
-    <View style={[styles.detailPill, isUser ? styles.detailPillUser : null, compact && styles.detailPillCompact]}>
-      <Text style={[styles.detailLabel, isUser ? styles.detailLabelUser : null]}>{tx(label)}</Text>
+    <View
+      style={[
+        styles.detailPill,
+        isUser ? styles.detailPillUser : null,
+        isCounterboy ? (counterboyLight ? styles.detailPillCounterboyLight : styles.detailPillCounterboy) : null,
+        compact && styles.detailPillCompact,
+      ]}
+    >
+      <Text
+        style={[
+          styles.detailLabel,
+          isUser ? styles.detailLabelUser : null,
+          isCounterboy ? (counterboyLight ? styles.detailLabelCounterboyLight : styles.detailLabelCounterboy) : null,
+        ]}
+      >
+        {tx(label)}
+      </Text>
       <View style={styles.detailValueRow}>
         {icon ? <View style={styles.detailIconWrap}>{icon}</View> : null}
         <Text
-          style={[styles.detailValue, isUser ? styles.detailValueUser : null, compact && styles.detailValueCompact]}
+          style={[
+            styles.detailValue,
+            isUser ? styles.detailValueUser : null,
+            isCounterboy ? (counterboyLight ? styles.detailValueCounterboyLight : styles.detailValueCounterboy) : null,
+            compact && styles.detailValueCompact,
+          ]}
           numberOfLines={lines}
         >
           {value}
@@ -141,6 +167,8 @@ export default function ProfileFlipCard({ profile, role = 'electrician', photoUr
     .slice(0, 2);
 
   const isDealer = role === 'dealer';
+  const isCounterboy = role === 'counterboy';
+  const counterboyLightCard = isCounterboy && !darkMode;
   const code = isDealer
     ? profile?.dealer_code
     : role === 'user'
@@ -262,7 +290,13 @@ export default function ProfileFlipCard({ profile, role = 'electrician', photoUr
     const safeDealerAddress = escapeHtml(dealerAddress);
     const heading = escapeHtml(tx(role === 'dealer' ? 'Business Details' : 'Connected Dealer'));
     const partnerRole = escapeHtml(
-      tx(role === 'dealer' ? 'Dealer Partner' : 'Electrician Partner')
+      tx(
+        role === 'dealer'
+          ? 'Dealer Partner'
+          : role === 'counterboy'
+            ? 'Counter Boy Account'
+            : 'Electrician Partner',
+      ),
     );
     const safeCodeLabel = escapeHtml(tx('Code'));
     const safeLocationLabel = escapeHtml(tx('Location'));
@@ -274,30 +308,30 @@ export default function ProfileFlipCard({ profile, role = 'electrician', photoUr
         <head>
           <meta charset="utf-8" />
           <style>
-            body { font-family: Arial, sans-serif; background: #eef4ff; margin: 0; padding: 28px; color: #0f172a; }
-            .title { font-size: 22px; font-weight: 800; margin-bottom: 18px; color: #10254a; }
+            body { font-family: Arial, sans-serif; background: ${role === 'counterboy' ? '#F5EDE4' : '#eef4ff'}; margin: 0; padding: 28px; color: #0f172a; }
+            .title { font-size: 22px; font-weight: 800; margin-bottom: 18px; color: ${role === 'counterboy' ? '#6B2D1D' : '#10254a'}; }
             .card { border-radius: 28px; padding: 22px; margin-bottom: 22px; color: white; overflow: hidden; }
-            .front { background: linear-gradient(135deg, #587ac7, #4768b7, #38549b); }
-            .back { background: linear-gradient(135deg, #6284c9, #4b6db4, #35518c); }
+            .front { background: linear-gradient(135deg, ${role === 'counterboy' ? '#EDD4CC, #E0C0B6, #D6B3A8' : '#587ac7, #4768b7, #38549b'}); }
+            .back { background: linear-gradient(135deg, ${role === 'counterboy' ? '#D9B8AD, #CFAD9F, #C5A292' : '#6284c9, #4b6db4, #35518c'}); }
             .row { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; }
             .identity { display: flex; gap: 14px; align-items: center; flex: 1; }
             .avatar { width: 66px; height: 66px; border-radius: 22px; background: white; color: #10254a; font-size: 24px; font-weight: 900; display: flex; align-items: center; justify-content: center; }
-            .eyebrow { color: #afc0e4; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
-            .name { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
-            .phone { font-size: 13px; color: #d8e3f8; }
+            .eyebrow { color: ${role === 'counterboy' ? '#6B2D1D' : '#afc0e4'}; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+            .name { font-size: 22px; font-weight: 800; margin-bottom: 4px; color: ${role === 'counterboy' ? '#2D1A10' : 'inherit'}; }
+            .phone { font-size: 13px; color: ${role === 'counterboy' ? '#5C3D2E' : '#d8e3f8'}; }
             .logo { width: 54px; height: 54px; border-radius: 18px; background: rgba(255,255,255,0.18); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; overflow: hidden; }
             .logo img { width: 100%; height: 100%; object-fit: contain; background: white; }
             .pill-row { display: flex; gap: 12px; margin-top: 20px; }
-            .pill { flex: 1; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.08); border-radius: 18px; padding: 12px; }
-            .pill-label { color: #96a7c5; font-size: 10px; font-weight: 700; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.8px; }
-            .pill-value { font-size: 13px; font-weight: 800; line-height: 18px; }
+            .pill { flex: 1; background: ${role === 'counterboy' ? 'rgba(107,45,29,0.08)' : 'rgba(255,255,255,0.12)'}; border: 1px solid ${role === 'counterboy' ? 'rgba(107,45,29,0.12)' : 'rgba(255,255,255,0.08)'}; border-radius: 18px; padding: 12px; }
+            .pill-label { color: ${role === 'counterboy' ? '#7A4A38' : '#96a7c5'}; font-size: 10px; font-weight: 700; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.8px; }
+            .pill-value { font-size: 13px; font-weight: 800; line-height: 18px; color: ${role === 'counterboy' ? '#2D1A10' : '#ffffff'}; }
             .back-layout { display: flex; gap: 14px; align-items: stretch; }
             .back-left { flex: 1; }
             .stack { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
             .qr-panel { width: 112px; text-align: center; }
             .qr-frame { background: white; border-radius: 18px; padding: 8px; }
             .qr-frame img { width: 100%; height: 96px; object-fit: contain; }
-            .qr-text { color: #afc0e4; font-size: 10px; font-weight: 700; margin-top: 8px; word-break: break-word; }
+            .qr-text { color: ${role === 'counterboy' ? '#E8D4C8' : '#afc0e4'}; font-size: 10px; font-weight: 700; margin-top: 8px; word-break: break-word; }
           </style>
         </head>
         <body>
@@ -402,24 +436,29 @@ export default function ProfileFlipCard({ profile, role = 'electrician', photoUr
           >
             <LinearGradient
               colors={
-                darkMode 
-                  ? ['#0F172A', '#16233B', '#1E3A5F'] 
-                  : isDealer 
+                darkMode
+                  ? isCounterboy
+                    ? ([...cb.flipCardFrontDark] as const)
+                    : (['#0F172A', '#16233B', '#1E3A5F'] as const)
+                  : isDealer
                     ? ['#173E80', '#355C95', '#88AEEA']
                     : role === 'user'
-                    ? ['#F0D2B6', '#E4BC98', '#CB8A57']
-                    : ['#587AC7', '#4768B7', '#38549B']
+                      ? ['#F0D2B6', '#E4BC98', '#CB8A57']
+                      : isCounterboy
+                        ? ([...cb.flipCardFrontLight] as const)
+                        : ['#587AC7', '#4768B7', '#38549B']
               }
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.gradientFill}
             >
-              <View style={[styles.textureOne, darkMode ? styles.textureOneDark : null]} />
+              <View style={[styles.textureOne, darkMode ? styles.textureOneDark : null, isCounterboy ? (counterboyLightCard ? styles.textureOneCounterboyLight : styles.textureOneCounterboy) : null]} />
               <View
                 style={[
                   styles.textureTwo,
                   isDealer ? styles.textureTwoDealer : null,
                   role === 'user' ? styles.textureTwoUser : null,
+                  isCounterboy ? (counterboyLightCard ? styles.textureTwoCounterboyLight : styles.textureTwoCounterboy) : null,
                   darkMode ? styles.textureTwoDark : null,
                 ]}
               />
@@ -430,11 +469,29 @@ export default function ProfileFlipCard({ profile, role = 'electrician', photoUr
                     {effectivePhotoUri ? (
                       <Image source={{ uri: effectivePhotoUri }} style={styles.avatarImage} />
                     ) : (
-                      <Text style={[styles.avatarText, role === 'user' ? styles.avatarTextUser : null]}>{initials}</Text>
+                      <Text
+                        style={[
+                          styles.avatarText,
+                          role === 'user' ? styles.avatarTextUser : null,
+                          isCounterboy ? styles.avatarTextCounterboy : null,
+                          counterboyLightCard ? styles.avatarTextCounterboyOnLight : null,
+                        ]}
+                      >
+                        {initials}
+                      </Text>
                     )}
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={[styles.roleText, role === 'user' ? styles.roleTextUser : null, darkMode ? styles.roleTextDark : null]}>
+                    <Text
+                      style={[
+                        styles.roleText,
+                        role === 'user' ? styles.roleTextUser : null,
+                        isCounterboy ? styles.roleTextCounterboy : null,
+                        counterboyLightCard ? styles.roleTextCounterboyOnLight : null,
+                        darkMode && !isCounterboy ? styles.roleTextDark : null,
+                        darkMode && isCounterboy ? styles.roleTextCounterboyDark : null,
+                      ]}
+                    >
                       {role === 'dealer'
                         ? t('dealerPartner')
                         : role === 'user'
@@ -443,15 +500,29 @@ export default function ProfileFlipCard({ profile, role = 'electrician', photoUr
                         ? tx('Counter Boy Account')
                         : t('electricianPartner')}
                     </Text>
-                    <Text style={[styles.nameText, role === 'user' ? styles.nameTextUser : null]}>{profile?.name || fallbackText}</Text>
-                    <Text style={[styles.phoneText, role === 'user' ? styles.phoneTextUser : null, darkMode ? styles.phoneTextDark : null]}>
+                    <Text style={[styles.nameText, role === 'user' ? styles.nameTextUser : null, isCounterboy ? styles.nameTextCounterboy : null, counterboyLightCard ? styles.nameTextCounterboyOnLight : null]}>
+                      {profile?.name || fallbackText}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.phoneText,
+                        role === 'user' ? styles.phoneTextUser : null,
+                        isCounterboy ? styles.phoneTextCounterboy : null,
+                        counterboyLightCard ? styles.phoneTextCounterboyOnLight : null,
+                        darkMode && !isCounterboy ? styles.phoneTextDark : null,
+                        darkMode && isCounterboy ? styles.phoneTextCounterboyDark : null,
+                      ]}
+                    >
                       {profile?.phone ? '+91 ' + profile.phone : fallbackText}
                     </Text>
                     <Animated.Text
                       style={[
                         styles.inlineTapHint,
                         role === 'user' ? styles.inlineTapHintUser : null,
-                        darkMode ? styles.inlineTapHintDark : null,
+                        isCounterboy ? styles.inlineTapHintCounterboy : null,
+                        counterboyLightCard ? styles.inlineTapHintCounterboyOnLight : null,
+                        darkMode && !isCounterboy ? styles.inlineTapHintDark : null,
+                        darkMode && isCounterboy ? styles.inlineTapHintCounterboyDark : null,
                         { transform: [{ scale: hintPulse }] },
                       ]}
                       numberOfLines={1}
@@ -463,8 +534,27 @@ export default function ProfileFlipCard({ profile, role = 'electrician', photoUr
               </View>
 
               <View style={styles.frontBottomRow}>
-                <DetailPill label={codeLabel} value={code || fallbackText} isUser={role === 'user'} />
-                <DetailPill label="Location" value={frontLocation} isUser={role === 'user'} icon={<LocationIcon color={role === 'user' ? '#8D4A1E' : '#FFFFFF'} />} />
+                <DetailPill
+                  label={codeLabel}
+                  value={code || fallbackText}
+                  isUser={role === 'user'}
+                  isCounterboy={isCounterboy}
+                  counterboyLight={counterboyLightCard}
+                />
+                <DetailPill
+                  label="Location"
+                  value={frontLocation}
+                  isUser={role === 'user'}
+                  isCounterboy={isCounterboy}
+                  counterboyLight={counterboyLightCard}
+                  icon={
+                    <LocationIcon
+                      color={
+                        role === 'user' ? '#8D4A1E' : counterboyLightCard ? cb.primaryDeep : '#FFFFFF'
+                      }
+                    />
+                  }
+                />
               </View>
             </LinearGradient>
           </Animated.View>
@@ -478,33 +568,60 @@ export default function ProfileFlipCard({ profile, role = 'electrician', photoUr
           >
             <LinearGradient
               colors={
-                darkMode 
-                  ? ['#111827', '#172033', '#243B53'] 
-                  : isDealer 
+                darkMode
+                  ? isCounterboy
+                    ? ([...cb.flipCardBackDark] as const)
+                    : (['#111827', '#172033', '#243B53'] as const)
+                  : isDealer
                     ? ['#214D99', '#355C95', '#6F96D8']
                     : role === 'user'
-                    ? ['#F5DFC9', '#EFCFAC', '#DDA373']
-                    : ['#6284C9', '#4B6DB4', '#35518C']
+                      ? ['#F5DFC9', '#EFCFAC', '#DDA373']
+                      : isCounterboy
+                        ? ([...cb.flipCardBackLight] as const)
+                        : ['#6284C9', '#4B6DB4', '#35518C']
               }
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.gradientFill}
             >
-              <View style={[styles.backGlowOne, role === 'user' ? styles.backGlowOneUser : null, darkMode ? styles.backGlowOneDark : null]} />
-              <View style={[styles.backGlowTwo, role === 'user' ? styles.backGlowTwoUser : null, darkMode ? styles.backGlowTwoDark : null]} />
+              <View
+                style={[
+                  styles.backGlowOne,
+                  role === 'user' ? styles.backGlowOneUser : null,
+                  isCounterboy ? styles.backGlowOneCounterboy : null,
+                  darkMode ? styles.backGlowOneDark : null,
+                ]}
+              />
+              <View
+                style={[
+                  styles.backGlowTwo,
+                  role === 'user' ? styles.backGlowTwoUser : null,
+                  isCounterboy ? styles.backGlowTwoCounterboy : null,
+                  darkMode ? styles.backGlowTwoDark : null,
+                ]}
+              />
               <View style={styles.backContent}>
                 <View style={styles.backLeft}>
-                  <Text style={[styles.backHeading, role === 'user' ? styles.backHeadingUser : null, darkMode ? styles.backHeadingDark : null]}>
+                  <Text
+                    style={[
+                      styles.backHeading,
+                      role === 'user' ? styles.backHeadingUser : null,
+                      isCounterboy ? styles.backHeadingCounterboy : null,
+                      darkMode && !isCounterboy ? styles.backHeadingDark : null,
+                      darkMode && isCounterboy ? styles.backHeadingCounterboyDark : null,
+                    ]}
+                  >
                     {tx(role === 'dealer' ? 'Business Details' : role === 'user' ? 'Account Details' : 'Connected Dealer')}
                   </Text>
                   <View style={styles.metaStack}>
-                    <DetailPill label="Name" value={dealerName} compact isUser={role === 'user'} />
-                    <DetailPill label="Location" value={dealerLocation} compact lines={2} isUser={role === 'user'} />
+                    <DetailPill label="Name" value={dealerName} compact isUser={role === 'user'} isCounterboy={isCounterboy} />
+                    <DetailPill label="Location" value={dealerLocation} compact lines={2} isUser={role === 'user'} isCounterboy={isCounterboy} />
                     <DetailPill
                       label={backThirdLabel}
                       value={backThirdValue}
                       compact
                       isUser={role === 'user'}
+                      isCounterboy={isCounterboy}
                       lines={role === 'dealer' ? 2 : undefined}
                     />
                   </View>
@@ -514,7 +631,14 @@ export default function ProfileFlipCard({ profile, role = 'electrician', photoUr
                   <View style={styles.qrFrame}>
                     <Image source={{ uri: qrUrl }} style={styles.qrImage} resizeMode="contain" />
                   </View>
-                  <Text style={[styles.qrCodeText, role === 'user' ? styles.qrCodeTextUser : null]} numberOfLines={1}>
+                  <Text
+                    style={[
+                      styles.qrCodeText,
+                      role === 'user' ? styles.qrCodeTextUser : null,
+                      isCounterboy ? styles.qrCodeTextCounterboy : null,
+                    ]}
+                    numberOfLines={1}
+                  >
                     {qrValue}
                   </Text>
                 </View>
@@ -567,6 +691,9 @@ const styles = StyleSheet.create({
     top: -30,
     right: -40,
   },
+  textureOneCounterboy: {
+    backgroundColor: 'rgba(139,60,42,0.22)',
+  },
   textureOneDark: {
     backgroundColor: 'rgba(59,130,246,0.12)',
   },
@@ -587,6 +714,9 @@ const styles = StyleSheet.create({
   },
   textureTwoUser: {
     backgroundColor: 'rgba(255,255,255,0.22)',
+  },
+  textureTwoCounterboy: {
+    backgroundColor: 'rgba(111,78,55,0.18)',
   },
   downloadMiniBtn: {
     position: 'absolute',
@@ -621,6 +751,9 @@ const styles = StyleSheet.create({
   backGlowOneUser: {
     backgroundColor: 'rgba(255,255,255,0.18)',
   },
+  backGlowOneCounterboy: {
+    backgroundColor: 'rgba(139,60,42,0.2)',
+  },
   backGlowTwo: {
     position: 'absolute',
     width: 120,
@@ -654,8 +787,12 @@ const styles = StyleSheet.create({
   avatarImage: { width: '100%', height: '100%' },
   avatarText: { color: '#10254A', fontSize: 24, fontWeight: '900' },
   avatarTextUser: { color: '#8D4A1E' },
+  avatarTextCounterboy: { color: '#F9F4ED' },
   backGlowTwoUser: {
     backgroundColor: 'rgba(255,243,230,0.24)',
+  },
+  backGlowTwoCounterboy: {
+    backgroundColor: 'rgba(240,223,208,0.16)',
   },
   roleText: {
     color: '#AFC0E4',
@@ -667,11 +804,16 @@ const styles = StyleSheet.create({
   },
   roleTextDark: { color: '#BFDBFE' },
   roleTextUser: { color: '#8D4A1E' },
+  roleTextCounterboy: { color: cb.slate },
+  roleTextCounterboyDark: { color: '#C4A88C' },
   nameText: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', flexShrink: 1 },
   nameTextUser: { color: '#4E2B14' },
+  nameTextCounterboy: { color: '#FFFEF9' },
   phoneText: { color: '#D8E3F8', fontSize: 12.5, marginTop: 5 },
   phoneTextDark: { color: '#CBD5E1' },
   phoneTextUser: { color: '#7A5336' },
+  phoneTextCounterboy: { color: '#E8D9CC' },
+  phoneTextCounterboyDark: { color: '#D4C4B8' },
   inlineTapHint: {
     color: 'rgba(255,255,255,0.72)',
     fontSize: 7.8,
@@ -681,6 +823,8 @@ const styles = StyleSheet.create({
   },
   inlineTapHintDark: { color: 'rgba(226,232,240,0.82)' },
   inlineTapHintUser: { color: 'rgba(92,50,22,0.78)' },
+  inlineTapHintCounterboy: { color: 'rgba(245,237,228,0.88)' },
+  inlineTapHintCounterboyDark: { color: 'rgba(212,196,184,0.9)' },
 
   frontBottomRow: {
     position: 'absolute',
@@ -703,6 +847,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.52)',
     borderColor: 'rgba(141,74,30,0.12)',
   },
+  detailPillCounterboy: {
+    backgroundColor: 'rgba(255,255,255,0.14)',
+    borderColor: 'rgba(245,237,228,0.12)',
+  },
   detailPillCompact: {
     flex: 0,
     paddingVertical: 5,
@@ -719,10 +867,12 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
   },
   detailLabelUser: { color: '#9A6035' },
+  detailLabelCounterboy: { color: '#E8D4C8' },
   detailValueRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   detailIconWrap: { alignItems: 'center', justifyContent: 'center' },
   detailValue: { color: '#FFFFFF', fontSize: 10, fontWeight: '800', flexShrink: 1, lineHeight: 13 },
   detailValueUser: { color: '#5C3216' },
+  detailValueCounterboy: { color: '#FFFEF9' },
   detailValueCompact: { fontSize: 9.5, lineHeight: 12, flex: 1 },
   backContent: { flexDirection: 'row', flex: 1, gap: 10, alignItems: 'stretch' },
   backLeft: { flex: 1, justifyContent: 'flex-start', minWidth: 0 },
@@ -736,6 +886,8 @@ const styles = StyleSheet.create({
   },
   backHeadingDark: { color: '#DBEAFE' },
   backHeadingUser: { color: '#6A2F12' },
+  backHeadingCounterboy: { color: '#F5EDE4' },
+  backHeadingCounterboyDark: { color: '#E8D9CC' },
   metaStack: { gap: 4, marginTop: 8, paddingRight: 1 },
   qrPanel: { width: 92, alignItems: 'center', justifyContent: 'center', paddingVertical: 10 },
   qrFrame: {
@@ -755,4 +907,18 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   qrCodeTextUser: { color: '#8D4A1E' },
+  qrCodeTextCounterboy: { color: '#E8D4C8' },
+  roleTextCounterboyOnLight: { color: '#7A4A38' },
+  nameTextCounterboyOnLight: { color: '#2D1A10' },
+  phoneTextCounterboyOnLight: { color: '#5C3D2E' },
+  inlineTapHintCounterboyOnLight: { color: 'rgba(45,26,16,0.58)' },
+  avatarTextCounterboyOnLight: { color: '#6B2D1D' },
+  detailPillCounterboyLight: {
+    backgroundColor: 'rgba(107,45,29,0.10)',
+    borderColor: 'rgba(107,45,29,0.16)',
+  },
+  detailLabelCounterboyLight: { color: '#6B2D1D' },
+  detailValueCounterboyLight: { color: '#2D1A10' },
+  textureOneCounterboyLight: { backgroundColor: 'rgba(139,60,42,0.10)' },
+  textureTwoCounterboyLight: { backgroundColor: 'rgba(111,78,55,0.08)' },
 });

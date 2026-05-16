@@ -1,0 +1,26 @@
+/** Customer (user role) — warm cream & brown, aligned with onboarding / BottomNav */
+export const CUSTOMER_THEME = {
+  heroLight: ['#FBF1E7', '#F5E8DC', '#F0DEC9'] as const,
+  heroDark: ['#2A1810', '#3D2418', '#4D2E1E'] as const,
+  heroGlowOne: 'rgba(141,74,30,0.24)',
+  heroGlowTwo: 'rgba(166,93,46,0.32)',
+  heroGlowThree: 'rgba(106,47,18,0.18)',
+  statLight: ['#FBF1E7', '#F5E8DC', '#F0DEC9'] as const,
+  quickBrowse: ['#F5E8DC', '#F0DEC9'] as const,
+  quickBrowseTint: '#6A2F12',
+  quickRewards: ['#FBF1E7', '#F0DEC9'] as const,
+  quickRewardsTint: '#8D4A1E',
+  primary: '#6A2F12',
+  primaryDeep: '#8D4A1E',
+  ink: '#3D2418',
+  muted: '#8A7A6E',
+  border: '#EFD8C1',
+  borderDark: '#3D2A22',
+  surface: '#FFFFFF',
+  surfaceDark: '#241812',
+  soft: '#FBF1E7',
+  softDark: '#2D1C14',
+  /** Area below hero (scroll) — warm, no blue-gray */
+  canvasLight: '#F5E8DC',
+  canvasDark: '#1A100E',
+} as const;

@@ -1,3 +1,4 @@
+import { CUSTOMER_THEME } from '@/features/user/theme';
 import type { Screen, UserRole } from '@/shared/types/navigation';
 import {
   C,
@@ -164,6 +165,68 @@ export const electricianDetailRows: ProfileDetailRow[] = [
   { label: 'District', key: 'district' },
   { label: 'Pincode', key: 'pincode' },
   { label: 'Electrician Code', key: 'electricianCode' },
+];
+
+/** Counter boy profile detail list — same as electrician but ID field */
+export const counterboyDetailRows: ProfileDetailRow[] = [
+  { label: 'Mobile Number', key: 'phone' },
+  { label: 'Email', key: 'email', emptyText: 'Not provided' },
+  { label: 'Address', key: 'address' },
+  { label: 'State', key: 'state' },
+  { label: 'City', key: 'city' },
+  { label: 'District', key: 'district' },
+  { label: 'Pincode', key: 'pincode' },
+  { label: 'Counter Boy ID', key: 'counterboyCode' },
+];
+
+export const counterboyMenuItems: ProfileMenuItem[] = electricianMenuItems.filter(
+  (item) => item.screen !== 'Transfer Points'
+);
+
+/** Customer app — same routes as counter boy; warm accent colors */
+export const userMenuItems: ProfileMenuItem[] = [
+  {
+    label: 'My Redemption',
+    icon: 'redeem',
+    color: CUSTOMER_THEME.primaryDeep,
+    bg: CUSTOMER_THEME.soft,
+    screen: 'My Redemption',
+  },
+  {
+    label: 'Gift Store',
+    icon: 'gift',
+    color: '#0D9488',
+    bg: '#CCFBF1',
+    route: 'rewards',
+  },
+  { label: 'My Orders', icon: 'order', color: '#6A2F12', bg: '#F5E8DC', screen: 'My Orders' },
+  { label: 'Bank Details', icon: 'bank', color: '#B45309', bg: '#FEF3C7', screen: 'Bank Details' },
+  {
+    label: 'Refer To A Friend',
+    icon: 'refer',
+    color: CUSTOMER_THEME.primary,
+    bg: '#F0DEC9',
+    screen: 'Refer To A Friend',
+  },
+  { label: 'Need Help', icon: 'help', color: '#0D9488', bg: '#CCFBF1', screen: 'Need Help' },
+  {
+    label: 'Offers & Promotions',
+    icon: 'offer',
+    color: '#B45309',
+    bg: '#FEF3C7',
+    screen: 'Offers & Promotions',
+  },
+];
+
+export const userDetailRows: ProfileDetailRow[] = [
+  { label: 'Mobile Number', key: 'phone' },
+  { label: 'Email', key: 'email', emptyText: 'Not provided' },
+  { label: 'Address', key: 'address' },
+  { label: 'State', key: 'state' },
+  { label: 'City', key: 'city' },
+  { label: 'District', key: 'district' },
+  { label: 'Pincode', key: 'pincode' },
+  { label: 'Customer ID', key: 'userCode' },
 ];
 
 export const editRows: ProfileEditRow[] = [

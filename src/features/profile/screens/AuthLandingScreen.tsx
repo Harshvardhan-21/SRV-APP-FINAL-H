@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { OnboardingScreen } from '@/features/electrician/screens/OnboardingScreen';
@@ -51,7 +51,7 @@ export function AuthLandingScreen({
 
   const isDealer = role === 'dealer';
   const isCounterBoy = role === 'counterboy';
-  const accent = isDealer ? '#173E80' : isCounterBoy ? '#E8453C' : '#173E80';
+  const accent = isDealer ? '#173E80' : isCounterBoy ? '#8B3C2A' : '#173E80';
   const roleTheme = isDealer
     ? {
         p1: '#173E80',
@@ -70,19 +70,19 @@ export function AuthLandingScreen({
       }
     : isCounterBoy
     ? {
-        p1: '#E8453C',
-        p2: '#FF6B6B',
-        p3: '#F59E9A',
-        soft: '#FFF1F2',
-        orb: '#FECACA',
-        shell: '#FFF6F6',
-        cardBorder: '#FECACA',
-        secondaryBg: '#FFF5F5',
-        secondaryBorder: '#FECACA',
-        statsBorder: '#FECACA',
-        statBg: '#FFF5F5',
-        statCardBorder: '#FECACA',
-        backFade: '#FFEDEE',
+        p1: '#8B3C2A',
+        p2: '#6F4E37',
+        p3: '#A87A66',
+        soft: '#F5EDE4',
+        orb: '#EDE0D4',
+        shell: '#F9F4ED',
+        cardBorder: '#E0D0C0',
+        secondaryBg: '#F9F4ED',
+        secondaryBorder: '#E0D0C0',
+        statsBorder: '#E0D0C0',
+        statBg: '#F5EDE4',
+        statCardBorder: '#E0D0C0',
+        backFade: '#F5EDE4',
       }
     : {
         p1: '#173E80',

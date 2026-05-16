@@ -26,7 +26,7 @@ import { counterboyTheme as cb } from '@/features/counterboy/theme';
 
 const Colors = {
   primary: cb.primary,
-  primaryLight: '#D98A7F',
+  primaryLight: '#A87A66',
   primaryDark: cb.primaryDeep,
   background: cb.bg,
   backgroundDark: cb.darkBg,
