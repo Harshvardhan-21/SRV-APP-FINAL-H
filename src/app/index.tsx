@@ -50,6 +50,10 @@ import { GetStartedScreen } from '@/features/onboarding/GetStartedScreen';
 import { useAuth } from '@/shared/context/AuthContext';
 import { useAppData } from '@/shared/context/AppDataContext';
 import { storage } from '@/shared/api';
+import {
+  isRoleFeatureEnabled,
+  resolveRolePageControls,
+} from '@/shared/config/rolePageControls';
 
 type OnboardingStartOptions = {
   passwordConfigured?: boolean;
@@ -115,9 +119,16 @@ function AppContent() {
   const isDealer = currentRole === 'dealer';
   const isUser = currentRole === 'user';
   const isCounterBoy = currentRole === 'counterboy';
+  const rolePageControls = useMemo(
+    () => resolveRolePageControls(appSettings?.rolePageControls),
+    [appSettings?.rolePageControls]
+  );
   const pendingApprovalRole = roleNeedsAdminApproval(authRole) && isAuthenticated && !isApprovedAccountStatus(user?.status)
     ? authRole
     : null;
+  const resolvedCurrentScreen = isRoleFeatureEnabled(rolePageControls, currentRole, currentScreen)
+    ? currentScreen
+    : 'home';
 
   // Once auth loading is done, set initial state
   useEffect(() => {
@@ -187,6 +198,11 @@ function AppContent() {
 
   const handleNavigate = useCallback(
     (screen: Screen) => {
+      if (!isRoleFeatureEnabled(rolePageControls, currentRole, screen)) {
+        setCurrentScreen('home');
+        return;
+      }
+
       if (screen === currentScreen) {
         // Don't reset key for electricians screen — it causes unnecessary re-mount
         if (screen !== 'electricians') {
@@ -205,7 +221,7 @@ function AppContent() {
 
       setCurrentScreen(screen);
     },
-    [currentScreen]
+    [currentRole, currentScreen, rolePageControls]
   );
 
   const handleOpenProductCategory = useCallback((category: string) => {
@@ -450,14 +466,14 @@ function AppContent() {
     };
 
     if (isDealer) {
-      if (!isAuthenticated && isGuestBlockedScreen('dealer', currentScreen)) {
-        if (currentScreen === 'profile') {
+      if (!isAuthenticated && isGuestBlockedScreen('dealer', resolvedCurrentScreen)) {
+        if (resolvedCurrentScreen === 'profile') {
           return renderGuestAuthLanding('dealer');
         }
-        const feature = getGuestFeatureCopy('dealer', currentScreen);
+        const feature = getGuestFeatureCopy('dealer', resolvedCurrentScreen);
         return renderGuestFeatureGate('dealer', feature.title, feature.description);
       }
-      switch (currentScreen) {
+      switch (resolvedCurrentScreen) {
         case 'home':
           return (
             <DealerHomeScreen
@@ -559,14 +575,14 @@ function AppContent() {
     }
 
     if (isUser) {
-      if (!isAuthenticated && isGuestBlockedScreen('user', currentScreen)) {
-        if (currentScreen === 'profile') {
+      if (!isAuthenticated && isGuestBlockedScreen('user', resolvedCurrentScreen)) {
+        if (resolvedCurrentScreen === 'profile') {
           return renderGuestAuthLanding('user');
         }
-        const feature = getGuestFeatureCopy('user', currentScreen);
+        const feature = getGuestFeatureCopy('user', resolvedCurrentScreen);
         return renderGuestFeatureGate('user', feature.title, feature.description);
       }
-      switch (currentScreen) {
+      switch (resolvedCurrentScreen) {
         case 'home':
           return (
             <UserHomeScreen
@@ -657,14 +673,14 @@ function AppContent() {
     }
 
     if (isCounterBoy) {
-      if (!isAuthenticated && isGuestBlockedScreen('counterboy', currentScreen)) {
-        if (currentScreen === 'profile') {
+      if (!isAuthenticated && isGuestBlockedScreen('counterboy', resolvedCurrentScreen)) {
+        if (resolvedCurrentScreen === 'profile') {
           return renderGuestAuthLanding('counterboy');
         }
-        const feature = getGuestFeatureCopy('counterboy', currentScreen);
+        const feature = getGuestFeatureCopy('counterboy', resolvedCurrentScreen);
         return renderGuestFeatureGate('counterboy', feature.title, feature.description);
       }
-      switch (currentScreen) {
+      switch (resolvedCurrentScreen) {
         case 'home':
           return (
             <CounterBoyHomeScreen
@@ -748,14 +764,14 @@ function AppContent() {
       }
     }
 
-    if (!isAuthenticated && isGuestBlockedScreen('electrician', currentScreen)) {
-      if (currentScreen === 'profile') {
+    if (!isAuthenticated && isGuestBlockedScreen('electrician', resolvedCurrentScreen)) {
+      if (resolvedCurrentScreen === 'profile') {
         return renderGuestAuthLanding('electrician');
       }
-      const feature = getGuestFeatureCopy('electrician', currentScreen);
+      const feature = getGuestFeatureCopy('electrician', resolvedCurrentScreen);
       return renderGuestFeatureGate('electrician', feature.title, feature.description);
     }
-    switch (currentScreen) {
+    switch (resolvedCurrentScreen) {
       case 'home':
         return (
           <ElectricianHomeScreen
@@ -865,6 +881,7 @@ function AppContent() {
     }
   }, [
     currentScreen,
+    resolvedCurrentScreen,
     isDealer,
     isUser,
     isCounterBoy,
@@ -905,6 +922,7 @@ function AppContent() {
     appSettings?.whatsappNumber,
     pendingApprovalRole,
     handleUseAnotherApprovalNumber,
+    rolePageControls,
   ]);
 
   if (showOnboarding) {
@@ -935,13 +953,13 @@ function AppContent() {
         </SafeAreaView>
         {!pendingApprovalRole ? (
           isDealer ? (
-            <DealerBottomNav currentScreen={currentScreen} onNavigate={handleNavigate} />
+            <DealerBottomNav currentScreen={resolvedCurrentScreen} onNavigate={handleNavigate} />
           ) : isUser ? (
-            <UserBottomNav currentScreen={currentScreen} onNavigate={handleNavigate} />
+            <UserBottomNav currentScreen={resolvedCurrentScreen} onNavigate={handleNavigate} />
           ) : isCounterBoy ? (
-            <CounterBoyBottomNav currentScreen={currentScreen} onNavigate={handleNavigate} />
+            <CounterBoyBottomNav currentScreen={resolvedCurrentScreen} onNavigate={handleNavigate} />
           ) : (
-            <ElectricianBottomNav currentScreen={currentScreen} onNavigate={handleNavigate} />
+            <ElectricianBottomNav currentScreen={resolvedCurrentScreen} onNavigate={handleNavigate} />
           )
         ) : null}
       </View>

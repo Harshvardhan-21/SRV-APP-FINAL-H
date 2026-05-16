@@ -18,6 +18,10 @@ import Svg, { Circle, Path, Rect } from 'react-native-svg';
 import { withWebSafeNativeDriver } from '@/shared/animations/nativeDriver';
 import { useAppData } from '@/shared/context/AppDataContext';
 import { useAuth } from '@/shared/context/AuthContext';
+import {
+  isRoleFeatureEnabled,
+  resolveRolePageControls,
+} from '@/shared/config/rolePageControls';
 import type { Screen } from '@/shared/types/navigation';
 import { usePreferenceContext } from '@/shared/preferences';
 import ProfileFlipCard from '@/shared/components/ProfileFlipCard';
@@ -783,6 +787,18 @@ export function HomeScreen({
   const heroImageHeight = Math.round((width - 28) * 0.56);
   const tier = useMemo(() => getElectricianTier(totalPoints), [totalPoints]);
   const showTestimonials = appSettings?.testimonialsEnabled !== false;
+  const rolePageControls = useMemo(
+    () => resolveRolePageControls(appSettings?.rolePageControls),
+    [appSettings?.rolePageControls]
+  );
+  const showNotifications = isRoleFeatureEnabled(rolePageControls, 'user', 'notification');
+  const showCategories = isRoleFeatureEnabled(rolePageControls, 'user', 'categories');
+  const showCatalog = isRoleFeatureEnabled(rolePageControls, 'user', 'catalog_pdf');
+  const showRewards = isRoleFeatureEnabled(rolePageControls, 'user', 'rewards');
+  const showWhatsapp = isRoleFeatureEnabled(rolePageControls, 'user', 'whatsapp_support');
+  const showNeedHelp = isRoleFeatureEnabled(rolePageControls, 'user', 'need_help');
+  const showCart = isRoleFeatureEnabled(rolePageControls, 'user', 'cart');
+  const showProduct = isRoleFeatureEnabled(rolePageControls, 'user', 'product');
   const catalogPdfUrl =
     appSettings?.generalCatalogPdfUrl ??
     appSettings?.catalogPdfUrl;
@@ -985,6 +1001,7 @@ export function HomeScreen({
       iconColors: CUSTOMER_THEME.quickBrowse,
       iconTint: CUSTOMER_THEME.quickBrowseTint,
       onPress: () => onNavigate('categories'),
+      hidden: !showCategories,
     },
     {
       testID: 'user-home-action-catalog',
@@ -995,6 +1012,7 @@ export function HomeScreen({
       iconColors: ['#FEF3C7', '#FDE68A'] as const,
       iconTint: '#B45309',
       onPress: () => openCatalog(catalogPdfUrl),
+      hidden: !showCatalog,
     },
     {
       testID: 'electrician-home-action-rewards',
@@ -1005,6 +1023,7 @@ export function HomeScreen({
       iconColors: CUSTOMER_THEME.quickRewards,
       iconTint: CUSTOMER_THEME.quickRewardsTint,
       onPress: () => onNavigate('rewards'),
+      hidden: !showRewards,
     },
     {
       testID: 'electrician-home-action-whatsapp',
@@ -1016,8 +1035,9 @@ export function HomeScreen({
       iconTint: '#16A34A',
       onPress: () =>
           Linking.openURL(`https://wa.me/${appSettings?.whatsappNumber ?? '918837684004'}?text=Hello%20SRV%20Electricals%2C%20I%20need%20support`),
+      hidden: !showWhatsapp,
       },
-  ];
+  ].filter((item) => !item.hidden);
 
   return (
     <ScrollView
@@ -1042,21 +1062,23 @@ export function HomeScreen({
           </View>
 
           <View style={styles.topActions}>
-            <TouchableOpacity
-              onPress={() => onNavigate('notification')}
-              style={[styles.topActionBtn, darkMode ? styles.topActionBtnDark : null]}
-              activeOpacity={0.85}
-            >
-              <View
-                style={[
-                  styles.topIconCore,
-                  styles.notificationCore,
-                  darkMode ? styles.notificationCoreDark : null,
-                ]}
+            {showNotifications ? (
+              <TouchableOpacity
+                onPress={() => onNavigate('notification')}
+                style={[styles.topActionBtn, darkMode ? styles.topActionBtnDark : null]}
+                activeOpacity={0.85}
               >
-                <BellIcon color={darkMode ? '#FDBA74' : '#C2410C'} />
-              </View>
-            </TouchableOpacity>
+                <View
+                  style={[
+                    styles.topIconCore,
+                    styles.notificationCore,
+                    darkMode ? styles.notificationCoreDark : null,
+                  ]}
+                >
+                  <BellIcon color={darkMode ? '#FDBA74' : '#C2410C'} />
+                </View>
+              </TouchableOpacity>
+            ) : null}
           </View>
         </View>
 
@@ -1082,6 +1104,7 @@ export function HomeScreen({
         />
 
         <View style={styles.statRow}>
+          {showNeedHelp ? (
           <Animated.View
             style={[
               styles.statCardWrap,
@@ -1128,6 +1151,7 @@ export function HomeScreen({
               </LinearGradient>
             </TouchableOpacity>
           </Animated.View>
+          ) : null}
           <Animated.View
             style={[
               styles.statCardWrap,
@@ -1135,6 +1159,7 @@ export function HomeScreen({
               { transform: [{ scale: statsPulse }] },
             ]}
           >
+            {showCart ? (
             <TouchableOpacity
               activeOpacity={0.9}
               onPress={() => onNavigate('cart')}
@@ -1171,6 +1196,7 @@ export function HomeScreen({
                 </Text>
               </LinearGradient>
             </TouchableOpacity>
+            ) : null}
           </Animated.View>
         </View>
         </>
@@ -1238,7 +1264,7 @@ export function HomeScreen({
                   {tx('Browse Categories')}
                 </Text>
               </View>
-              {categories.length > 4 && (
+              {showProduct && categories.length > 4 && (
                 <TouchableOpacity onPress={() => onNavigate('product')} style={styles.inlineAction} activeOpacity={0.85}>
                   <Text
                     style={[

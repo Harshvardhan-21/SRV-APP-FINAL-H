@@ -31,6 +31,10 @@ import { formatCountText, usePreferenceContext } from '@/shared/preferences';
 import type { Screen } from '@/shared/types/navigation';
 import { useAuth } from '@/shared/context/AuthContext';
 import { useAppData } from '@/shared/context/AppDataContext';
+import {
+  isRoleFeatureEnabled,
+  resolveRolePageControls,
+} from '@/shared/config/rolePageControls';
 import { useCatalogDownload } from '@/shared/hooks';
 import { API_BASE_URL } from '@/shared/api/config';
 
@@ -619,6 +623,17 @@ export function HomeScreen({
   const cardW = (width - 28 - 12) / 2;
   const heroImageHeight = Math.round((width - 28) * 0.56);
   const showTestimonials = appSettings?.testimonialsEnabled !== false;
+  const rolePageControls = useMemo(
+    () => resolveRolePageControls(appSettings?.rolePageControls),
+    [appSettings?.rolePageControls]
+  );
+  const showNotifications = isRoleFeatureEnabled(rolePageControls, 'dealer', 'notification');
+  const showElectricians = isRoleFeatureEnabled(rolePageControls, 'dealer', 'electricians');
+  const showCatalog = isRoleFeatureEnabled(rolePageControls, 'dealer', 'catalog_pdf');
+  const showCallElectrician = isRoleFeatureEnabled(rolePageControls, 'dealer', 'call_electrician');
+  const showWhatsapp = isRoleFeatureEnabled(rolePageControls, 'dealer', 'whatsapp_support');
+  const showDealerTier = isRoleFeatureEnabled(rolePageControls, 'dealer', 'dealer_tier');
+  const showProduct = isRoleFeatureEnabled(rolePageControls, 'dealer', 'product');
   const catalogPdfUrl =
     appSettings?.dealerCatalogPdfUrl ??
     appSettings?.generalCatalogPdfUrl ??
@@ -788,6 +803,7 @@ export function HomeScreen({
         }
         onNavigate('electricians');
       },
+      hidden: !showElectricians,
     },
     {
       testID: 'dealer-home-action-catalog',
@@ -798,6 +814,7 @@ export function HomeScreen({
       iconColors: ['#FFF7ED', '#FFEDD5'] as const,
       iconTint: '#EA580C',
       onPress: () => openCatalog(catalogPdfUrl),
+      hidden: !showCatalog,
     },
     {
       testID: 'dealer-home-action-call-electrician',
@@ -808,6 +825,7 @@ export function HomeScreen({
       iconColors: ['#DCFCE7', '#BBF7D0'] as const,
       iconTint: '#16A34A',
       onPress: () => onNavigate('call_electrician'),
+      hidden: !showCallElectrician,
     },
     {
       testID: 'dealer-home-action-whatsapp',
@@ -821,8 +839,9 @@ export function HomeScreen({
         Linking.openURL(
           `https://wa.me/${supportWhatsapp}?text=Hello%20SRV%20Team,%20I%20need%20dealer%20support`
         ),
+      hidden: !showWhatsapp,
     },
-  ];
+  ].filter((item) => !item.hidden);
 
   return (
     <ScrollView
@@ -842,18 +861,20 @@ export function HomeScreen({
           <View style={[styles.logoWrap, darkMode ? styles.logoWrapDark : null]}>
             <Image source={logoImage} style={styles.logoImage} resizeMode="contain" />
           </View>
-          <TouchableOpacity
-            onPress={() => onNavigate('notification')}
-            style={[styles.topActionBtn, darkMode ? styles.topActionBtnDark : null]}
-            activeOpacity={0.85}
-          >
-            <View style={styles.bellIconWrap}>
-              <BellIcon color={darkMode ? '#FDBA74' : '#C2410C'} />
-              {hasUnreadNotif && (
-                <View style={styles.redDot} />
-              )}
-            </View>
-          </TouchableOpacity>
+          {showNotifications ? (
+            <TouchableOpacity
+              onPress={() => onNavigate('notification')}
+              style={[styles.topActionBtn, darkMode ? styles.topActionBtnDark : null]}
+              activeOpacity={0.85}
+            >
+              <View style={styles.bellIconWrap}>
+                <BellIcon color={darkMode ? '#FDBA74' : '#C2410C'} />
+                {hasUnreadNotif && (
+                  <View style={styles.redDot} />
+                )}
+              </View>
+            </TouchableOpacity>
+          ) : null}
         </View>
 
         {authUser ? (
@@ -873,6 +894,7 @@ export function HomeScreen({
         }} role="dealer" photoUri={profilePhotoUri} apiPhotoUri={authUser?.profileImage ?? null} />
 
         <View style={styles.statRow}>
+          {showCallElectrician ? (
           <Animated.View
             style={[
               styles.statCardWrap,
@@ -908,7 +930,9 @@ export function HomeScreen({
               </LinearGradient>
             </TouchableOpacity>
           </Animated.View>
+          ) : null}
 
+          {showDealerTier ? (
           <Animated.View
             style={[
               styles.statCardWrap,
@@ -960,6 +984,7 @@ export function HomeScreen({
               </LinearGradient>
             </TouchableOpacity>
           </Animated.View>
+          ) : null}
         </View>
         </>
         ) : (
@@ -1023,7 +1048,7 @@ export function HomeScreen({
                   {tx('Browse Categories')}
                 </Text>
               </View>
-              {categories.length > 4 && (
+              {showProduct && categories.length > 4 && (
                 <TouchableOpacity onPress={() => onNavigate('product')} style={styles.inlineAction} activeOpacity={0.85}>
                   <Text style={styles.viewAllText}>{tx('View all')}</Text>
                   <ChevronRight />

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Path, Rect, Circle } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -7,6 +7,11 @@ import { usePreferenceContext } from '@/shared/preferences';
 import { createShadow } from '@/shared/theme/shadows';
 import type { Screen } from '@/shared/types/navigation';
 import { useResponsive } from '@/shared/hooks';
+import { useAppData } from '@/shared/context/AppDataContext';
+import {
+  getAllowedBottomNavScreens,
+  resolveRolePageControls,
+} from '@/shared/config/rolePageControls';
 import { counterboyTheme as cb } from '@/features/counterboy/theme';
 
 const CB_PRIMARY = cb.primary;
@@ -107,14 +112,27 @@ const RIGHT: NavControlConfig[] = [
 
 export function BottomNav({ currentScreen, onNavigate }: { currentScreen: Screen; onNavigate: (screen: Screen) => void }) {
   const { darkMode, tx } = usePreferenceContext();
+  const { appSettings } = useAppData();
   const insets = useSafeAreaInsets();
   const { wp, isSmallDevice, isShortDevice } = useResponsive();
+  const rolePageControls = useMemo(
+    () => resolveRolePageControls(appSettings?.rolePageControls),
+    [appSettings?.rolePageControls]
+  );
+  const allowedScreens = useMemo(
+    () => new Set(getAllowedBottomNavScreens(rolePageControls, 'counterboy', ['home', 'product', 'wallet', 'profile'])),
+    [rolePageControls]
+  );
   const bottomPad = isShortDevice ? Math.max(insets.bottom, 4) : isSmallDevice ? Math.max(insets.bottom, 6) : Math.max(insets.bottom, 8);
   const topPad = isShortDevice ? 6 : 10;
+  const navItems = useMemo(
+    () => [...LEFT, ...RIGHT].filter((item) => allowedScreens.has(item.id)),
+    [allowedScreens]
+  );
 
   return (
     <View style={[styles.wrap, darkMode ? styles.wrapDark : null, { paddingBottom: bottomPad, paddingTop: topPad, paddingHorizontal: wp(8), minHeight: isShortDevice ? 52 : 54 }]}>
-      {[...LEFT, ...RIGHT].map((item) => (
+      {navItems.map((item) => (
         <NavTab key={item.id} id={item.id} label={tx(item.label)} active={currentScreen === item.id}
           onPress={() => onNavigate(item.id)} testID={item.testID} accessibilityLabel={item.accessibilityLabel} compact={isShortDevice} />
       ))}

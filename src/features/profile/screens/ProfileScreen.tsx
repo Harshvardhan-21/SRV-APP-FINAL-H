@@ -57,6 +57,11 @@ import { authApi, storage } from '@/shared/api';
 import { useAuth } from '@/shared/context/AuthContext';
 import { useAppData } from '@/shared/context/AppDataContext';
 import {
+  isRoleFeatureEnabled,
+  resolveRolePageControls,
+  type AppFeatureKey,
+} from '@/shared/config/rolePageControls';
+import {
   counterboyDetailRows,
   counterboyMenuItems,
   userDetailRows,
@@ -114,6 +119,7 @@ export function ProfileScreen({
   const {
     uploadProfilePhoto,
     removeProfilePhoto: removeRemoteProfilePhoto,
+    appSettings,
   } = useAppData();
 
   // Refresh from backend when profile screen opens
@@ -279,18 +285,59 @@ export function ProfileScreen({
     [preferenceValue, profileTheme]
   );
   const { t, tx, theme } = scopedPreferenceValue;
+  const rolePageControls = useMemo(
+    () => resolveRolePageControls(appSettings?.rolePageControls),
+    [appSettings?.rolePageControls]
+  );
+  const profileMenuFeatureMap: Record<string, AppFeatureKey> = {
+    'My Redemption': 'my_redemption',
+    'Gift Store': 'rewards',
+    'Dealer Bonus': 'dealer_bonus',
+    'Transfer Points': 'transfer_points',
+    'My Orders': 'my_orders',
+    'Bank Details': 'bank_details',
+    'Refer To A Friend': 'refer_friend',
+    'Need Help': 'need_help',
+    'Offers & Promotions': 'offers_promotions',
+    Cart: 'cart',
+  };
+  const settingsFeatureMap: Record<string, AppFeatureKey> = {
+    Notifications: 'notification',
+    Password: 'password',
+    'Rate Us': 'rate_us',
+    'App Settings': 'app_settings',
+    'Scan History': 'scan_history',
+    'Contact Support': 'contact_support',
+    'Privacy Policy': 'privacy_policy',
+  };
   const menuItems = useMemo(() => {
-    if (currentRole === 'dealer') return dealerMenuItems;
-    if (currentRole === 'counterboy') return counterboyMenuItems;
-    if (currentRole === 'user') return userMenuItems;
-    return electricianMenuItems;
-  }, [currentRole]);
+    const baseItems =
+      currentRole === 'dealer'
+        ? dealerMenuItems
+        : currentRole === 'counterboy'
+          ? counterboyMenuItems
+          : currentRole === 'user'
+            ? userMenuItems
+            : electricianMenuItems;
+
+    return baseItems.filter((item) => {
+      const featureKey = profileMenuFeatureMap[item.label];
+      return featureKey ? isRoleFeatureEnabled(rolePageControls, currentRole, featureKey) : true;
+    });
+  }, [currentRole, rolePageControls]);
   const settingsMenuItems = useMemo(
-    () =>
-      currentRole === 'electrician'
-        ? settingsItems
-        : settingsItems.filter((item) => item.screen !== 'Scan History'),
-    [currentRole]
+    () => {
+      const baseItems =
+        currentRole === 'electrician'
+          ? settingsItems
+          : settingsItems.filter((item) => item.screen !== 'Scan History');
+
+      return baseItems.filter((item) => {
+        const featureKey = settingsFeatureMap[item.label];
+        return featureKey ? isRoleFeatureEnabled(rolePageControls, currentRole, featureKey) : true;
+      });
+    },
+    [currentRole, rolePageControls]
   );
   const electricianCount = authUser?.electricianCount ?? 0;
   const electricianPoints = totalPoints ?? authUser?.totalPoints ?? 0;

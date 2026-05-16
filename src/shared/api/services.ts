@@ -606,6 +606,7 @@ export type AppSettings = {
   generalCatalogPdfUrl?: string | null;
   dealerCatalogPdfUrl?: string | null;
   catalogPdfUrl?: string | null;
+  rolePageControls?: Record<string, Record<string, boolean>> | null;
 };
 
 export type ScanResult = {
