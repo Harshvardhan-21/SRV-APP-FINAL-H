@@ -15,5 +15,6 @@ export type Screen =
   | 'electrician_tier'
   | 'bank_details'
   | 'transfer_points'
-  | 'dealer_bonus';
+  | 'dealer_bonus'
+  | 'support';
 export type UserRole = 'dealer' | 'electrician' | 'user' | 'counterboy';

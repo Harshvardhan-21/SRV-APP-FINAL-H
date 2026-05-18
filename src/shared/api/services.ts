@@ -375,7 +375,7 @@ export const redemptionsApi = {
 
 export const ordersApi = {
   getAll: () =>
-    api.get<UserOrder[]>('/profile/orders', undefined, true),
+    api.get<UserOrder[]>('/mobile/profile/orders', undefined, true),
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -599,9 +599,14 @@ export type AppSettings = {
   scanEnabled: boolean;
   giftsEnabled: boolean;
   referralEnabled: boolean;
+  testimonialsEnabled: boolean;
+  playEnabled: boolean;
   playStoreUrl?: string;
   appStoreUrl?: string;
+  generalCatalogPdfUrl?: string | null;
+  dealerCatalogPdfUrl?: string | null;
   catalogPdfUrl?: string | null;
+  rolePageControls?: Record<string, Record<string, boolean>> | null;
 };
 
 export type ScanResult = {

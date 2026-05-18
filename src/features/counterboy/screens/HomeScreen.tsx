@@ -8,6 +8,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 import { useAppData } from '@/shared/context/AppDataContext';
 import { useAuth } from '@/shared/context/AuthContext';
+import {
+  isRoleFeatureEnabled,
+  resolveRolePageControls,
+} from '@/shared/config/rolePageControls';
 import { usePreferenceContext } from '@/shared/preferences';
 import { createShadow } from '@/shared/theme/shadows';
 import { BannerCarousel } from '@/shared/components/BannerCarousel';
@@ -211,6 +215,19 @@ export function HomeScreen({
   const [testimonials, setTestimonials] = useState<TestimonialItem[]>([]);
   const [supportWhatsapp, setSupportWhatsapp] = useState('918837684004');
   const heroImageHeight = Math.round((width - 28) * 0.56);
+  const showTestimonials = appSettings?.testimonialsEnabled !== false;
+  const rolePageControls = useMemo(
+    () => resolveRolePageControls(appSettings?.rolePageControls),
+    [appSettings?.rolePageControls]
+  );
+  const showNotifications = isRoleFeatureEnabled(rolePageControls, 'counterboy', 'notification');
+  const showProduct = isRoleFeatureEnabled(rolePageControls, 'counterboy', 'product');
+  const showCatalog = isRoleFeatureEnabled(rolePageControls, 'counterboy', 'catalog_pdf');
+  const showWhatsapp = isRoleFeatureEnabled(rolePageControls, 'counterboy', 'whatsapp_support');
+  const showWallet = isRoleFeatureEnabled(rolePageControls, 'counterboy', 'wallet');
+  const catalogPdfUrl =
+    appSettings?.generalCatalogPdfUrl ??
+    appSettings?.catalogPdfUrl;
 
   useEffect(() => {
     const filtered = ctxBanners
@@ -292,14 +309,16 @@ export function HomeScreen({
       iconColors: [cb.soft, cb.peachSoft] as const,
       iconTint: cb.primary,
       onPress: () => onNavigate('product'),
+      hidden: !showProduct,
     },
     {
       title: tx('Product Catalog'),
       sub: tx('Download PDF for latest updated prices'),
       icon: DownloadIcon,
-      iconColors: [cb.blushSoft, cb.soft] as const,
-      iconTint: cb.primaryDeep,
-      onPress: () => openCatalog(appSettings?.catalogPdfUrl),
+      iconColors: ['#DBEAFE', '#BFDBFE'] as const,
+      iconTint: '#1D4ED8',
+      onPress: () => openCatalog(catalogPdfUrl),
+      hidden: !showCatalog,
     },
     {
       title: tx('WhatsApp'),
@@ -308,16 +327,18 @@ export function HomeScreen({
       iconColors: [cb.successSoft, '#CDE7DB'] as const,
       iconTint: cb.success,
       onPress: () => Linking.openURL(`https://wa.me/${supportWhatsapp}?text=Hello%20SRV%20Team`),
+      hidden: !showWhatsapp,
     },
     {
       title: tx('Wallet'),
       sub: tx('Points & rewards'),
       icon: WalletIcon,
-      iconColors: [cb.peachSoft, cb.blushSoft] as const,
-      iconTint: cb.primaryDeep,
+      iconColors: ['#FEF3C7', '#FDE68A'] as const,
+      iconTint: '#D97706',
       onPress: () => onNavigate('wallet'),
+      hidden: !showWallet,
     },
-  ];
+  ].filter((item) => !item.hidden);
 
   const cardW = (width - 28 - 12) / 2;
   const catCardW = Math.floor((width - 28 - 12) / 2);
@@ -361,16 +382,18 @@ export function HomeScreen({
               <Image source={logoImage} style={styles.logoImage} resizeMode="contain" />
             </View>
           </View>
-          <TouchableOpacity
-            onPress={() => onNavigate('notification')}
-            style={[styles.topActionBtn, darkMode ? styles.topActionBtnDark : null]}
-            activeOpacity={0.85}
-          >
-            <View style={[styles.topIconCore, styles.notificationCore, darkMode ? styles.notificationCoreDark : null]}>
-              <BellIcon color={darkMode ? '#C4A88C' : '#6F4E37'} />
-            </View>
-            {hasUnreadNotif && <View style={styles.redDot} />}
-          </TouchableOpacity>
+          {showNotifications ? (
+            <TouchableOpacity
+              onPress={() => onNavigate('notification')}
+              style={[styles.topActionBtn, darkMode ? styles.topActionBtnDark : null]}
+              activeOpacity={0.85}
+            >
+              <View style={[styles.topIconCore, styles.notificationCore, darkMode ? styles.notificationCoreDark : null]}>
+                <BellIcon color={darkMode ? '#C4A88C' : '#6F4E37'} />
+              </View>
+              {hasUnreadNotif && <View style={styles.redDot} />}
+            </TouchableOpacity>
+          ) : null}
         </View>
 
         {authUser ? (
@@ -378,16 +401,11 @@ export function HomeScreen({
             profile={{
               name: authUser?.name ?? '',
               phone: authUser?.phone ?? '',
-              dealer_code: authUser?.dealerCode ?? '',
               counterboy_code: authUser?.counterboyCode ?? '',
               town: authUser?.city ?? '',
               district: authUser?.district ?? '',
               state: authUser?.state ?? '',
               address: authUser?.address ?? '',
-              electrician_code: authUser?.electricianCode ?? '',
-              dealer_name: authUser?.dealerName ?? '',
-              dealer_town: authUser?.dealerTown ?? '',
-              dealer_phone: authUser?.dealerPhone ?? '',
             }}
             role="counterboy"
             photoUri={profilePhotoUri}
@@ -433,10 +451,12 @@ export function HomeScreen({
               {tx('Browse Categories')}
             </Text>
           </View>
-          <TouchableOpacity onPress={() => onNavigate('product')} style={styles.inlineAction} activeOpacity={0.85}>
-            <Text style={[styles.viewAllText, darkMode ? styles.viewAllTextDark : null]}>{tx('View all')}</Text>
-            <ChevronRight color={darkMode ? cb.slate : CB_PRIMARY} size={14} />
-          </TouchableOpacity>
+          {showProduct ? (
+            <TouchableOpacity onPress={() => onNavigate('product')} style={styles.inlineAction} activeOpacity={0.85}>
+              <Text style={[styles.viewAllText, darkMode ? styles.viewAllTextDark : null]}>{tx('View all')}</Text>
+              <ChevronRight color={darkMode ? cb.slate : CB_PRIMARY} size={14} />
+            </TouchableOpacity>
+          ) : null}
         </View>
 
         <View style={styles.homeCatGrid}>
@@ -469,13 +489,15 @@ export function HomeScreen({
           ))}
         </View>
 
-        <TestimonialShowcase
-          eyebrow={tx('Electrician Testimonials')}
-          title={tx('What Members Say')}
-          subtitle={tx('Trusted feedback from the SRV network')}
-          items={testimonials}
-          darkMode={darkMode}
-        />
+        {showTestimonials ? (
+          <TestimonialShowcase
+            eyebrow={tx('Electrician Testimonials')}
+            title={tx('What Members Say')}
+            subtitle={tx('Trusted feedback from the SRV network')}
+            items={testimonials}
+            darkMode={darkMode}
+          />
+        ) : null}
 
         <WebsitePromoSection darkMode={darkMode} />
       </View>

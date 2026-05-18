@@ -31,6 +31,10 @@ import { formatCountText, usePreferenceContext } from '@/shared/preferences';
 import type { Screen } from '@/shared/types/navigation';
 import { useAuth } from '@/shared/context/AuthContext';
 import { useAppData } from '@/shared/context/AppDataContext';
+import {
+  isRoleFeatureEnabled,
+  resolveRolePageControls,
+} from '@/shared/config/rolePageControls';
 import { useCatalogDownload } from '@/shared/hooks';
 import { API_BASE_URL } from '@/shared/api/config';
 
@@ -618,6 +622,22 @@ export function HomeScreen({
   const tier = useMemo(() => getTier(connectedCount), [connectedCount]);
   const cardW = (width - 28 - 12) / 2;
   const heroImageHeight = Math.round((width - 28) * 0.56);
+  const showTestimonials = appSettings?.testimonialsEnabled !== false;
+  const rolePageControls = useMemo(
+    () => resolveRolePageControls(appSettings?.rolePageControls),
+    [appSettings?.rolePageControls]
+  );
+  const showNotifications = isRoleFeatureEnabled(rolePageControls, 'dealer', 'notification');
+  const showElectricians = isRoleFeatureEnabled(rolePageControls, 'dealer', 'electricians');
+  const showCatalog = isRoleFeatureEnabled(rolePageControls, 'dealer', 'catalog_pdf');
+  const showCallElectrician = isRoleFeatureEnabled(rolePageControls, 'dealer', 'call_electrician');
+  const showWhatsapp = isRoleFeatureEnabled(rolePageControls, 'dealer', 'whatsapp_support');
+  const showDealerTier = isRoleFeatureEnabled(rolePageControls, 'dealer', 'dealer_tier');
+  const showProduct = isRoleFeatureEnabled(rolePageControls, 'dealer', 'product');
+  const catalogPdfUrl =
+    appSettings?.dealerCatalogPdfUrl ??
+    appSettings?.generalCatalogPdfUrl ??
+    appSettings?.catalogPdfUrl;
   const [apiBannerSlides, setApiBannerSlides] = useState<CarouselSlide[]>([]);
   const [supportWhatsapp, setSupportWhatsapp] = useState('918837684004');
 
@@ -770,7 +790,7 @@ export function HomeScreen({
       sub: formatCountText(language, connectedCount, 'connected', 'जुड़े हुए', 'ਜੁੜੇ ਹੋਏ'),
       icon: UserPlusIcon,
       iconColors: ['#EEF5FF', '#DCE8FF'] as const,
-      iconTint: '#173E80',
+      iconTint: '#1D4ED8',
       onPress: () => {
         const kyc = authUser?.kycStatus;
         if (kyc !== 'verified') {
@@ -783,6 +803,7 @@ export function HomeScreen({
         }
         onNavigate('electricians');
       },
+      hidden: !showElectricians,
     },
     {
       testID: 'dealer-home-action-catalog',
@@ -790,9 +811,10 @@ export function HomeScreen({
       title: tx('Product Catalog'),
       sub: tx('Download PDF for latest updated prices'),
       icon: DownloadIcon,
-      iconColors: ['#EEF5FF', '#DCE8FF'] as const,
-      iconTint: '#173E80',
-      onPress: () => openCatalog(appSettings?.catalogPdfUrl),
+      iconColors: ['#FFF7ED', '#FFEDD5'] as const,
+      iconTint: '#EA580C',
+      onPress: () => openCatalog(catalogPdfUrl),
+      hidden: !showCatalog,
     },
     {
       testID: 'dealer-home-action-call-electrician',
@@ -800,9 +822,10 @@ export function HomeScreen({
       title: tx('Call Electrician'),
       sub: tx('Reach your network'),
       icon: PhoneIcon,
-      iconColors: ['#EEF5FF', '#DCE8FF'] as const,
-      iconTint: '#173E80',
+      iconColors: ['#DCFCE7', '#BBF7D0'] as const,
+      iconTint: '#16A34A',
       onPress: () => onNavigate('call_electrician'),
+      hidden: !showCallElectrician,
     },
     {
       testID: 'dealer-home-action-whatsapp',
@@ -810,14 +833,15 @@ export function HomeScreen({
       title: tx('WhatsApp'),
       sub: tx('Chat with us'),
       icon: WhatsAppIcon,
-      iconColors: ['#EEF5FF', '#DCE8FF'] as const,
-      iconTint: '#173E80',
+      iconColors: ['#DCFCE7', '#BBF7D0'] as const,
+      iconTint: '#25D366',
       onPress: () =>
         Linking.openURL(
           `https://wa.me/${supportWhatsapp}?text=Hello%20SRV%20Team,%20I%20need%20dealer%20support`
         ),
+      hidden: !showWhatsapp,
     },
-  ];
+  ].filter((item) => !item.hidden);
 
   return (
     <ScrollView
@@ -837,18 +861,20 @@ export function HomeScreen({
           <View style={[styles.logoWrap, darkMode ? styles.logoWrapDark : null]}>
             <Image source={logoImage} style={styles.logoImage} resizeMode="contain" />
           </View>
-          <TouchableOpacity
-            onPress={() => onNavigate('notification')}
-            style={[styles.topActionBtn, darkMode ? styles.topActionBtnDark : null]}
-            activeOpacity={0.85}
-          >
-            <View style={styles.bellIconWrap}>
-              <BellIcon color={darkMode ? '#FDBA74' : '#C2410C'} />
-              {hasUnreadNotif && (
-                <View style={styles.redDot} />
-              )}
-            </View>
-          </TouchableOpacity>
+          {showNotifications ? (
+            <TouchableOpacity
+              onPress={() => onNavigate('notification')}
+              style={[styles.topActionBtn, darkMode ? styles.topActionBtnDark : null]}
+              activeOpacity={0.85}
+            >
+              <View style={styles.bellIconWrap}>
+                <BellIcon color={darkMode ? '#FDBA74' : '#C2410C'} />
+                {hasUnreadNotif && (
+                  <View style={styles.redDot} />
+                )}
+              </View>
+            </TouchableOpacity>
+          ) : null}
         </View>
 
         {authUser ? (
@@ -868,6 +894,7 @@ export function HomeScreen({
         }} role="dealer" photoUri={profilePhotoUri} apiPhotoUri={authUser?.profileImage ?? null} />
 
         <View style={styles.statRow}>
+          {showCallElectrician ? (
           <Animated.View
             style={[
               styles.statCardWrap,
@@ -903,7 +930,9 @@ export function HomeScreen({
               </LinearGradient>
             </TouchableOpacity>
           </Animated.View>
+          ) : null}
 
+          {showDealerTier ? (
           <Animated.View
             style={[
               styles.statCardWrap,
@@ -955,6 +984,7 @@ export function HomeScreen({
               </LinearGradient>
             </TouchableOpacity>
           </Animated.View>
+          ) : null}
         </View>
         </>
         ) : (
@@ -1018,7 +1048,7 @@ export function HomeScreen({
                   {tx('Browse Categories')}
                 </Text>
               </View>
-              {categories.length > 4 && (
+              {showProduct && categories.length > 4 && (
                 <TouchableOpacity onPress={() => onNavigate('product')} style={styles.inlineAction} activeOpacity={0.85}>
                   <Text style={styles.viewAllText}>{tx('View all')}</Text>
                   <ChevronRight />
@@ -1041,31 +1071,33 @@ export function HomeScreen({
           </>
         )}
 
-        <TestimonialShowcase
-          eyebrow={
-            language === 'Hindi'
-              ? 'डीलर की राय'
-              : language === 'Punjabi'
-                ? 'ਡੀਲਰ ਦੀ ਰਾਇ'
-                : 'Dealer Testimonials'
-          }
-          title={
-            language === 'Hindi'
-              ? 'हमारे डीलर क्या कहते हैं'
-              : language === 'Punjabi'
-                ? 'ਸਾਡੇ ਡੀਲਰ ਕੀ ਕਹਿੰਦੇ ਹਨ'
-                : 'What Dealers Say'
-          }
-          subtitle={
-            language === 'Hindi'
-              ? 'रियल नेटवर्क पार्टनर्स की राय, जिन्होंने एसआरवी के साथ बिजनेस को और मजबूत बनाया।'
-              : language === 'Punjabi'
-                ? 'ਅਸਲ ਨੈੱਟਵਰਕ ਪਾਰਟਨਰਾਂ ਦੀ ਰਾਇ, ਜਿਨ੍ਹਾਂ ਨੇ SRV ਨਾਲ ਆਪਣਾ ਕਾਰੋਬਾਰ ਹੋਰ ਮਜ਼ਬੂਤ ਕੀਤਾ।'
-                : 'Real partner feedback from dealers who are growing faster with SRV.'
-          }
-          items={dealerTestimonials}
-          darkMode={darkMode}
-        />
+        {showTestimonials ? (
+          <TestimonialShowcase
+            eyebrow={
+              language === 'Hindi'
+                ? 'डीलर की राय'
+                : language === 'Punjabi'
+                  ? 'ਡੀਲਰ ਦੀ ਰਾਇ'
+                  : 'Dealer Testimonials'
+            }
+            title={
+              language === 'Hindi'
+                ? 'हमारे डीलर क्या कहते हैं'
+                : language === 'Punjabi'
+                  ? 'ਸਾਡੇ ਡੀਲਰ ਕੀ ਕਹਿੰਦੇ ਹਨ'
+                  : 'What Dealers Say'
+            }
+            subtitle={
+              language === 'Hindi'
+                ? 'रियल नेटवर्क पार्टनर्स की राय, जिन्होंने एसआरवी के साथ बिजनेस को और मजबूत बनाया।'
+                : language === 'Punjabi'
+                  ? 'ਅਸਲ ਨੈੱਟਵਰਕ ਪਾਰਟਨਰਾਂ ਦੀ ਰਾਇ, ਜਿਨ੍ਹਾਂ ਨੇ SRV ਨਾਲ ਆਪਣਾ ਕਾਰੋਬਾਰ ਹੋਰ ਮਜ਼ਬੂਤ ਕੀਤਾ।'
+                  : 'Real partner feedback from dealers who are growing faster with SRV.'
+            }
+            items={dealerTestimonials}
+            darkMode={darkMode}
+          />
+        ) : null}
 
         <WebsitePromoSection darkMode={darkMode} />
 

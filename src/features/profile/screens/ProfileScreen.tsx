@@ -57,6 +57,11 @@ import { authApi, storage } from '@/shared/api';
 import { useAuth } from '@/shared/context/AuthContext';
 import { useAppData } from '@/shared/context/AppDataContext';
 import {
+  isRoleFeatureEnabled,
+  resolveRolePageControls,
+  type AppFeatureKey,
+} from '@/shared/config/rolePageControls';
+import {
   counterboyDetailRows,
   counterboyMenuItems,
   userDetailRows,
@@ -88,6 +93,8 @@ export function ProfileScreen({
   onProfilePhotoChange,
   totalPoints,
   totalScans,
+  initialSubPage,
+  onInitialSubPageConsumed,
 }: {
   currentRole: UserRole;
   onNavigate: (screen: Screen) => void;
@@ -104,12 +111,15 @@ export function ProfileScreen({
   onProfilePhotoChange: (photoUri: string | null) => void;
   totalPoints?: number;
   totalScans?: number;
+  initialSubPage?: Exclude<SubPage, null> | null;
+  onInitialSubPageConsumed?: () => void;
 }) {
   // Real user from auth context
   const { user: authUser, updateUser, refreshProfile } = useAuth();
   const {
     uploadProfilePhoto,
     removeProfilePhoto: removeRemoteProfilePhoto,
+    appSettings,
   } = useAppData();
 
   // Refresh from backend when profile screen opens
@@ -184,6 +194,13 @@ export function ProfileScreen({
       setDraftTaxHolder(getTaxHolderValue(p));
     }
   }, [buildProfileFromAuth]);
+
+  useEffect(() => {
+    if (initialSubPage) {
+      setSubPage(initialSubPage);
+      onInitialSubPageConsumed?.();
+    }
+  }, [initialSubPage, onInitialSubPageConsumed]);
 
   const preferenceValue = usePreferenceValue({
     language,
@@ -268,18 +285,59 @@ export function ProfileScreen({
     [preferenceValue, profileTheme]
   );
   const { t, tx, theme } = scopedPreferenceValue;
+  const rolePageControls = useMemo(
+    () => resolveRolePageControls(appSettings?.rolePageControls),
+    [appSettings?.rolePageControls]
+  );
+  const profileMenuFeatureMap: Record<string, AppFeatureKey> = {
+    'My Redemption': 'my_redemption',
+    'Gift Store': 'rewards',
+    'Dealer Bonus': 'dealer_bonus',
+    'Transfer Points': 'transfer_points',
+    'My Orders': 'my_orders',
+    'Bank Details': 'bank_details',
+    'Refer To A Friend': 'refer_friend',
+    'Need Help': 'need_help',
+    'Offers & Promotions': 'offers_promotions',
+    Cart: 'cart',
+  };
+  const settingsFeatureMap: Record<string, AppFeatureKey> = {
+    Notifications: 'notification',
+    Password: 'password',
+    'Rate Us': 'rate_us',
+    'App Settings': 'app_settings',
+    'Scan History': 'scan_history',
+    'Contact Support': 'contact_support',
+    'Privacy Policy': 'privacy_policy',
+  };
   const menuItems = useMemo(() => {
-    if (currentRole === 'dealer') return dealerMenuItems;
-    if (currentRole === 'counterboy') return counterboyMenuItems;
-    if (currentRole === 'user') return userMenuItems;
-    return electricianMenuItems;
-  }, [currentRole]);
+    const baseItems =
+      currentRole === 'dealer'
+        ? dealerMenuItems
+        : currentRole === 'counterboy'
+          ? counterboyMenuItems
+          : currentRole === 'user'
+            ? userMenuItems
+            : electricianMenuItems;
+
+    return baseItems.filter((item) => {
+      const featureKey = profileMenuFeatureMap[item.label];
+      return featureKey ? isRoleFeatureEnabled(rolePageControls, currentRole, featureKey) : true;
+    });
+  }, [currentRole, rolePageControls]);
   const settingsMenuItems = useMemo(
-    () =>
-      currentRole === 'electrician' || currentRole === 'counterboy' || currentRole === 'user'
-        ? settingsItems
-        : settingsItems.filter((item) => item.screen !== 'Scan History'),
-    [currentRole]
+    () => {
+      const baseItems =
+        currentRole === 'electrician'
+          ? settingsItems
+          : settingsItems.filter((item) => item.screen !== 'Scan History');
+
+      return baseItems.filter((item) => {
+        const featureKey = settingsFeatureMap[item.label];
+        return featureKey ? isRoleFeatureEnabled(rolePageControls, currentRole, featureKey) : true;
+      });
+    },
+    [currentRole, rolePageControls]
   );
   const electricianCount = authUser?.electricianCount ?? 0;
   const electricianPoints = totalPoints ?? authUser?.totalPoints ?? 0;
@@ -577,7 +635,7 @@ export function ProfileScreen({
     ),
     'Dealer Bonus': <PartnerCommissionPage onBack={() => setSubPage(null)} />,
     'Transfer Points': (
-      <TransferPointsPage onBack={() => setSubPage(null)} onNavigate={onNavigate} />
+      <TransferPointsPage onBack={() => setSubPage(null)} onNavigate={onNavigate} currentRole={currentRole} />
     ),
     'My Orders': <MyOrdersPage onBack={() => setSubPage(null)} />,
     'Bank Details': <BankDetailsPage onBack={() => setSubPage(null)} />,

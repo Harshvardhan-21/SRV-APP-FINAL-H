@@ -1,10 +1,10 @@
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
   Easing,
   FlatList,
-  Image,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -36,6 +36,7 @@ const C = {
 // ── Category colour map (keyed by normalised category id) ────────────────────
 const CAT_COLORS: Record<string, { gradient: [string, string, string]; scanBg: string; scanText: string; cardGradient: [string, string, string]; iconBg: string }> = {
   fanbox:       { gradient: ['#6F879F','#93A8BE','#D9E1EA'], scanBg: '#F5F8FB', scanText: '#4A637B', cardGradient: ['#FAFBFD','#E9EEF5','#D5DEE9'], iconBg: '#E5ECF4' },
+  fanrods:      { gradient: ['#6F879F','#93A8BE','#D9E1EA'], scanBg: '#F5F8FB', scanText: '#4A637B', cardGradient: ['#FAFBFD','#E9EEF5','#D5DEE9'], iconBg: '#E5ECF4' },
   concealedbox: { gradient: ['#6F879F','#93A8BE','#D9E1EA'], scanBg: '#F5F8FB', scanText: '#4A637B', cardGradient: ['#FAFBFD','#E9EEF5','#D5DEE9'], iconBg: '#E5ECF4' },
   modular:      { gradient: ['#6F879F','#93A8BE','#D9E1EA'], scanBg: '#F5F8FB', scanText: '#4A637B', cardGradient: ['#FAFBFD','#E9EEF5','#D5DEE9'], iconBg: '#E5ECF4' },
   mcb:          { gradient: ['#4A6FA5','#6B8FC7','#B8CCE8'], scanBg: '#EEF4FF', scanText: '#2D5FA0', cardGradient: ['#F8FAFF','#EBF2FF','#D8E8FF'], iconBg: '#DDE9F8' },
@@ -44,17 +45,23 @@ const CAT_COLORS: Record<string, { gradient: [string, string, string]; scanBg: s
   axialfan:     { gradient: ['#2E7D5E','#4CAF85','#90D4B8'], scanBg: '#EDF8F3', scanText: '#1E6B4A', cardGradient: ['#F5FDF9','#E2F5EC','#C8EDD9'], iconBg: '#C8EDD9' },
   led:          { gradient: ['#8B6914','#C49A2A','#E8CC7A'], scanBg: '#FDF8EC', scanText: '#7A5A10', cardGradient: ['#FFFDF5','#FDF5DC','#F8EAB8'], iconBg: '#F5E8C0' },
   changeover:   { gradient: ['#6F879F','#93A8BE','#D9E1EA'], scanBg: '#F5F8FB', scanText: '#4A637B', cardGradient: ['#FAFBFD','#E9EEF5','#D5DEE9'], iconBg: '#E5ECF4' },
+  knifetypechangeoverswitches: { gradient: ['#6F879F','#93A8BE','#D9E1EA'], scanBg: '#F5F8FB', scanText: '#4A637B', cardGradient: ['#FAFBFD','#E9EEF5','#D5DEE9'], iconBg: '#E5ECF4' },
   mainswitch:   { gradient: ['#C0392B','#E74C3C','#F1948A'], scanBg: '#FFF0EF', scanText: '#A93226', cardGradient: ['#FFF8F8','#FFE8E6','#FFD5D2'], iconBg: '#FFD5D2' },
+  mainswitchfuseunits: { gradient: ['#6F879F','#93A8BE','#D9E1EA'], scanBg: '#F5F8FB', scanText: '#4A637B', cardGradient: ['#FAFBFD','#E9EEF5','#D5DEE9'], iconBg: '#E5ECF4' },
   louver:       { gradient: ['#2E7D5E','#4CAF85','#90D4B8'], scanBg: '#EDF8F3', scanText: '#1E6B4A', cardGradient: ['#F5FDF9','#E2F5EC','#C8EDD9'], iconBg: '#C8EDD9' },
   conduit:      { gradient: ['#6F879F','#93A8BE','#D9E1EA'], scanBg: '#F5F8FB', scanText: '#4A637B', cardGradient: ['#FAFBFD','#E9EEF5','#D5DEE9'], iconBg: '#E5ECF4' },
   pvcpipe:      { gradient: ['#6F879F','#93A8BE','#D9E1EA'], scanBg: '#F5F8FB', scanText: '#4A637B', cardGradient: ['#FAFBFD','#E9EEF5','#D5DEE9'], iconBg: '#E5ECF4' },
   stabilizer:   { gradient: ['#4A6FA5','#6B8FC7','#B8CCE8'], scanBg: '#EEF4FF', scanText: '#2D5FA0', cardGradient: ['#F8FAFF','#EBF2FF','#D8E8FF'], iconBg: '#DDE9F8' },
   junction:     { gradient: ['#6F879F','#93A8BE','#D9E1EA'], scanBg: '#F5F8FB', scanText: '#4A637B', cardGradient: ['#FAFBFD','#E9EEF5','#D5DEE9'], iconBg: '#E5ECF4' },
+  junctionbox:  { gradient: ['#6F879F','#93A8BE','#D9E1EA'], scanBg: '#F5F8FB', scanText: '#4A637B', cardGradient: ['#FAFBFD','#E9EEF5','#D5DEE9'], iconBg: '#E5ECF4' },
+  pvcjunctionbox: { gradient: ['#6F879F','#93A8BE','#D9E1EA'], scanBg: '#F5F8FB', scanText: '#4A637B', cardGradient: ['#FAFBFD','#E9EEF5','#D5DEE9'], iconBg: '#E5ECF4' },
+  ventoguard:   { gradient: ['#6F879F','#93A8BE','#D9E1EA'], scanBg: '#F5F8FB', scanText: '#4A637B', cardGradient: ['#FAFBFD','#E9EEF5','#D5DEE9'], iconBg: '#E5ECF4' },
 };
 const DEFAULT_CAT_COLOR = { gradient: ['#6F879F','#93A8BE','#D9E1EA'] as [string,string,string], scanBg: '#F5F8FB', scanText: '#4A637B', cardGradient: ['#FAFBFD','#E9EEF5','#D5DEE9'] as [string,string,string], iconBg: '#E5ECF4' };
 
 const DEFAULT_IMAGES: Record<string, string> = {
   fanbox:       'https://srvelectricals.com/cdn/shop/files/FC_4_17-30.png?v=1757426626&width=320',
+  fanrods:      'https://cdn.shopify.com/s/files/1/0651/4583/1466/files/FanRod_Super.png',
   concealedbox: 'https://srvelectricals.com/cdn/shop/files/CRD_PL_3.png?v=1757426566&width=320',
   modular:      'https://srvelectricals.com/cdn/shop/files/3x3_679e5d30-ecf2-446e-9452-354bbf4c4a26.png?v=1757426377&width=320',
   mcb:          'https://srvelectricals.com/cdn/shop/files/MCB_Box_4_Way_GI.png?v=1757426418&width=320',
@@ -63,19 +70,26 @@ const DEFAULT_IMAGES: Record<string, string> = {
   axialfan:     'https://srvelectricals.com/cdn/shop/files/AP-Turtle-Fan.webp?v=1747938680&width=320',
   led:          'https://srvelectricals.com/cdn/shop/files/FloodLightSleek.png?v=1757426471&width=320',
   changeover:   'https://srvelectricals.com/cdn/shop/files/ACO_100A_FP.png?v=1757426480&width=320',
+  knifetypechangeoverswitches: 'https://cdn.shopify.com/s/files/1/0651/4583/1466/files/CO400AKNIFETYPE.png',
   mainswitch:   'https://srvelectricals.com/cdn/shop/files/CO_32A_DP_PRM.png?v=1757426515&width=320',
+  mainswitchfuseunits: 'https://cdn.shopify.com/s/files/1/0651/4583/1466/files/MainSwitch63A.png',
   louver:       'https://srvelectricals.com/cdn/shop/files/Louver_6_inch.png?v=1757426390&width=320',
   conduit:      'https://cdn.shopify.com/s/files/1/0651/4583/1466/files/PVCPipe_d645973b-bd5e-41de-8eb0-53331cce1c19.png?v=1772786167',
   stabilizer:   'https://srvelectricals.com/cdn/shop/files/VoltageStabilizer.png?v=1757426471&width=320',
   junction:     'https://srvelectricals.com/cdn/shop/files/Junction_Box.png?v=1757426390&width=320',
+  junctionbox:  'https://cdn.shopify.com/s/files/1/0651/4583/1466/files/JunctionBox_CNG.png',
+  pvcjunctionbox: 'https://cdn.shopify.com/s/files/1/0651/4583/1466/files/PVCJunctionBox.png',
+  ventoguard:   'https://cdn.shopify.com/s/files/1/0651/4583/1466/files/VentoGuard.png',
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
-  fanbox: 'Fan Box', concealedbox: 'Concealed Box', modular: 'Modular Box', modularbox: 'Modular Box',
+  fanbox: 'Fan Box', fanrods: 'Fan Rods', concealedbox: 'Concealed Box', modular: 'Modular Box', modularbox: 'Modular Box',
   mcb: 'MCB DB', busbar: 'Bus Bar', exhaust: 'Exhaust Fan', axialfan: 'Axial Fan',
-  led: 'LED Lights', changeover: 'Changeover', mainswitch: 'Main Switch',
+  led: 'LED Lights', changeover: 'Changeover', knifetypechangeoverswitches: 'Knife Type Changeover',
+  mainswitch: 'Main Switch', mainswitchfuseunits: 'Main Switch Fuse Units',
   louver: 'Louvers', conduit: 'Conduit Pipe', pvcpipe: 'Conduit Pipe',
-  stabilizer: 'Voltage Stabilizer', junction: 'Junction Box',
+  stabilizer: 'Voltage Stabilizer', junction: 'Junction Box', junctionbox: 'Junction Box',
+  pvcjunctionbox: 'PVC Junction Box', ventoguard: 'VentoGuard',
 };
 
 const CATEGORY_ALIASES: Record<string, string> = {
@@ -278,7 +292,15 @@ const AnimatedProductImage = memo(function AnimatedProductImage({ uri, size }: {
         }}
       />
       <Animated.View style={{ transform: [{ translateY: floatY }, { scale: imgScale }, { rotate: swayDeg }] }}>
-        <Image source={{ uri }} style={{ width: size, height: size }} resizeMode="contain" />
+        <Image 
+          source={{ uri }} 
+          style={{ width: size, height: size }} 
+          contentFit="contain"
+          transition={200}
+          cachePolicy="memory-disk"
+          priority="high"
+          recyclingKey={uri}
+        />
       </Animated.View>
     </View>
   );
@@ -498,6 +520,17 @@ export function ProductScreen({
     return [...result].sort((a, b) => a.name.localeCompare(b.name));
   }, [products, category, search, isSearching]);
 
+  // ✨ PREFETCH NEXT IMAGES FOR FASTER LOADING ✨
+  useEffect(() => {
+    if (filtered.length > 6) {
+      // Prefetch next 10 images in background
+      const nextImages = filtered.slice(6, 16);
+      nextImages.forEach(product => {
+        Image.prefetch(product.imageUrl);
+      });
+    }
+  }, [filtered]);
+
   const rows = useMemo<ProductRow[]>(() => {
     const r: ProductRow[] = [];
     for (let i = 0; i < filtered.length; i += 2) {
@@ -667,18 +700,18 @@ export function ProductScreen({
             const cc2 = cat.id === 'all' ? DEFAULT_CAT_COLOR : catColor(cat.id);
             
             // Customer theme colors
-            const customerBg = active ? '#6A2F12' : '#FBF1E7';
-            const customerBorder = active ? '#6A2F12' : '#E5D4C1';
+            const customerBg = active ? '#6A2F12' : '#FFFFFF';
+            const customerBorder = active ? '#6A2F12' : '#EEEEF3';
             const customerIconBg = active ? 'rgba(255,255,255,0.2)' : '#F5E8DC';
             const customerIconColor = active ? '#fff' : '#6A2F12';
-            const customerTextColor = active ? '#fff' : '#6A2F12';
+            const customerTextColor = active ? '#fff' : '#1C1E2E';
             
             // Counterboy theme colors
-            const counterboyBg = active ? '#8B3C2A' : '#F9F4ED';
-            const counterboyBorder = active ? '#8B3C2A' : '#E0D0C0';
+            const counterboyBg = active ? '#8B3C2A' : '#FFFFFF';
+            const counterboyBorder = active ? '#8B3C2A' : '#EEEEF3';
             const counterboyIconBg = active ? 'rgba(255,255,255,0.2)' : '#EDE0D4';
             const counterboyIconColor = active ? '#fff' : '#8B3C2A';
-            const counterboyTextColor = active ? '#fff' : '#5C3D2E';
+            const counterboyTextColor = active ? '#fff' : '#1C1E2E';
             
             return (
               <TouchableOpacity
@@ -731,30 +764,27 @@ export function ProductScreen({
           )}
         </View>
       ) : (
-        <LinearGradient 
-          colors={isCustomer ? ['#FBF1E7', '#F5E8DC', '#F0DEC9'] : isCounterboy ? ['#F9F4ED', '#F0DFD0', '#EDE0D4'] : cc.gradient} 
-          start={{ x: 0, y: 0 }} 
-          end={{ x: 1, y: 0 }} 
-          style={styles.catBanner}
+        <View 
+          style={[styles.catBanner, { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#EEEEF3' }]}
         >
           <View style={styles.catBannerLeft}>
-            <View style={styles.bannerIconWrap}>
-              <CatIcon id={category} size={32} color={isCustomer ? '#6A2F12' : isCounterboy ? '#8B3C2A' : '#fff'} />
+            <View style={[styles.bannerIconWrap, { backgroundColor: isCustomer ? '#F5E8DC' : isCounterboy ? '#F0DFD0' : cc.iconBg }]}>
+              <CatIcon id={category} size={32} color={isCustomer ? '#6A2F12' : isCounterboy ? '#8B3C2A' : cc.scanText} />
             </View>
             <View style={{ flex: 1, minWidth: 0 }}>
-              <Text style={[styles.catBannerTitle, isCustomer && { color: '#6A2F12' }, isCounterboy && { color: '#5C3D2E' }]} numberOfLines={1} adjustsFontSizeToFit>{currentCat.label}</Text>
-              <Text style={[styles.catBannerSub, isCustomer && { color: '#8D4A1E' }, isCounterboy && { color: '#8A7A6E' }]} numberOfLines={1}>
+              <Text style={[styles.catBannerTitle, { color: isCustomer ? '#6A2F12' : isCounterboy ? '#5C3D2E' : '#1C1E2E' }]} numberOfLines={1} adjustsFontSizeToFit>{currentCat.label}</Text>
+              <Text style={[styles.catBannerSub, { color: isCustomer ? '#8D4A1E' : isCounterboy ? '#8A7A6E' : '#9898A8' }]} numberOfLines={1}>
                 {catalogLoading && products.length === 0 ? tx('Loading...') : `${filtered.length} ${tx('products available')}`}
               </Text>
             </View>
           </View>
           {!isDealer && !isCustomer && !isCounterboy ? (
-            <TouchableOpacity onPress={() => onNavigate('scan')} style={styles.catScanBtn}>
-              <ScanIcon size={20} color="#fff" />
-              <Text style={styles.catScanText}>{bannerActionLabel}</Text>
+            <TouchableOpacity onPress={() => onNavigate('scan')} style={[styles.catScanBtn, { backgroundColor: cc.scanBg }]}>
+              <ScanIcon size={20} color={cc.scanText} />
+              <Text style={[styles.catScanText, { color: cc.scanText }]}>{bannerActionLabel}</Text>
             </TouchableOpacity>
           ) : null}
-        </LinearGradient>
+        </View>
       )}
     </View>
   ), [darkMode, tx, search, showFilters, uiCategories, categoryItems, category, isSearching, filtered.length, cc, currentCat, catalogLoading, products.length, isDealer, isCounterboy, onNavigate, bannerActionLabel]);
@@ -803,10 +833,13 @@ export function ProductScreen({
       ListFooterComponent={ListFooter}
       ListEmptyComponent={ListEmpty}
       showsVerticalScrollIndicator={false}
-      initialNumToRender={4}
-      maxToRenderPerBatch={6}
-      windowSize={7}
-      removeClippedSubviews
+      // ✨ SUPER OPTIMIZED FOR FAST IMAGE LOADING ✨
+      initialNumToRender={2}           // Render only 2 rows (4 products) initially - FASTEST!
+      maxToRenderPerBatch={2}          // Load 2 rows (4 products) at a time
+      windowSize={3}                   // Keep only 3 screens worth in memory - MINIMAL!
+      removeClippedSubviews={true}     // Remove off-screen items from memory
+      updateCellsBatchingPeriod={50}   // Batch updates every 50ms for ultra-smooth scrolling
+      onEndReachedThreshold={0.3}      // Start loading more when 30% from bottom
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
@@ -960,6 +993,7 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 12,
     justifyContent: 'space-between',
+    backgroundColor: '#FFFFFF',
   },
   infoZoneDark: { backgroundColor: '#111827' },
   infoSpacer: { height: 8 },

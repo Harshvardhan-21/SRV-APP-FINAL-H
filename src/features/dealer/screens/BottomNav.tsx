@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -7,6 +7,11 @@ import { usePreferenceContext } from '@/shared/preferences';
 import { createShadow } from '@/shared/theme/shadows';
 import type { Screen } from '@/shared/types/navigation';
 import { useResponsive } from '@/shared/hooks';
+import { useAppData } from '@/shared/context/AppDataContext';
+import {
+  getAllowedBottomNavScreens,
+  resolveRolePageControls,
+} from '@/shared/config/rolePageControls';
 
 type NavControlConfig = {
   id: Screen;
@@ -346,8 +351,19 @@ export function BottomNav({
   onNavigate: (screen: Screen) => void;
 }) {
   const { darkMode, tx } = usePreferenceContext();
+  const { appSettings } = useAppData();
   const insets = useSafeAreaInsets();
   const { wp, isSmallDevice, isShortDevice } = useResponsive();
+  const rolePageControls = useMemo(
+    () => resolveRolePageControls(appSettings?.rolePageControls),
+    [appSettings?.rolePageControls]
+  );
+  const allowedScreens = useMemo(
+    () => new Set(getAllowedBottomNavScreens(rolePageControls, 'dealer', ['home', 'product', 'wallet', 'profile', 'electricians'])),
+    [rolePageControls]
+  );
+  const leftItems = useMemo(() => LEFT.filter((item) => allowedScreens.has(item.id)), [allowedScreens]);
+  const rightItems = useMemo(() => RIGHT.filter((item) => allowedScreens.has(item.id)), [allowedScreens]);
   const bottomPad = isShortDevice
     ? Math.max(insets.bottom, 4)
     : isSmallDevice
@@ -368,7 +384,7 @@ export function BottomNav({
       ]}
     >
       <View style={styles.side}>
-        {LEFT.map((item) => (
+        {leftItems.map((item) => (
           <NavTab
             key={item.id}
             id={item.id}
@@ -382,14 +398,16 @@ export function BottomNav({
         ))}
       </View>
 
-      <CenterButton
-        active={currentScreen === 'electricians'}
-        onPress={() => onNavigate('electricians')}
-        compact={isShortDevice}
-      />
+      {allowedScreens.has('electricians') ? (
+        <CenterButton
+          active={currentScreen === 'electricians'}
+          onPress={() => onNavigate('electricians')}
+          compact={isShortDevice}
+        />
+      ) : null}
 
       <View style={styles.side}>
-        {RIGHT.map((item) => (
+        {rightItems.map((item) => (
           <NavTab
             key={item.id}
             id={item.id}
