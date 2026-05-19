@@ -1,7 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useMemo, useState } from 'react';
 import {
-  Image, Linking, Pressable, ScrollView,
+  Image, Linking, ScrollView,
   StyleSheet, Text, TouchableOpacity, View, useWindowDimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -115,9 +115,7 @@ function getCbHomeCatImage(id: string, apiImageUrl?: string | null) {
 }
 
 const CB_PRIMARY = cb.primary;
-const CB_DARK = cb.primaryDeep;
 const CB_LIGHT = cb.bg;
-const CB_SOFT = cb.soft;
 
 const logoImage = require('../../../../assets/srv logo white.jpeg');
 
@@ -126,17 +124,6 @@ function BellIcon({ color = '#10254A', size = 22 }: { color?: string; size?: num
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path d="M6 16.5V11a6 6 0 1112 0v5.5l1.2 1.2a.8.8 0 01-.57 1.36H5.37a.8.8 0 01-.57-1.36L6 16.5z" stroke={color} strokeWidth={1.8} strokeLinejoin="round" />
       <Path d="M10 20a2 2 0 004 0" stroke={color} strokeWidth={1.8} strokeLinecap="round" />
-    </Svg>
-  );
-}
-
-function ScanIcon({ color = CB_PRIMARY, size = 22 }: { color?: string; size?: number }) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Rect x="4" y="4" width="6" height="6" rx="1.2" stroke={color} strokeWidth={1.8} />
-      <Rect x="14" y="4" width="6" height="6" rx="1.2" stroke={color} strokeWidth={1.8} />
-      <Rect x="4" y="14" width="6" height="6" rx="1.2" stroke={color} strokeWidth={1.8} />
-      <Path d="M14 14h2v2h-2zM18 14h2v6h-6v-2h4v-4z" fill={color} />
     </Svg>
   );
 }
@@ -208,7 +195,7 @@ export function HomeScreen({
   const { darkMode, tx } = usePreferenceContext();
   const { user: authUser } = useAuth();
   const { banners: ctxBanners, testimonials: ctxTestimonials, appSettings, categories: ctxCategories } = useAppData();
-  const { openCatalog, downloading } = useCatalogDownload();
+  const { openCatalog } = useCatalogDownload();
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const [apiBannerSlides, setApiBannerSlides] = useState<any[]>([]);

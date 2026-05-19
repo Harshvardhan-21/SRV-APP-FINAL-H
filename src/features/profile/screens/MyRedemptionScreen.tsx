@@ -75,8 +75,8 @@ export function RedemptionPage({
     }).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
-  const now = new Date();
   const filteredItems = useMemo(() => {
+    const now = new Date();
     const byTab = redemptions.filter((item) => item.type === activeTab);
     if (activeFilter === 'All') return byTab;
     const cutoff = new Date(now);

@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useRef, useEffect } from 'react';
 import {
   View, Text, StyleSheet, Animated, Easing, TouchableOpacity, Image,
 } from 'react-native';
-import Svg, { Circle, Rect, Path, G, Line, Ellipse } from 'react-native-svg';
+import Svg, { Circle, Rect, Path, G, Line } from 'react-native-svg';
 import { ws, hs, rf } from '../../shared/hooks/useResponsive';
 
 const AView = Animated.View as any;
@@ -18,8 +17,6 @@ const THEME = {
   tag:       '#F0DEC9',
   tagText:   '#6A2F12',
 };
-
-const TAGS = ['Browse Products', 'Easy Ordering', 'Trusted Quality'];
 
 function BgIcons() {
   return (
@@ -93,7 +90,7 @@ export default function CustomerSlide({ onBack, onContinue }: Props) {
       Animated.timing(floatAnim, { toValue: 1, duration: 2000, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
       Animated.timing(floatAnim, { toValue: 0, duration: 2000, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
     ])).start();
-  }, []);
+  }, [descFade, descScale, fadeAnim, floatAnim, glowAnim, scaleAnim, slideUp, textSlide]);
 
   const floatY = floatAnim.interpolate({ inputRange: [0, 1], outputRange: [0, -12] });
 

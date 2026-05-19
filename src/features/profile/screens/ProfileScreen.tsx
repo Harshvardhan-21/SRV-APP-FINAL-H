@@ -77,6 +77,29 @@ import {
   settingsItems,
 } from '../lib/profileData';
 
+const PROFILE_MENU_FEATURE_MAP: Record<string, AppFeatureKey> = {
+  'My Redemption': 'my_redemption',
+  'Gift Store': 'rewards',
+  'Dealer Bonus': 'dealer_bonus',
+  'Transfer Points': 'transfer_points',
+  'My Orders': 'my_orders',
+  'Bank Details': 'bank_details',
+  'Refer To A Friend': 'refer_friend',
+  'Need Help': 'need_help',
+  'Offers & Promotions': 'offers_promotions',
+  Cart: 'cart',
+};
+
+const SETTINGS_FEATURE_MAP: Record<string, AppFeatureKey> = {
+  Notifications: 'notification',
+  Password: 'password',
+  'Rate Us': 'rate_us',
+  'App Settings': 'app_settings',
+  'Scan History': 'scan_history',
+  'Contact Support': 'contact_support',
+  'Privacy Policy': 'privacy_policy',
+};
+
 export function ProfileScreen({
   currentRole,
   onNavigate,
@@ -125,7 +148,7 @@ export function ProfileScreen({
   // Refresh from backend when profile screen opens
   useEffect(() => {
     void refreshProfile();
-  }, []);
+  }, [refreshProfile]);
 
   // Build profile from live auth data only so admin-side updates stay authoritative.
   const buildProfileFromAuth = useMemo((): Profile => {
@@ -167,7 +190,7 @@ export function ProfileScreen({
       counterboyCode: authUser.counterboyCode ?? '',
       userCode: authUser.userCode ?? '',
     };
-  }, [authUser, currentRole]);
+  }, [authUser]);
 
   const [profile, setProfile] = useState<Profile>(buildProfileFromAuth);
   const [draft, setDraft] = useState<Profile>(buildProfileFromAuth);
@@ -193,7 +216,7 @@ export function ProfileScreen({
       setDraftTaxIdentity(getTaxIdentityValue(p));
       setDraftTaxHolder(getTaxHolderValue(p));
     }
-  }, [buildProfileFromAuth]);
+  }, [buildProfileFromAuth, showEdit]);
 
   useEffect(() => {
     if (initialSubPage) {
@@ -289,27 +312,6 @@ export function ProfileScreen({
     () => resolveRolePageControls(appSettings?.rolePageControls),
     [appSettings?.rolePageControls]
   );
-  const profileMenuFeatureMap: Record<string, AppFeatureKey> = {
-    'My Redemption': 'my_redemption',
-    'Gift Store': 'rewards',
-    'Dealer Bonus': 'dealer_bonus',
-    'Transfer Points': 'transfer_points',
-    'My Orders': 'my_orders',
-    'Bank Details': 'bank_details',
-    'Refer To A Friend': 'refer_friend',
-    'Need Help': 'need_help',
-    'Offers & Promotions': 'offers_promotions',
-    Cart: 'cart',
-  };
-  const settingsFeatureMap: Record<string, AppFeatureKey> = {
-    Notifications: 'notification',
-    Password: 'password',
-    'Rate Us': 'rate_us',
-    'App Settings': 'app_settings',
-    'Scan History': 'scan_history',
-    'Contact Support': 'contact_support',
-    'Privacy Policy': 'privacy_policy',
-  };
   const menuItems = useMemo(() => {
     const baseItems =
       currentRole === 'dealer'
@@ -321,7 +323,7 @@ export function ProfileScreen({
             : electricianMenuItems;
 
     return baseItems.filter((item) => {
-      const featureKey = profileMenuFeatureMap[item.label];
+      const featureKey = PROFILE_MENU_FEATURE_MAP[item.label];
       return featureKey ? isRoleFeatureEnabled(rolePageControls, currentRole, featureKey) : true;
     });
   }, [currentRole, rolePageControls]);
@@ -333,7 +335,7 @@ export function ProfileScreen({
           : settingsItems.filter((item) => item.screen !== 'Scan History');
 
       return baseItems.filter((item) => {
-        const featureKey = settingsFeatureMap[item.label];
+        const featureKey = SETTINGS_FEATURE_MAP[item.label];
         return featureKey ? isRoleFeatureEnabled(rolePageControls, currentRole, featureKey) : true;
       });
     },

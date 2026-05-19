@@ -2,6 +2,12 @@ import { API_BASE_URL } from './config';
 import { storage } from './storage';
 import { sessionEvents } from './sessionEvents';
 
+const debugLog = (...args: unknown[]) => {
+  if (__DEV__) {
+    console.warn(...args);
+  }
+};
+
 type RequestOptions = {
   method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
   body?: object;
@@ -91,7 +97,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   }
 
   const url = buildUrl(path, params);
-  console.log(`🌐 API ${method} ${url}`);
+  debugLog(`API ${method} ${url}`);
 
   try {
     const response = await fetchWithTimeout(url, {
@@ -99,16 +105,15 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
       headers,
       ...(body ? { body: JSON.stringify(body) } : {}),
     });
-
-    console.log(`✅ API ${method} ${path} - Status: ${response.status}`);
+    debugLog(`API ${method} ${path} - Status: ${response.status}`);
 
     // Token expired — try refresh
     if (response.status === 401 && auth) {
-      console.log('🔄 Token expired, attempting refresh...');
+      debugLog('Token expired, attempting refresh...');
       try {
         const accessToken = await refreshAccessToken();
         headers['Authorization'] = `Bearer ${accessToken}`;
-        console.log('✅ Token refreshed successfully');
+        debugLog('Token refreshed successfully');
         const retryRes = await fetchWithTimeout(url, {
           method,
           headers,
@@ -140,7 +145,10 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     }
 
     const data = await response.json();
-    console.log(`📦 API ${method} ${path} response:`, typeof data === 'object' && data !== null ? Object.keys(data) : 'primitive');
+    debugLog(
+      `API ${method} ${path} response:`,
+      typeof data === 'object' && data !== null ? Object.keys(data) : 'primitive'
+    );
     return data as T;
   } catch (error: any) {
     console.error(`❌ API ${method} ${path} error:`, error.message);

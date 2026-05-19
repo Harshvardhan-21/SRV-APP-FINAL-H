@@ -17,8 +17,6 @@ import {
 // Customer theme colors matching Customer_Slide
 const BROWN_PRIMARY = '#6A2F12';
 const BROWN_SECONDARY = '#8D4A1E';
-const BROWN_LIGHT = '#FBF1E7';
-
 type NavControlConfig = {
   id: Screen;
   label: string;
@@ -41,25 +39,6 @@ function HomeIcon({ color, size = 24 }: { color: string; size?: number }) {
         strokeWidth={2}
         strokeLinecap="round"
         strokeLinejoin="round"
-      />
-    </Svg>
-  );
-}
-
-function ProductIcon({ color, size = 24 }: { color: string; size?: number }) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path
-        d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"
-        stroke={color}
-        strokeWidth={2}
-        strokeLinejoin="round"
-      />
-      <Path
-        d="M3.27 6.96L12 12.01l8.73-5.05M12 22.08V12"
-        stroke={color}
-        strokeWidth={2}
-        strokeLinecap="round"
       />
     </Svg>
   );

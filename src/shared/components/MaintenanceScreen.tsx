@@ -13,7 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import Svg, { Circle, Path, G } from 'react-native-svg';
+import Svg, { Circle, Path } from 'react-native-svg';
 import { createShadow } from '@/shared/theme/shadows';
 
 const srvLogo = require('../../../assets/srv-login-logo.png');
@@ -67,7 +67,7 @@ function Dot({ delay }: { delay: number }) {
     );
     loop.start();
     return () => loop.stop();
-  }, []);
+  }, [anim, delay]);
   const scale   = anim.interpolate({ inputRange: [0, 1], outputRange: [1, 1.7] });
   const opacity = anim.interpolate({ inputRange: [0, 1], outputRange: [0.35, 1] });
   return <Animated.View style={[styles.dot, { transform: [{ scale }], opacity }]} />;
@@ -102,7 +102,7 @@ export function MaintenanceScreen({ message, onRetry }: Props) {
     g1.start();
     g2.start();
     return () => { g1.stop(); g2.stop(); };
-  }, []);
+  }, [fadeIn, gear1Rot, gear2Rot, slideUp]);
 
   const spin1 = gear1Rot.interpolate({ inputRange: [0, 1],  outputRange: ['0deg',   '360deg'] });
   const spin2 = gear2Rot.interpolate({ inputRange: [-1, 0], outputRange: ['-360deg', '0deg'] });
@@ -144,7 +144,7 @@ export function MaintenanceScreen({ message, onRetry }: Props) {
           <Text style={styles.badgeText}>Under Maintenance</Text>
         </View>
 
-        <Text style={styles.title}>We'll be back soon!</Text>
+        <Text style={styles.title}>We&apos;ll be back soon!</Text>
         <Text style={styles.sub}>
           {message || 'Our team is working hard to improve your experience. Please check back in a little while.'}
         </Text>

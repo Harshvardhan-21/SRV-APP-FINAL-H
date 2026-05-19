@@ -15,7 +15,6 @@ import {
 import { counterboyTheme as cb } from '@/features/counterboy/theme';
 
 const CB_PRIMARY = cb.primary;
-const CB_DARK = cb.primaryDeep;
 
 type NavControlConfig = {
   id: Screen;

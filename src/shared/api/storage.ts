@@ -1,11 +1,7 @@
-// Safe AsyncStorage wrapper — falls back to in-memory if AsyncStorage unavailable
-let AsyncStorageModule: any = null;
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-try {
-  AsyncStorageModule = require('@react-native-async-storage/async-storage').default;
-} catch {
-  // AsyncStorage not available — use memory fallback
-}
+// Safe AsyncStorage wrapper — falls back to in-memory if AsyncStorage unavailable
+const AsyncStorageModule = AsyncStorage;
 
 // In-memory fallback for when AsyncStorage is unavailable
 const memoryStore: Record<string, string> = {};

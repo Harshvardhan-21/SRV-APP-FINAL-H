@@ -15,7 +15,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Circle, Path, Rect } from 'react-native-svg';
+import Svg, { Circle, Path } from 'react-native-svg';
 import { withWebSafeNativeDriver } from '@/shared/animations/nativeDriver';
 import ProfileFlipCard from '@/shared/components/ProfileFlipCard';
 import {
@@ -131,19 +131,6 @@ function resolveRemoteImageUrl(uri?: string | null) {
   return `${API_BASE_HOST}/${normalized.replace(/^\.?\//, '')}`;
 }
 
-const HOME_PRODUCT_ACCENTS: Record<string, readonly [string, string, string]> = {
-  fanbox:       ['#F7FBFF', '#E5EEFF', '#CFE0FF'],
-  concealedbox: ['#F7FBFF', '#E5EEFF', '#CFE0FF'],
-  modular:      ['#F7FBFF', '#E5EEFF', '#CFE0FF'],
-  mcb:          ['#F7FBFF', '#E5EEFF', '#CFE0FF'],
-  busbar:       ['#F7FBFF', '#E5EEFF', '#CFE0FF'],
-  exhaust:      ['#F7FBFF', '#E5EEFF', '#CFE0FF'],
-  led:          ['#F7FBFF', '#E5EEFF', '#CFE0FF'],
-  changeover:   ['#F7FBFF', '#E5EEFF', '#CFE0FF'],
-  mainswitch:   ['#F7FBFF', '#E5EEFF', '#CFE0FF'],
-  louver:       ['#F7FBFF', '#E5EEFF', '#CFE0FF'],
-};
-
 function BellIcon({ color = '#10254A', size = 22 }: { color?: string; size?: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
@@ -182,16 +169,6 @@ function PhoneIcon({ color = '#173E80', size = 24 }: { color?: string; size?: nu
         strokeWidth={1.8}
         strokeLinejoin="round"
       />
-    </Svg>
-  );
-}
-
-function WalletIcon({ color = '#173E80', size = 24 }: { color?: string; size?: number }) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Rect x="3" y="6" width="18" height="13" rx="2.4" stroke={color} strokeWidth={2} />
-      <Path d="M15.5 11.5H21V16h-5.5a2.25 2.25 0 010-4.5z" stroke={color} strokeWidth={2} />
-      <Circle cx="16.8" cy="13.75" r="1.05" fill={color} />
     </Svg>
   );
 }
@@ -260,75 +237,6 @@ function ChevronRight({ color = '#173E80', size = 16 }: { color?: string; size?:
         strokeLinejoin="round"
       />
     </Svg>
-  );
-}
-
-function FilterIcon({ color = '#173E80', size = 16 }: { color?: string; size?: number }) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path d="M4 7h16M7 12h10M10 17h4" stroke={color} strokeWidth={1.9} strokeLinecap="round" />
-      <Circle cx="9" cy="7" r="2" fill="#FFFFFF" stroke={color} strokeWidth={1.7} />
-      <Circle cx="15" cy="12" r="2" fill="#FFFFFF" stroke={color} strokeWidth={1.7} />
-      <Circle cx="12" cy="17" r="2" fill="#FFFFFF" stroke={color} strokeWidth={1.7} />
-    </Svg>
-  );
-}
-
-function ScanIcon({ color = '#10254A', size = 22 }: { color?: string; size?: number }) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Rect x="4" y="4" width="6" height="6" rx="1.2" stroke={color} strokeWidth={1.8} />
-      <Rect x="14" y="4" width="6" height="6" rx="1.2" stroke={color} strokeWidth={1.8} />
-      <Rect x="4" y="14" width="6" height="6" rx="1.2" stroke={color} strokeWidth={1.8} />
-      <Path d="M14 14h2v2h-2zM18 14h2v6h-6v-2h4v-4z" fill={color} />
-    </Svg>
-  );
-}
-
-function FeaturedProductImage({ uri, size }: { uri: string; size: number }) {
-  const floatY   = useRef(new Animated.Value(0)).current;
-  const imgScale = useRef(new Animated.Value(1)).current;
-  const rotateZ  = useRef(new Animated.Value(0)).current;
-  const shimmerX = useRef(new Animated.Value(-1)).current;
-
-  useEffect(() => {
-    const floatLoop = Animated.loop(Animated.sequence([
-      Animated.timing(floatY, withWebSafeNativeDriver({ toValue: -10, duration: 1800, easing: Easing.inOut(Easing.sin) })),
-      Animated.timing(floatY, withWebSafeNativeDriver({ toValue: 0,   duration: 1800, easing: Easing.inOut(Easing.sin) })),
-    ]));
-    const scaleLoop = Animated.loop(Animated.sequence([
-      Animated.timing(imgScale, withWebSafeNativeDriver({ toValue: 1.08, duration: 2400, easing: Easing.inOut(Easing.ease) })),
-      Animated.timing(imgScale, withWebSafeNativeDriver({ toValue: 1,    duration: 2400, easing: Easing.inOut(Easing.ease) })),
-    ]));
-    const swayLoop = Animated.loop(Animated.sequence([
-      Animated.timing(rotateZ, withWebSafeNativeDriver({ toValue: 1,  duration: 2600, easing: Easing.inOut(Easing.sin) })),
-      Animated.timing(rotateZ, withWebSafeNativeDriver({ toValue: -1, duration: 2600, easing: Easing.inOut(Easing.sin) })),
-      Animated.timing(rotateZ, withWebSafeNativeDriver({ toValue: 0,  duration: 2600, easing: Easing.inOut(Easing.sin) })),
-    ]));
-    const runShimmer = () => {
-      shimmerX.setValue(-1);
-      Animated.timing(shimmerX, withWebSafeNativeDriver({ toValue: 2, duration: 900, easing: Easing.inOut(Easing.ease) }))
-        .start(({ finished }) => { if (finished) setTimeout(runShimmer, 3500); });
-    };
-    floatLoop.start(); scaleLoop.start(); swayLoop.start();
-    const t = setTimeout(runShimmer, 1000);
-    return () => { floatLoop.stop(); scaleLoop.stop(); swayLoop.stop(); clearTimeout(t); };
-  }, [floatY, imgScale, rotateZ, shimmerX]);
-
-  const swayDeg   = rotateZ.interpolate({ inputRange: [-1, 0, 1], outputRange: ['-2deg', '0deg', '2deg'] });
-  const shimmerTX = shimmerX.interpolate({ inputRange: [-1, 2], outputRange: [-size * 1.5, size * 3] });
-
-  return (
-    <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-      <Animated.View pointerEvents="none" style={{
-        position: 'absolute', top: 0, bottom: 0,
-        width: size * 0.35, backgroundColor: 'rgba(255,255,255,0.32)',
-        transform: [{ translateX: shimmerTX }, { rotate: '20deg' }], zIndex: 2,
-      }} />
-      <Animated.View style={{ transform: [{ translateY: floatY }, { scale: imgScale }, { rotate: swayDeg }] }}>
-        <Image source={{ uri }} style={{ width: size, height: size }} resizeMode="contain" />
-      </Animated.View>
-    </View>
   );
 }
 
@@ -446,116 +354,6 @@ function HomeCategoryCard({
   );
 }
 
-function FeaturedCard({
-  title,
-  subtitle,
-  image,
-  points,
-  price,
-  width,
-  accent,
-  badge,
-  onPress,
-  onScan,
-}: {
-  title: string;
-  subtitle: string;
-  image: string;
-  points: number;
-  price: string;
-  width: number;
-  accent: readonly [string, string, string];
-  badge: string;
-  onPress: () => void;
-  onScan: () => void;
-}) {
-  const { darkMode, tx } = usePreferenceContext();
-  const pressScale = useRef(new Animated.Value(1)).current;
-  const tilt = useRef(new Animated.Value(0)).current;
-
-  const handlePressIn = () => {
-    Animated.parallel([
-      Animated.spring(
-        pressScale,
-        withWebSafeNativeDriver({
-          toValue: 0.97,
-          tension: 115,
-          friction: 8,
-        })
-      ),
-      Animated.spring(tilt, withWebSafeNativeDriver({ toValue: 1, tension: 115, friction: 8 })),
-    ]).start();
-  };
-
-  const handlePressOut = () => {
-    Animated.parallel([
-      Animated.spring(
-        pressScale,
-        withWebSafeNativeDriver({ toValue: 1, tension: 115, friction: 8 })
-      ),
-      Animated.spring(tilt, withWebSafeNativeDriver({ toValue: 0, tension: 115, friction: 8 })),
-    ]).start();
-  };
-
-  const rotateY = tilt.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '4deg'] });
-
-  return (
-    <Pressable onPress={onPress} onPressIn={handlePressIn} onPressOut={handlePressOut}>
-      <Animated.View
-        style={[
-          styles.productCard,
-          darkMode ? styles.productCardDark : null,
-          {
-            width,
-            transform: [{ scale: pressScale }, { perspective: 900 }, { rotateY }],
-          },
-        ]}
-      >
-        <LinearGradient
-          colors={darkMode ? ['#1E293B', '#243B55', '#1E293B'] : ['#FFFFFF', '#FFFFFF', '#FFFFFF']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.productImageWrap}
-        >
-          <View style={styles.productBadge}>
-            <Text style={styles.productBadgeText}>{badge}</Text>
-          </View>
-          <View style={[styles.pointsPill, styles.pointsPillFloating, { borderColor: '#173E8033' }]}>
-            <Text style={[styles.pointsPillText, { color: '#173E80' }]}>+{points} pts</Text>
-          </View>
-          <View style={styles.productShine} />
-          <FeaturedProductImage uri={resolveRemoteImageUrl(image) ?? image} size={width + 6} />
-        </LinearGradient>
-        <View style={styles.productInfo}>
-          <Text
-            style={[styles.productTitle, darkMode ? styles.productTitleDark : null]}
-            numberOfLines={1}
-          >
-            {title}
-          </Text>
-          <Text
-            style={[styles.productSub, darkMode ? styles.productSubDark : null]}
-            numberOfLines={2}
-          >
-            {subtitle}
-          </Text>
-          <View style={styles.productFooter}>
-            <Text style={[styles.productPrice, darkMode ? styles.productPriceDark : null]}>{price}</Text>
-          </View>
-          <TouchableOpacity
-            onPress={onScan}
-            style={[styles.productScanBtn, { backgroundColor: '#EEF5FF' }]}
-            activeOpacity={0.85}
-          >
-            <ScanIcon color="#173E80" size={15} />
-            <Text style={[styles.productScanBtnText, { color: '#173E80' }]}>{tx('Scan to Earn')}</Text>
-          </TouchableOpacity>
-        </View>
-      </Animated.View>
-    </Pressable>
-  );
-}
-
 function getTier(count: number) {
   if (count <= 100) {
     return {
@@ -613,11 +411,10 @@ export function HomeScreen({
     testimonials: ctxTestimonials,
     appSettings,
   } = useAppData();
-  const { openCatalog, downloading } = useCatalogDownload();
+  const { openCatalog } = useCatalogDownload();
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const statPulse = useRef(new Animated.Value(1)).current;
-  const autoSlideRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const connectedCount = authUser?.electricianCount ?? 0;
   const tier = useMemo(() => getTier(connectedCount), [connectedCount]);
   const cardW = (width - 28 - 12) / 2;
@@ -769,7 +566,7 @@ export function HomeScreen({
       });
     }
     return [];
-  }, [language, ctxTestimonials]);
+  }, [ctxTestimonials]);
 
   useEffect(() => {
     const pulse = Animated.loop(

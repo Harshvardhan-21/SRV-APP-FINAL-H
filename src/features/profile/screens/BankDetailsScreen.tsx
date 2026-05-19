@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
   Platform,
@@ -31,9 +30,8 @@ const bankOptions = [
 
 export function BankDetailsPage({ onBack }: { onBack: () => void }) {
   const { t, tx, theme } = usePreferenceContext();
-  const { user, updateUser, role } = useAuth();
+  const { user, updateUser } = useAuth();
 
-  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [accountHolderName, setAccountHolderName] = useState(user?.accountHolderName ?? '');
   const [accountNumber, setAccountNumber] = useState(user?.bankAccount ?? '');
@@ -50,7 +48,7 @@ export function BankDetailsPage({ onBack }: { onBack: () => void }) {
     setIfsc(user?.ifsc ?? '');
     setUpi(user?.upiId ?? '');
     setSelectedBank(user?.bankName ?? '');
-  }, [user?.id]);
+  }, [user]);
 
   const isValidUpi = (value: string) =>
     /^[A-Za-z0-9._-]{2,}@[A-Za-z0-9.-]{2,}$/.test(value.trim());

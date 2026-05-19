@@ -1,5 +1,4 @@
-import { Alert } from 'react-native';
-import { Linking } from 'react-native';
+import { Alert, Linking } from 'react-native';
 
 export function useCatalogDownload() {
   const openCatalog = (url: string | null | undefined) => {

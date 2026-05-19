@@ -21,7 +21,6 @@ type NavControlConfig = {
 };
 
 const ELECTRICIAN_PRIMARY = '#173E80';
-const ELECTRICIAN_PRIMARY_DARK = '#12315F';
 
 // ── Icons ─────────────────────────────────────────────────────────────
 

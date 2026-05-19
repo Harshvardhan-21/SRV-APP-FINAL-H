@@ -1091,9 +1091,6 @@ export function OnboardingScreen({
     return () => clearInterval(timer);
   }, [signupOtpCountdown]);
 
-  // matchedDealer is now fetched via real API in verifyDealer()
-  const matchedDealer = undefined;
-
   const scrollToForm = () =>
     setTimeout(() => {
       // Scroll enough so the focused field clears the keyboard.
@@ -3902,4 +3899,3 @@ const s = StyleSheet.create({
   otpTimer: { color: C.error, fontSize: 12, fontWeight: '800' },
   otpResend: { color: C.accentA, fontSize: 12, fontWeight: '800' },
 });
-

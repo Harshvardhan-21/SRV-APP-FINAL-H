@@ -91,7 +91,7 @@ export function ForceUpdateScreen({
     );
     bounce.start();
     return () => bounce.stop();
-  }, []);
+  }, [fadeIn, iconBounce, slideUp]);
 
   const handleUpdate = () => {
     onGoToStore?.();

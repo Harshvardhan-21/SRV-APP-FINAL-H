@@ -158,7 +158,7 @@ export function NotificationScreen({
     } finally {
       setLoading(false);
     }
-  }, [role, user?.id, onNotificationsSeen]);
+  }, [role, user?.id, onNotificationsSeen, roleTheme.cycle]);
 
   useEffect(() => {
     loadAndMarkSeen();

@@ -10,7 +10,7 @@ export function ContactSupportPage({ onBack }: { onBack: () => void }) {
   const [activeTab, setActiveTab] = useState<'contact' | 'faq'>('contact');
   const [supportPhone, setSupportPhone] = useState('8837668004');
   const [supportEmail, setSupportEmail] = useState('info@srvelectricals.com');
-  const [headOffice, setHeadOffice] = useState(
+  const [headOffice] = useState(
     'Paul Electricals\nNangal kalan road, Village Jawaharke, Mansa, Punjab - 151505',
   );
 

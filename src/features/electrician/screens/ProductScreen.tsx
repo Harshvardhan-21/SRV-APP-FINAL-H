@@ -7,7 +7,6 @@ import {
   FlatList,
   Pressable,
   RefreshControl,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -19,7 +18,6 @@ import Svg, { Circle, Path, Rect } from 'react-native-svg';
 import { withWebSafeNativeDriver } from '@/shared/animations/nativeDriver';
 import { useAppData } from '@/shared/context/AppDataContext';
 import { usePreferenceContext } from '@/shared/preferences';
-import { createShadow } from '@/shared/theme/shadows';
 import type { Screen } from '@/shared/types/navigation';
 import type { Product as ApiProduct, ProductCategory as ApiProductCategory } from '@/shared/api';
 
@@ -494,8 +492,11 @@ export function ProductScreen({
   const uiCategories = useMemo(() => buildUiCategories(products, apiCategories), [products, apiCategories]);
 
   // All categories list including "All"
-  const allCategoryItem: UiCategory = { id: 'all', label: tx('All Products'), count: products.length, imageUrl: DEFAULT_IMAGES.fanbox };
-  const categoryItems = useMemo(() => [allCategoryItem, ...uiCategories], [uiCategories, products.length, tx]);
+  const allCategoryItem = useMemo<UiCategory>(
+    () => ({ id: 'all', label: tx('All Products'), count: products.length, imageUrl: DEFAULT_IMAGES.fanbox }),
+    [products.length, tx]
+  );
+  const categoryItems = useMemo(() => [allCategoryItem, ...uiCategories], [allCategoryItem, uiCategories]);
 
   // Sync initialCategory changes
   useEffect(() => {
@@ -787,7 +788,7 @@ export function ProductScreen({
         </View>
       )}
     </View>
-  ), [darkMode, tx, search, showFilters, uiCategories, categoryItems, category, isSearching, filtered.length, cc, currentCat, catalogLoading, products.length, isDealer, isCounterboy, onNavigate, bannerActionLabel]);
+  ), [darkMode, tx, search, showFilters, uiCategories, categoryItems, category, isSearching, filtered.length, cc, currentCat, catalogLoading, products.length, isCustomer, isDealer, isCounterboy, onNavigate, bannerActionLabel]);
 
   const ListFooter = useMemo(() => (
     <View>
