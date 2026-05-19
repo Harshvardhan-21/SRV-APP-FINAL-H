@@ -23,7 +23,6 @@ import { HomeScreen as CounterBoyHomeScreen } from '@/features/counterboy/screen
 import { ProfileScreen as CounterBoyProfileScreen } from '@/features/counterboy/screens/ProfileScreen';
 import { ProductScreen as CounterBoyProductScreen } from '@/features/counterboy/screens/ProductScreen';
 import { NotificationScreen as CounterBoyNotificationScreen } from '@/features/counterboy/screens/NotificationScreen';
-import { ScanScreen as CounterBoyScanScreen } from '@/features/counterboy/screens/ScanScreen';
 import { SupportScreen as CounterBoySupportScreen } from '@/features/counterboy/screens/SupportScreen';
 import { BottomNav as UserBottomNav } from '@/features/user/screens/BottomNav';
 import { HomeScreen as UserHomeScreen } from '@/features/user/screens/HomeScreen';
@@ -167,7 +166,7 @@ function AppContent() {
         });
       }
     }
-  }, [user?.totalPoints, user?.totalScans, user?.profileImage, authRole]);
+  }, [user, authRole]);
 
   // Fetch unread notification count — poll every 30s when authenticated
   useEffect(() => {
@@ -185,7 +184,7 @@ function AppContent() {
     void checkUnread();
     const interval = setInterval(checkUnread, 30000);
     return () => clearInterval(interval);
-  }, [isAuthenticated, user?.id, authRole]);
+  }, [isAuthenticated, user, authRole]);
 
   const preferenceValue = usePreferenceValue({
     language,
@@ -883,7 +882,6 @@ function AppContent() {
         );
     }
   }, [
-    currentScreen,
     resolvedCurrentScreen,
     isDealer,
     isUser,
@@ -925,7 +923,7 @@ function AppContent() {
     appSettings?.whatsappNumber,
     pendingApprovalRole,
     handleUseAnotherApprovalNumber,
-    rolePageControls,
+    userProfileInitialSubPage,
   ]);
 
   if (showOnboarding) {

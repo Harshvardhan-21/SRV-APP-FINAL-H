@@ -41,152 +41,7 @@ import { bannersApi } from '@/shared/api';
 import { CUSTOMER_THEME } from '@/features/user/theme';
 
 // ── Category color system (same as ProductScreen) ─────────────────────
-type CatColorScheme = {
-  gradient: [string, string, string];
-  scanBg: string;
-  scanText: string;
-  cardGradient: [string, string, string];
-  iconBg: string;
-};
-
-const CAT_COLORS: Record<string, CatColorScheme> = {
-  fanbox:       { gradient: ['#4A637B','#6F879F','#93A8BE'], scanBg:'#F5F8FB', scanText:'#4A637B', cardGradient:['#FAFBFD','#E9EEF5','#D5DEE9'], iconBg:'#E5ECF4' },
-  concealedbox: { gradient: ['#3B6E8C','#5A8FAD','#8AB4CC'], scanBg:'#F0F7FB', scanText:'#3B6E8C', cardGradient:['#F8FBFD','#E4EFF6','#CCDDE9'], iconBg:'#DFF0F8' },
-  modular:      { gradient: ['#5C4A8C','#7B6AAD','#A898CC'], scanBg:'#F5F3FB', scanText:'#5C4A8C', cardGradient:['#FDFCFF','#EDE9F8','#DDD6F0'], iconBg:'#EAE5F8' },
-  mcb:          { gradient: ['#1D4ED8','#3B6EF0','#7BA4F8'], scanBg:'#EFF6FF', scanText:'#1D4ED8', cardGradient:['#F8FBFF','#E0EEFF','#C7DDFF'], iconBg:'#DBEAFE' },
-  busbar:       { gradient: ['#B45309','#D97706','#F59E0B'], scanBg:'#FFFBEB', scanText:'#B45309', cardGradient:['#FFFEF8','#FEF3C7','#FDE68A'], iconBg:'#FEF3C7' },
-  exhaust:      { gradient: ['#065F46','#059669','#34D399'], scanBg:'#F0FDF4', scanText:'#065F46', cardGradient:['#F8FFF9','#DCFCE7','#BBF7D0'], iconBg:'#D1FAE5' },
-  led:          { gradient: ['#92400E','#D97706','#FCD34D'], scanBg:'#FFFBEB', scanText:'#92400E', cardGradient:['#FFFEF5','#FEF9C3','#FEF08A'], iconBg:'#FEF3C7' },
-  changeover:   { gradient: ['#7C3AED','#8B5CF6','#A78BFA'], scanBg:'#F5F3FF', scanText:'#7C3AED', cardGradient:['#FDFCFF','#EDE9FE','#DDD6FE'], iconBg:'#EDE9FE' },
-  mainswitch:   { gradient: ['#BE123C','#E11D48','#FB7185'], scanBg:'#FFF1F2', scanText:'#BE123C', cardGradient:['#FFF8F9','#FFE4E6','#FECDD3'], iconBg:'#FFE4E6' },
-  louver:       { gradient: ['#0F766E','#0D9488','#2DD4BF'], scanBg:'#F0FDFA', scanText:'#0F766E', cardGradient:['#F8FFFD','#CCFBF1','#99F6E4'], iconBg:'#CCFBF1' },
-  axialfan:     { gradient: ['#065F46','#059669','#34D399'], scanBg:'#F0FDF4', scanText:'#065F46', cardGradient:['#F8FFF9','#DCFCE7','#BBF7D0'], iconBg:'#D1FAE5' },
-  ledflood:     { gradient: ['#92400E','#D97706','#FCD34D'], scanBg:'#FFFBEB', scanText:'#92400E', cardGradient:['#FFFEF5','#FEF9C3','#FEF08A'], iconBg:'#FEF3C7' },
-  multipin:     { gradient: ['#BE123C','#E11D48','#FB7185'], scanBg:'#FFF1F2', scanText:'#BE123C', cardGradient:['#FFF8F9','#FFE4E6','#FECDD3'], iconBg:'#FFE4E6' },
-  pintop:       { gradient: ['#5C4A8C','#7B6AAD','#A898CC'], scanBg:'#F5F3FB', scanText:'#5C4A8C', cardGradient:['#FDFCFF','#EDE9F8','#DDD6F0'], iconBg:'#EAE5F8' },
-};
-const DYNAMIC_PALETTES: CatColorScheme[] = [
-  { gradient: ['#4A637B','#6F879F','#93A8BE'], scanBg:'#F5F8FB', scanText:'#4A637B', cardGradient:['#FAFBFD','#E9EEF5','#D5DEE9'], iconBg:'#E5ECF4' },
-  { gradient: ['#1D4ED8','#3B6EF0','#7BA4F8'], scanBg:'#EFF6FF', scanText:'#1D4ED8', cardGradient:['#F8FBFF','#E0EEFF','#C7DDFF'], iconBg:'#DBEAFE' },
-  { gradient: ['#065F46','#059669','#34D399'], scanBg:'#F0FDF4', scanText:'#065F46', cardGradient:['#F8FFF9','#DCFCE7','#BBF7D0'], iconBg:'#D1FAE5' },
-  { gradient: ['#7C3AED','#8B5CF6','#A78BFA'], scanBg:'#F5F3FF', scanText:'#7C3AED', cardGradient:['#FDFCFF','#EDE9FE','#DDD6FE'], iconBg:'#EDE9FE' },
-  { gradient: ['#B45309','#D97706','#F59E0B'], scanBg:'#FFFBEB', scanText:'#B45309', cardGradient:['#FFFEF8','#FEF3C7','#FDE68A'], iconBg:'#FEF3C7' },
-  { gradient: ['#BE123C','#E11D48','#FB7185'], scanBg:'#FFF1F2', scanText:'#BE123C', cardGradient:['#FFF8F9','#FFE4E6','#FECDD3'], iconBg:'#FFE4E6' },
-  { gradient: ['#0F766E','#0D9488','#2DD4BF'], scanBg:'#F0FDFA', scanText:'#0F766E', cardGradient:['#F8FFFD','#CCFBF1','#99F6E4'], iconBg:'#CCFBF1' },
-  { gradient: ['#5C4A8C','#7B6AAD','#A898CC'], scanBg:'#F5F3FB', scanText:'#5C4A8C', cardGradient:['#FDFCFF','#EDE9F8','#DDD6F0'], iconBg:'#EAE5F8' },
-];
-const catColorCache: Record<string, CatColorScheme> = {};
-function getCatColor(id: string, index = 0): CatColorScheme {
-  if (CAT_COLORS[id]) return CAT_COLORS[id];
-  if (catColorCache[id]) return catColorCache[id];
-  const palette = DYNAMIC_PALETTES[index % DYNAMIC_PALETTES.length];
-  catColorCache[id] = palette;
-  return palette;
-}
-
 // ── Category Icon SVGs (same as ProductScreen) ────────────────────────
-function CatIcon({ id, size = 24, color = CUSTOMER_THEME.ink }: { id: string; size?: number; color?: string }) {
-  const s = size;
-  switch (id) {
-    case 'fanbox': return (
-      <Svg width={s} height={s} viewBox="0 0 32 32" fill="none">
-        <Rect x="3" y="3" width="12" height="12" rx="2.5" stroke={color} strokeWidth="2" />
-        <Rect x="17" y="3" width="12" height="12" rx="2.5" stroke={color} strokeWidth="2" />
-        <Rect x="3" y="17" width="12" height="12" rx="2.5" stroke={color} strokeWidth="2" />
-        <Rect x="17" y="17" width="12" height="12" rx="2.5" stroke={color} strokeWidth="2" />
-        <Circle cx="9" cy="9" r="2" stroke={color} strokeWidth="1.5" />
-        <Circle cx="23" cy="9" r="2" stroke={color} strokeWidth="1.5" />
-        <Circle cx="9" cy="23" r="2" stroke={color} strokeWidth="1.5" />
-        <Circle cx="23" cy="23" r="2" stroke={color} strokeWidth="1.5" />
-      </Svg>
-    );
-    case 'mcb': return (
-      <Svg width={s} height={s} viewBox="0 0 32 32" fill="none">
-        <Rect x="5" y="3" width="22" height="26" rx="3" stroke={color} strokeWidth="2" />
-        <Rect x="9" y="7" width="6" height="8" rx="1.5" stroke={color} strokeWidth="1.6" />
-        <Rect x="17" y="7" width="6" height="8" rx="1.5" stroke={color} strokeWidth="1.6" />
-        <Path d="M9 20h14M9 23h10" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
-        <Path d="M14 7V5M18 7V5" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
-      </Svg>
-    );
-    case 'busbar': return (
-      <Svg width={s} height={s} viewBox="0 0 32 32" fill="none">
-        <Rect x="3" y="5" width="26" height="22" rx="3" stroke={color} strokeWidth="2" />
-        <Path d="M3 12h26M3 20h26" stroke={color} strokeWidth="1.8" />
-        <Path d="M9 5v5M16 5v5M23 5v5M9 20v7M16 20v7M23 20v7" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
-        <Rect x="7" y="13.5" width="4" height="5" rx="1" stroke={color} strokeWidth="1.4" />
-        <Rect x="14" y="13.5" width="4" height="5" rx="1" stroke={color} strokeWidth="1.4" />
-        <Rect x="21" y="13.5" width="4" height="5" rx="1" stroke={color} strokeWidth="1.4" />
-      </Svg>
-    );
-    case 'changeover': return (
-      <Svg width={s} height={s} viewBox="0 0 32 32" fill="none">
-        <Rect x="3" y="4" width="26" height="24" rx="3" stroke={color} strokeWidth="2" />
-        <Path d="M10 14l6-6 6 6" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        <Path d="M22 18l-6 6-6-6" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        <Path d="M16 8v16" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeDasharray="2 2" />
-      </Svg>
-    );
-    case 'led': case 'ledflood': return (
-      <Svg width={s} height={s} viewBox="0 0 32 32" fill="none">
-        <Path d="M16 4a8 8 0 018 8c0 3-1.5 5.5-4 7v3H12v-3c-2.5-1.5-4-4-4-7a8 8 0 018-8z" stroke={color} strokeWidth="2" />
-        <Path d="M12 22h8M13 25h6" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
-        <Path d="M16 28v1" stroke={color} strokeWidth="2" strokeLinecap="round" />
-        <Path d="M8 12H6M24 12h2M10 6.5L8.5 5M22 6.5l1.5-1.5" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
-        <Circle cx="16" cy="12" r="3" stroke={color} strokeWidth="1.5" />
-      </Svg>
-    );
-    case 'exhaust': case 'axialfan': return (
-      <Svg width={s} height={s} viewBox="0 0 32 32" fill="none">
-        <Circle cx="16" cy="16" r="12" stroke={color} strokeWidth="2" />
-        <Circle cx="16" cy="16" r="3" stroke={color} strokeWidth="1.8" />
-        <Path d="M16 13c0-4 3-6 3-6s-1 4-3 6z" stroke={color} strokeWidth="1.5" strokeLinejoin="round" />
-        <Path d="M19 16c4 0 6 3 6 3s-4-1-6-3z" stroke={color} strokeWidth="1.5" strokeLinejoin="round" />
-        <Path d="M16 19c0 4-3 6-3 6s1-4 3-6z" stroke={color} strokeWidth="1.5" strokeLinejoin="round" />
-        <Path d="M13 16c-4 0-6-3-6-3s4 1 6 3z" stroke={color} strokeWidth="1.5" strokeLinejoin="round" />
-      </Svg>
-    );
-    case 'mainswitch': return (
-      <Svg width={s} height={s} viewBox="0 0 32 32" fill="none">
-        <Rect x="5" y="4" width="22" height="24" rx="3" stroke={color} strokeWidth="2" />
-        <Circle cx="16" cy="13" r="5" stroke={color} strokeWidth="2" />
-        <Path d="M16 10v3l2 2" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-        <Path d="M9 22h14M11 25h10" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
-      </Svg>
-    );
-    case 'louver': return (
-      <Svg width={s} height={s} viewBox="0 0 32 32" fill="none">
-        <Rect x="3" y="3" width="26" height="26" rx="3" stroke={color} strokeWidth="2" />
-        <Path d="M6 10h20M6 16h20M6 22h20" stroke={color} strokeWidth="2" strokeLinecap="round" />
-      </Svg>
-    );
-    case 'concealedbox': return (
-      <Svg width={s} height={s} viewBox="0 0 32 32" fill="none">
-        <Rect x="4" y="4" width="24" height="24" rx="3" stroke={color} strokeWidth="2" />
-        <Rect x="9" y="9" width="14" height="14" rx="2" stroke={color} strokeWidth="1.8" />
-        <Circle cx="16" cy="16" r="2.5" stroke={color} strokeWidth="1.5" />
-      </Svg>
-    );
-    case 'modular': return (
-      <Svg width={s} height={s} viewBox="0 0 32 32" fill="none">
-        <Rect x="3" y="3" width="26" height="26" rx="3" stroke={color} strokeWidth="2" />
-        <Rect x="7" y="7" width="8" height="8" rx="1.5" stroke={color} strokeWidth="1.6" />
-        <Rect x="17" y="7" width="8" height="8" rx="1.5" stroke={color} strokeWidth="1.6" />
-        <Rect x="7" y="17" width="8" height="8" rx="1.5" stroke={color} strokeWidth="1.6" />
-        <Rect x="17" y="17" width="8" height="8" rx="1.5" stroke={color} strokeWidth="1.6" />
-      </Svg>
-    );
-    default: return (
-      <Svg width={s} height={s} viewBox="0 0 32 32" fill="none">
-        <Rect x="3" y="3" width="12" height="12" rx="2.5" stroke={color} strokeWidth="2" />
-        <Rect x="17" y="3" width="12" height="12" rx="2.5" stroke={color} strokeWidth="2" />
-        <Rect x="3" y="17" width="12" height="12" rx="2.5" stroke={color} strokeWidth="2" />
-        <Rect x="17" y="17" width="12" height="12" rx="2.5" stroke={color} strokeWidth="2" />
-      </Svg>
-    );
-  }
-}
-
 // ── Real CDN images for each category (same as ProductScreen) ────────
 const CAT_IMAGES: Record<string, string> = {
   fanbox:        'https://srvelectricals.com/cdn/shop/files/FC_4_17-30.png?v=1757426626&width=320',
@@ -388,12 +243,6 @@ const homeCatStyles = StyleSheet.create({
 
 const logoImage = require('../../../../assets/srv logo white.jpeg');
 
-type BannerSlide = {
-  image: { uri: string };
-  resizeMode: 'cover' | 'contain';
-  backgroundColor: string;
-};
-
 const API_BASE_HOST = API_BASE_URL.replace(/\/api\/v1\/?$/, '');
 
 function resolveRemoteImageUrl(value?: string | null): string | null {
@@ -445,170 +294,6 @@ function mapBannerSlides(items: any[]): CarouselSlide[] {
     resizeMode: 'cover' as const,
     backgroundColor: b.bgColor ?? '#5C3A28',
   }));
-}
-
-type HomeProduct = {
-  id: string;
-  name: string;
-  description: string;
-  img: string;
-  category: string;
-  price: string;
-  points: number;
-};
-function FeaturedProductImage({ uri, size }: { uri: string; size: number }) {
-  const floatY = useRef(new Animated.Value(0)).current;
-  const imgScale = useRef(new Animated.Value(1)).current;
-  useEffect(() => {
-    const floatLoop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(
-          floatY,
-          withWebSafeNativeDriver({
-            toValue: -8,
-            duration: 1600,
-            easing: Easing.inOut(Easing.sin),
-          })
-        ),
-        Animated.timing(
-          floatY,
-          withWebSafeNativeDriver({
-            toValue: 0,
-            duration: 1600,
-            easing: Easing.inOut(Easing.sin),
-          })
-        ),
-      ])
-    );
-    const scaleLoop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(
-          imgScale,
-          withWebSafeNativeDriver({
-            toValue: 1.05,
-            duration: 2200,
-            easing: Easing.inOut(Easing.ease),
-          })
-        ),
-        Animated.timing(
-          imgScale,
-          withWebSafeNativeDriver({
-            toValue: 1,
-            duration: 2200,
-            easing: Easing.inOut(Easing.ease),
-          })
-        ),
-      ])
-    );
-    floatLoop.start();
-    scaleLoop.start();
-    return () => {
-      floatLoop.stop();
-      scaleLoop.stop();
-    };
-  }, [floatY, imgScale]);
-  return (
-    <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
-      <Animated.View style={{ transform: [{ translateY: floatY }, { scale: imgScale }] }}>
-        <Image source={{ uri }} style={{ width: size, height: size }} resizeMode="contain" />
-      </Animated.View>
-    </View>
-  );
-}
-function FeaturedProductCard({
-  product,
-  width,
-  onOpenCategory,
-  onScan,
-}: {
-  product: HomeProduct;
-  width: number;
-  onOpenCategory: (category: string) => void;
-  onScan: () => void;
-}) {
-  const { darkMode, tx } = usePreferenceContext();
-  const palette = getCatColor(product.category);
-  const pressScale = useRef(new Animated.Value(1)).current;
-  const tilt = useRef(new Animated.Value(0)).current;
-  const handlePressIn = () => {
-    Animated.parallel([
-      Animated.spring(pressScale, withWebSafeNativeDriver({ toValue: 0.965, tension: 110, friction: 7 })),
-      Animated.spring(tilt, withWebSafeNativeDriver({ toValue: 1, tension: 110, friction: 7 })),
-    ]).start();
-  };
-  const handlePressOut = () => {
-    Animated.parallel([
-      Animated.spring(pressScale, withWebSafeNativeDriver({ toValue: 1, tension: 110, friction: 7 })),
-      Animated.spring(tilt, withWebSafeNativeDriver({ toValue: 0, tension: 110, friction: 7 })),
-    ]).start();
-  };
-  const rotateY = tilt.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '4deg'] });
-  const badgeText = tx(product.points >= 25 ? 'Top Pick' : 'Popular');
-  return (
-    <Pressable onPress={() => onOpenCategory(product.category)} onPressIn={handlePressIn} onPressOut={handlePressOut}>
-      <Animated.View
-        style={[
-          styles.productCard,
-          darkMode ? styles.productCardDark : null,
-          { width, transform: [{ scale: pressScale }, { perspective: 900 }, { rotateY }] },
-        ]}
-      >
-        <LinearGradient
-          colors={darkMode ? [...CUSTOMER_THEME.heroDark] : palette.cardGradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.productImageZone}
-        >
-          <LinearGradient
-            colors={palette.gradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.productBadge}
-          >
-            <Text style={styles.productBadgeText}>{badgeText}</Text>
-          </LinearGradient>
-          <View style={[styles.pointsPill, styles.pointsPillFloating, { borderColor: palette.scanText + '33' }]}>
-            <Text style={[styles.pointsPillText, { color: palette.scanText }]}>+{product.points} pts</Text>
-          </View>
-          <FeaturedProductImage uri={product.img} size={width + 6} />
-        </LinearGradient>
-        <View style={styles.productInfo}>
-          <Text style={[styles.productName, darkMode ? styles.productNameDark : null]} numberOfLines={1}>
-            {product.name}
-          </Text>
-          <Text style={[styles.productDesc, darkMode ? styles.productDescDark : null]} numberOfLines={2}>
-            {product.description}
-          </Text>
-          <View style={styles.productFooter}>
-            <Text style={[styles.productPrice, darkMode ? styles.productPriceDark : null]}>{product.price}</Text>
-          </View>
-          <TouchableOpacity
-            onPress={() => onScan()}
-            style={[styles.productScanBtn, { backgroundColor: palette.scanBg }]}
-            activeOpacity={0.85}
-          >
-            <ScanIcon color={palette.scanText} size={15} />
-            <Text style={[styles.productScanBtnText, { color: palette.scanText }]}>{tx('Scan to Earn')}</Text>
-          </TouchableOpacity>
-        </View>
-      </Animated.View>
-    </Pressable>
-  );
-}
-function WalletIcon({ color = CUSTOMER_THEME.ink, size = 22 }: { color?: string; size?: number }) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Rect x="3" y="6" width="18" height="13" rx="2.4" stroke={color} strokeWidth={1.8} />
-      <Path d="M15.5 11.5H21V16h-5.5a2.25 2.25 0 010-4.5z" stroke={color} strokeWidth={1.8} />
-      <Circle cx="16.8" cy="13.75" r="1.05" fill={color} />
-      <Path
-        d="M7 6V4.8A1.8 1.8 0 018.8 3h7.7"
-        stroke={color}
-        strokeWidth={1.8}
-        strokeLinecap="round"
-      />
-    </Svg>
-  );
 }
 
 function DownloadIcon({ color = '#6A2F12', size = 22 }: { color?: string; size?: number }) {
@@ -720,17 +405,6 @@ function ChevronRight({ color = CUSTOMER_THEME.ink, size = 16 }: { color?: strin
   );
 }
 
-function FilterIcon({ color = CUSTOMER_THEME.ink, size = 16 }: { color?: string; size?: number }) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path d="M4 7h16M7 12h10M10 17h4" stroke={color} strokeWidth={1.9} strokeLinecap="round" />
-      <Circle cx="9" cy="7" r="2" fill="#FFFFFF" stroke={color} strokeWidth={1.7} />
-      <Circle cx="15" cy="12" r="2" fill="#FFFFFF" stroke={color} strokeWidth={1.7} />
-      <Circle cx="12" cy="17" r="2" fill="#FFFFFF" stroke={color} strokeWidth={1.7} />
-    </Svg>
-  );
-}
-
 /** Member tier card on customer home — warm creams, no electrician blue/slate */
 function customerHomeTierLightGradient(tierName: ElectricianTierName): [string, string, string] {
   switch (tierName) {
@@ -773,14 +447,11 @@ export function HomeScreen({
     appSettings,
   } = useAppData();
   const { user: authUser } = useAuth();
-  const { openCatalog, downloading } = useCatalogDownload();
+  const { openCatalog } = useCatalogDownload();
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  const [slide, setSlide] = useState(0);
-  const productFilters = ['All', 'Boxes', 'Fans'] as const;
-  const [selectedFilter, setSelectedFilter] = useState<(typeof productFilters)[number]>('All');
   const [apiBannerSlides, setApiBannerSlides] = useState<CarouselSlide[]>([]);
-  const [bannerLoading, setBannerLoading] = useState(true);
+  const [, setBannerLoading] = useState(true);
   const [testimonials, setTestimonials] = useState<TestimonialItem[]>([]);
   const statsPulse = useRef(new Animated.Value(1)).current;
   const cardW = (width - 28 - 12) / 2;
@@ -802,20 +473,6 @@ export function HomeScreen({
   const catalogPdfUrl =
     appSettings?.generalCatalogPdfUrl ??
     appSettings?.catalogPdfUrl;
-  const catalogProducts = useMemo(
-    () =>
-      ctxProducts.slice(0, 4).map((item) => ({
-        id: item.id,
-        name: item.name,
-        description: item.sub ?? '',
-        img: item.imageUrl || item.image || CAT_IMAGES[item.category] || CAT_IMAGES.fanbox,
-        category: item.category,
-        price: item.price ? `Rs ${item.price}` : '',
-        points: item.points,
-      })),
-    [ctxProducts],
-  );
-
   // Prefer admin-managed category metadata, then backfill from products.
   const categories = useMemo(() => {
     const catMap = new Map<string, number>();
@@ -937,22 +594,6 @@ export function HomeScreen({
   }, [apiBannerSlides.length]);
 
   const activeBannerSlides = apiBannerSlides;
-
-  const filteredProducts = useMemo(() => {
-    if (selectedFilter === 'Boxes') {
-      return catalogProducts.filter((product) => {
-        const source = `${product.name} ${product.description}`.toLowerCase();
-        return source.includes('box');
-      });
-    }
-    if (selectedFilter === 'Fans') {
-      return catalogProducts.filter((product) => {
-        const source = `${product.name} ${product.description}`.toLowerCase();
-        return source.includes('fan');
-      });
-    }
-    return catalogProducts;
-  }, [catalogProducts, selectedFilter]);
 
   // Show only 4 specific hardcoded categories on home screen
   const displayedCategories = useMemo(() => {

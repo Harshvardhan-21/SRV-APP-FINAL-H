@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useRef, useEffect } from 'react';
 import {
@@ -141,7 +140,7 @@ export default function CounterBoySlide({ onBack, onContinue }: Props) {
       Animated.timing(floatAnim, { toValue: 1, duration: 2000, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
       Animated.timing(floatAnim, { toValue: 0, duration: 2000, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
     ])).start();
-  }, []);
+  }, [descFade, descScale, fadeAnim, floatAnim, glowAnim, scaleAnim, slideUp]);
 
   const floatY = floatAnim.interpolate({
     inputRange: [0, 1],

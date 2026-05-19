@@ -11,8 +11,6 @@ export function RateUsPage({ onBack }: { onBack: () => void }) {
   const [review, setReview] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [loadingExisting, setLoadingExisting] = useState(true);
-
   // Load existing rating on mount
   useEffect(() => {
     ratingApi.get().then((res) => {
@@ -21,7 +19,7 @@ export function RateUsPage({ onBack }: { onBack: () => void }) {
         setReview(res.review ?? '');
         setSubmitted(true);
       }
-    }).catch(() => {}).finally(() => setLoadingExisting(false));
+    }).catch(() => {});
   }, []);
 
   const rateCopy =

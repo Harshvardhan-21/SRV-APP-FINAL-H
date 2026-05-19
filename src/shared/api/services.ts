@@ -2,6 +2,57 @@ import { api } from './client';
 import { API_BASE_URL as apiBaseUrl } from './config';
 import { storage } from './storage';
 
+function sanitizeDealerSignupPayload(data: {
+  name: string;
+  phone: string;
+  email?: string;
+  town: string;
+  district: string;
+  state: string;
+  address: string;
+  pincode?: string;
+  gstNumber?: string;
+  password?: string;
+}) {
+  return {
+    name: data.name,
+    phone: data.phone,
+    email: data.email,
+    town: data.town,
+    district: data.district,
+    state: data.state,
+    address: data.address,
+    pincode: data.pincode,
+    gstNumber: data.gstNumber,
+    password: data.password,
+  };
+}
+
+function sanitizeUserProfileUpdatePayload(data: Partial<UserProfile>) {
+  return {
+    name: data.name,
+    email: data.email,
+    phone: data.phone,
+    city: data.city,
+    town: data.town,
+    district: data.district,
+    state: data.state,
+    address: data.address,
+    pincode: data.pincode,
+    gstNumber: data.gstNumber,
+    accountHolderName: data.accountHolderName,
+    bankAccount: data.bankAccount,
+    ifsc: data.ifsc,
+    bankName: data.bankName,
+    upiId: data.upiId,
+    bankLinked: data.bankLinked,
+    language: data.language,
+    darkMode: data.darkMode,
+    pushEnabled: data.pushEnabled,
+    profileImage: data.profileImage,
+  };
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // AUTH
 // ─────────────────────────────────────────────────────────────────────────────
@@ -114,7 +165,7 @@ export const authApi = {
   }) => {
     const res = await api.post<{ accessToken: string; refreshToken: string; user: UserProfile }>(
       '/mobile/auth/signup/dealer',
-      data
+      sanitizeDealerSignupPayload(data)
     );
     await storage.setTokens(res.accessToken, res.refreshToken);
     await storage.setUserProfile(res.user);
@@ -189,7 +240,7 @@ export const authApi = {
   },
 
   updateProfile: (data: Partial<UserProfile>) =>
-    api.patch<UserProfile>('/mobile/auth/profile', data, true),
+    api.patch<UserProfile>('/mobile/auth/profile', sanitizeUserProfileUpdatePayload(data), true),
 
   getProfile: () =>
     api.get<UserProfile>('/mobile/auth/profile', undefined, true),
@@ -386,7 +437,7 @@ export const profileApi = {
     api.get<UserProfile>('/mobile/auth/profile', undefined, true),
 
   update: (data: Partial<UserProfile>) =>
-    api.patch<UserProfile>('/mobile/auth/profile', data, true),
+    api.patch<UserProfile>('/mobile/auth/profile', sanitizeUserProfileUpdatePayload(data), true),
 
   uploadPhoto: (base64DataUri: string, source = 'upload') =>
     api.patch<{ profileImage: string }>('/mobile/profile/photo', { profileImage: base64DataUri, source }, true),

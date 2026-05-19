@@ -2152,6 +2152,6 @@ export function usePreferenceValue({
       tx: (text: string) => translateUiText(language, text),
       theme,
     }),
-    [currentRole, darkMode, language, setDarkMode, setLanguage, theme]
+    [darkMode, language, setDarkMode, setLanguage, theme]
   );
 }

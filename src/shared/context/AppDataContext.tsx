@@ -1,8 +1,7 @@
-import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 import { API_BASE_URL } from '../api/config';
 import {
-  authApi,
   bannersApi,
   catalogApi,
   electriciansApi,
@@ -32,7 +31,6 @@ import {
   type ProductCategory,
   type RedemptionRecord,
   type RewardScheme,
-  type ScanRecord,
   type ScanResult,
   type Testimonial,
   type UserProfile,
@@ -41,6 +39,12 @@ import {
 } from '../api/services';
 import { storage } from '../api/storage';
 import { useAuth } from './AuthContext';
+
+const debugLog = (...args: unknown[]) => {
+  if (__DEV__) {
+    console.warn(...args);
+  }
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Context type
@@ -142,7 +146,7 @@ const defaultCtx: AppDataContextType = {
 const AppDataContext = createContext<AppDataContextType>(defaultCtx);
 
 export function AppDataProvider({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, user, role, refreshProfile, logout } = useAuth();
+  const { isAuthenticated, user, role, logout } = useAuth();
   const appStateRef = useRef(AppState.currentState);
 
   const [loading, setLoading] = useState(false);
@@ -166,8 +170,8 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   const [rewardSchemes, setRewardSchemes] = useState<RewardScheme[]>([]);
 
   // ── Public data (no auth needed) ─────────────────────────────────────────
-  const loadPublicData = async () => {
-    console.log('🔄 Loading public data...');
+  const loadPublicData = useCallback(async () => {
+    debugLog('🔄 Loading public data...');
     try {
       const [prods, cats, roleBans, tests, setts, offs, schemes, gifts] = await Promise.all([
         productsApi.getAll().catch((err) => {
@@ -206,7 +210,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
 
       let bans = roleBans;
 
-      console.log('✅ Public data loaded:', {
+      debugLog('✅ Public data loaded:', {
         products: prods.data?.length || 0,
         categories: cats.data?.length || 0,
         banners: bans.data?.length || 0,
@@ -218,7 +222,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       });
 
       if ((bans.data?.length ?? 0) === 0 && role) {
-        console.log('No role-specific banners found, retrying without role filter');
+        debugLog('No role-specific banners found, retrying without role filter');
         bans = await bannersApi.getAll().catch((err) => {
           console.error('Banner fallback API failed:', err.message);
           return { data: [] as Banner[] };
@@ -238,22 +242,22 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       console.error('❌ Public data loading failed:', error);
       setCatalogLoading(false);
     }
-  };
+  }, [role]);
 
-  // ── Private data (auth required) ─────────────────────────────────────────
-  const handleSessionExpired = async () => {
-    console.log('🔐 Session expired — logging out');
+  // ?? Private data (auth required) ─────────────────────────────────────────
+  const handleSessionExpired = useCallback(async () => {
+    debugLog('🔐 Session expired — logging out');
     await storage.clearAll();
     await logout();
-  };
+  }, [logout]);
 
-  const loadPrivateData = async () => {
+  const loadPrivateData = useCallback(async () => {
     if (!isAuthenticated) {
-      console.log('⚠️ User not authenticated, skipping private data');
+      debugLog('⚠️ User not authenticated, skipping private data');
       return;
     }
 
-    console.log('🔄 Loading private data for user:', user?.id, 'role:', role);
+    debugLog('🔄 Loading private data for user:', user?.id, 'role:', role);
     try {
       const shouldLoadScanHistory = role === 'electrician';
       const [prof, wal, scans, notifs, reds] = await Promise.all([
@@ -286,7 +290,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         }),
       ]);
 
-      console.log('✅ Private data loaded:', {
+      debugLog('✅ Private data loaded:', {
         profile: !!prof,
         wallet: !!wal,
         scanHistory: !!scans,
@@ -309,7 +313,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
 
       // Dealer-specific
       if (role === 'dealer') {
-        console.log('🔄 Loading dealer-specific data...');
+        debugLog('🔄 Loading dealer-specific data...');
         const [elecs, bonus] = await Promise.all([
           electriciansApi.getAll().catch((err) => {
             console.error('❌ Electricians API failed:', err.message);
@@ -322,7 +326,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
             return null;
           }),
         ]);
-        console.log('✅ Dealer data loaded:', {
+        debugLog('✅ Dealer data loaded:', {
           electricians: !!elecs,
           dealerBonus: !!bonus,
         });
@@ -348,43 +352,43 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error('❌ Private data loading failed:', error);
     }
-  };
+  }, [handleSessionExpired, isAuthenticated, role, user?.id]);
 
-  const refreshAll = async () => {
+  const refreshAll = useCallback(async () => {
     setLoading(true);
-    console.log('🔄 Starting data refresh...');
-    console.log('🔧 Using API URL:', API_BASE_URL);
+    debugLog('🔄 Starting data refresh...');
+    debugLog('🔧 Using API URL:', API_BASE_URL);
 
     // Test basic connectivity first
     try {
       const healthUrl = `${API_BASE_URL.replace('/api/v1', '')}/health`;
-      console.log('🏥 Testing health endpoint:', healthUrl);
+      debugLog('🏥 Testing health endpoint:', healthUrl);
       const testResponse = await fetch(healthUrl, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
       });
-      console.log('✅ Health check response:', testResponse.status, testResponse.statusText);
+      debugLog('✅ Health check response:', testResponse.status, testResponse.statusText);
       if (testResponse.ok) {
         const healthData = await testResponse.json();
-        console.log('📊 Health data:', healthData);
+        debugLog('📊 Health data:', healthData);
       }
     } catch (healthError: any) {
       console.error('❌ Health check failed:', healthError.message);
-      console.log('🔍 Backend might not be running at:', API_BASE_URL);
+      debugLog('🔍 Backend might not be running at:', API_BASE_URL);
     }
 
     try {
       await Promise.all([loadPublicData(), loadPrivateData()]);
-      console.log('✅ Data refresh completed successfully');
+      debugLog('✅ Data refresh completed successfully');
     } catch (error) {
       console.error('❌ Data refresh failed:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [loadPrivateData, loadPublicData]);
 
   // Initial load — include `role` so banners/offers refetch when session role is available or changes
-  useEffect(() => { void refreshAll(); }, [isAuthenticated, user?.id, role]);
+  useEffect(() => { void refreshAll(); }, [refreshAll]);
 
   // AppState polling — refresh when app comes to foreground
   useEffect(() => {
@@ -397,73 +401,73 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       if (AppState.currentState === 'active') void refreshAll();
     }, 30000);
     return () => { sub.remove(); clearInterval(interval); };
-  }, [isAuthenticated, user?.id]);
+  }, [refreshAll]);
 
   // ── Actions ───────────────────────────────────────────────────────────────
-  const submitScan = async (qrCode: string, mode: 'single' | 'multi'): Promise<ScanResult> => {
+  const submitScan = useCallback(async (qrCode: string, mode: 'single' | 'multi'): Promise<ScanResult> => {
     const result = await scanApi.submit(qrCode, mode);
     void refreshAll();
     return result;
-  };
+  }, [refreshAll]);
 
-  const addElectrician = async (data: { name: string; phone: string; city?: string; state?: string }) => {
+  const addElectrician = useCallback(async (data: { name: string; phone: string; city?: string; state?: string }) => {
     await electriciansApi.add(data);
     void refreshAll();
-  };
+  }, [refreshAll]);
 
-  const updateProfile = async (data: Partial<UserProfile>): Promise<UserProfile> => {
+  const updateProfile = useCallback(async (data: Partial<UserProfile>): Promise<UserProfile> => {
     const result = await profileApi.update(data);
     void refreshAll();
     return result;
-  };
+  }, [refreshAll]);
 
-  const uploadProfilePhoto = async (base64DataUri: string, source = 'upload') => {
+  const uploadProfilePhoto = useCallback(async (base64DataUri: string, source = 'upload') => {
     await profileApi.uploadPhoto(base64DataUri, source);
     void refreshAll();
-  };
+  }, [refreshAll]);
 
-  const removeProfilePhoto = async () => {
+  const removeProfilePhoto = useCallback(async () => {
     await profileApi.removePhoto();
     void refreshAll();
-  };
+  }, [refreshAll]);
 
-  const updatePreferences = async (data: { language?: string; darkMode?: boolean; pushEnabled?: boolean }) => {
+  const updatePreferences = useCallback(async (data: { language?: string; darkMode?: boolean; pushEnabled?: boolean }) => {
     await profileApi.updatePreferences(data);
     void refreshAll();
-  };
+  }, [refreshAll]);
 
-  const saveBankAccount = async (data: any) => {
+  const saveBankAccount = useCallback(async (data: any) => {
     await walletApi.saveBankAccount(data);
     void refreshAll();
-  };
+  }, [refreshAll]);
 
-  const redeemReward = async (data: { schemeId: string; note?: string }) => {
+  const redeemReward = useCallback(async (data: { schemeId: string; note?: string }) => {
     await walletApi.redeemReward(data);
     void refreshAll();
-  };
+  }, [refreshAll]);
 
-  const transferPoints = async (data: { receiverPhone: string; points: number }) => {
+  const transferPoints = useCallback(async (data: { receiverPhone: string; points: number }) => {
     await walletApi.transferPoints(data);
     void refreshAll();
-  };
+  }, [refreshAll]);
 
-  const requestDealerBonusWithdrawal = async (data: { amount: number }) => {
+  const requestDealerBonusWithdrawal = useCallback(async (data: { amount: number }) => {
     await walletApi.requestDealerBonusWithdrawal(data);
     void refreshAll();
-  };
+  }, [refreshAll]);
 
-  const submitSupportTicket = async (data: { subject: string; comment: string; photoUrl?: string }) => {
+  const submitSupportTicket = useCallback(async (data: { subject: string; comment: string; photoUrl?: string }) => {
     await supportApi.createTicket(data);
-  };
+  }, []);
 
-  const deleteNotification = async (id: string) => {
+  const deleteNotification = useCallback(async (id: string) => {
     await notificationsApi.delete(id);
     setNotifications((prev) => prev.filter((n) => n.id !== id));
-  };
+  }, []);
 
-  const submitRating = async (rating: number, review?: string) => {
+  const submitRating = useCallback(async (rating: number, review?: string) => {
     await ratingApi.submit(rating, review);
-  };
+  }, []);
 
   const value = useMemo<AppDataContextType>(() => ({
     loading, profile, wallet, walletSummary: wallet, scanHistory, notifications, offers,
@@ -478,6 +482,10 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     loading, profile, wallet, scanHistory, notifications, offers, products, categories,
     catalogLoading, banners, giftProducts, testimonials, electricians, redemptions, appSettings,
     dealerBonus, userQrCode, referral, rewardSchemes,
+    refreshAll, submitScan, addElectrician, updateProfile, uploadProfilePhoto,
+    removeProfilePhoto, updatePreferences, saveBankAccount, redeemReward,
+    transferPoints, requestDealerBonusWithdrawal, submitSupportTicket,
+    deleteNotification, submitRating,
   ]);
 
   return <AppDataContext.Provider value={value}>{children}</AppDataContext.Provider>;

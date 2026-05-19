@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useRef, useEffect } from 'react';
 import {
   View, Text, StyleSheet, Animated, Easing, TouchableOpacity, Image,
@@ -18,8 +17,6 @@ const THEME = {
   tag:       '#E7EDF8',
   tagText:   '#102A63',
 };
-
-const TAGS = ['Business Growth', 'First Point of Contact', 'Performance Driven'];
 
 function BgIcons() {
   return (
@@ -106,7 +103,7 @@ export default function DealerSlide({ onBack, onContinue }: Props) {
         Animated.spring(anim, { toValue: 1, useNativeDriver: true, tension: 80, friction: 8 })
       )),
     ]).start();
-  }, []);
+  }, [chipAnims, descFade, descScale, fadeAnim, floatAnim, glowAnim, scaleAnim, slideUp, textSlide]);
 
   const floatY = floatAnim.interpolate({ inputRange: [0, 1], outputRange: [0, -12] });
 

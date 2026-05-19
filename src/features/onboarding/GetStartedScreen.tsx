@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import MainSlide, { UserRole as OnboardingRole } from './Main_Slide';

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { AppIcon, C, PageHeader } from '../components/ProfileShared';
 import { usePreferenceContext } from '@/shared/preferences';
@@ -15,7 +15,7 @@ export function NotificationsPage({ onBack }: { onBack: () => void }) {
     { id: string; title: string; body: string; time: string }[]
   >([]);
 
-  const fetchNotifications = () => {
+  const fetchNotifications = useCallback(() => {
     setLoading(true);
     notificationsApi.getAll(role ?? undefined, user?.id).then((res) => {
       const data = res.data ?? [];
@@ -35,11 +35,11 @@ export function NotificationsPage({ onBack }: { onBack: () => void }) {
         }))
       );
     }).catch(() => {}).finally(() => setLoading(false));
-  };
+  }, [role, user?.id]);
 
   useEffect(() => {
     fetchNotifications();
-  }, [role, user?.id]);
+  }, [fetchNotifications]);
 
   const handleDelete = (id: string) => {
     Alert.alert(
@@ -56,7 +56,7 @@ export function NotificationsPage({ onBack }: { onBack: () => void }) {
               await notificationsApi.delete(id);
               setNotifData((current) => current.filter((n) => n.id !== id));
               setReadIds((current) => current.filter((readId) => readId !== id));
-            } catch (e) {
+            } catch {
               Alert.alert('Error', 'Failed to delete notification');
             } finally {
               setDeletingId(null);
@@ -66,8 +66,6 @@ export function NotificationsPage({ onBack }: { onBack: () => void }) {
       ]
     );
   };
-
-  const unreadCount = notifData.length - readIds.length;
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.bg }}>

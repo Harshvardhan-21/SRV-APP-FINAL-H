@@ -562,7 +562,7 @@ function ComingSoonScreen({ darkMode, insets }: { darkMode: boolean; insets: { t
 
         {/* Description */}
         <Text style={[csStyles.desc, { color: darkMode ? '#C4A882' : '#8A7A6E' }]}>
-          We're crafting an amazing video experience for you — product guides, quick reels, and helpful tips. It'll be worth the wait!
+          We&apos;re crafting an amazing video experience for you - product guides, quick reels, and helpful tips. It&apos;ll be worth the wait!
         </Text>
 
         {/* Divider dots */}

@@ -66,7 +66,7 @@ export function AppGate({ children }: Props) {
     };
 
     check();
-  }, [appSettings?.forceUpdate, appSettings?.minAppVersion]);
+  }, [appSettings]);
 
   // Called when user taps "Update" — record that they acknowledged this version
   const handleGoToStore = useCallback(async () => {

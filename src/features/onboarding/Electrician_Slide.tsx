@@ -1,10 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // Electrician Slide - Teal Theme (image-matched)
 import React, { useRef, useEffect } from 'react';
 import {
   View, Text, StyleSheet, Animated, Easing, TouchableOpacity, Image,
 } from 'react-native';
-import Svg, { Circle, Rect, Path, G, Line, Ellipse } from 'react-native-svg';
+import Svg, { Circle, Rect, Path, G, Line } from 'react-native-svg';
 import { ws, hs, rf } from '../../shared/hooks/useResponsive';
 const AView = Animated.View as any;
 const CIRCLE_SIZE = ws(240);
@@ -20,8 +19,6 @@ const THEME = {
   tagText:   '#102A63',
   shadow:    '#102A63',
 };
-
-const TAGS = ['Install & Demo', 'First Product User', 'Trusted Expert'];
 
 function BgIcons() {
   return (
@@ -102,7 +99,7 @@ export default function ElectricianSlide({ onBack, onContinue }: Props) {
       Animated.timing(floatAnim, { toValue: 1, duration: 2000, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
       Animated.timing(floatAnim, { toValue: 0, duration: 2000, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
     ])).start();
-  }, []);
+  }, [descFade, descScale, fadeAnim, floatAnim, glowAnim, scaleAnim, slideUp, textSlide]);
 
   const floatY = floatAnim.interpolate({ inputRange: [0, 1], outputRange: [0, -12] });
 

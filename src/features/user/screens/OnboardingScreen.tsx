@@ -1,4 +1,4 @@
-﻿import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
   Easing,
@@ -1044,9 +1044,6 @@ export function OnboardingScreen({
     }, 1000);
     return () => clearInterval(timer);
   }, [signupOtpCountdown]);
-
-  // matchedDealer is now fetched via real API in verifyDealer()
-  const matchedDealer = undefined;
 
   const scrollToForm = () =>
     setTimeout(() => scrollRef.current?.scrollTo({ y: 180, animated: true }), 120);

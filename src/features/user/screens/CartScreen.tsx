@@ -107,7 +107,6 @@ export function CartScreen({
   const insets = useSafeAreaInsets();
 
   const bg = darkMode ? '#0F172A' : '#F2F3F7';
-  const heroSurface = darkMode ? '#1A2434' : '#FBF1E7';
   const cardBg = darkMode ? '#162132' : '#FFFFFF';
   const cardSoft = darkMode ? '#1D2A3D' : '#FBF1E7';
   const borderColor = darkMode ? '#2B3A52' : '#E5D4C1';

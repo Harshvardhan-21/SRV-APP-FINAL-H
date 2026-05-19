@@ -36,7 +36,7 @@ function WhatsAppIcon({ color = '#FFFFFF', size = 18 }: { color?: string; size?:
 }
 
 export function CallElectricianScreen() {
-  const { tx, theme, darkMode } = usePreferenceContext();
+  const { tx, darkMode } = usePreferenceContext();
   const [electricians, setElectricians] = useState<{ id: string; name: string; phone: string; city?: string }[]>([]);
 
   useEffect(() => {
@@ -345,4 +345,3 @@ const styles = StyleSheet.create({
     backgroundColor: '#173E80',
   },
 });
-

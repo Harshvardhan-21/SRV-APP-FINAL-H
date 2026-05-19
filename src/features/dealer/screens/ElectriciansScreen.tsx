@@ -95,26 +95,6 @@ function HomeIcon({ color = '#FFFFFF', size = 18 }: { color?: string; size?: num
   );
 }
 
-function ShieldIcon({ color = '#173E80', size = 16 }: { color?: string; size?: number }) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path
-        d="M12 3l7 3v5c0 5.1-3.2 8.8-7 10-3.8-1.2-7-4.9-7-10V6l7-3z"
-        stroke={color}
-        strokeWidth={1.8}
-        strokeLinejoin="round"
-      />
-      <Path
-        d="M9.2 12.3l1.9 1.9 3.9-4.1"
-        stroke={color}
-        strokeWidth={1.8}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </Svg>
-  );
-}
-
 function StatCard({
   label,
   value,
