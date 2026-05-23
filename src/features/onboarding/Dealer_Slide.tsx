@@ -4,6 +4,7 @@ import {
 } from 'react-native';
 import Svg, { Circle, Rect, Path, G, Line } from 'react-native-svg';
 import { ws, hs, rf } from '../../shared/hooks/useResponsive';
+import { usePreferenceContext } from '@/shared/preferences';
 
 const AView = Animated.View as any;
 const CIRCLE_SIZE = ws(240);
@@ -61,6 +62,7 @@ function Character() {
 interface Props { onBack?: () => void; onContinue?: () => void; }
 
 export default function DealerSlide({ onBack, onContinue }: Props) {
+  const { darkMode } = usePreferenceContext();
   const fadeAnim  = useRef(new Animated.Value(0)).current;
   const slideUp   = useRef(new Animated.Value(40)).current;
   const scaleAnim = useRef(new Animated.Value(0.92)).current;
@@ -108,10 +110,10 @@ export default function DealerSlide({ onBack, onContinue }: Props) {
   const floatY = floatAnim.interpolate({ inputRange: [0, 1], outputRange: [0, -12] });
 
   return (
-    <AView style={[s.root, { opacity: fadeAnim }]}>
+    <AView style={[s.root, { opacity: fadeAnim, backgroundColor: darkMode ? '#0B1220' : '#FFFFFF' }]}>
 
       <AView style={[s.circleWrap, { transform: [{ scale: scaleAnim }, { translateY: floatY }] }]}>
-        <View style={[s.circle, { backgroundColor: THEME.circle }]}>
+        <View style={[s.circle, { backgroundColor: darkMode ? '#111827' : THEME.circle }]}>
           <BgIcons />
           <Character />
         </View>
@@ -123,7 +125,7 @@ export default function DealerSlide({ onBack, onContinue }: Props) {
           <Text style={s.titleButtonText}>FOR OUR SRV DEALERS</Text>
         </View>
         
-        <AView style={[s.contentCard, { opacity: descFade, transform: [{ scale: descScale }] }]}>
+        <AView style={[s.contentCard, { opacity: descFade, transform: [{ scale: descScale }], backgroundColor: darkMode ? '#111827' : '#FFFFFF', borderColor: darkMode ? '#1E293B' : THEME.light }]}>
           <View style={s.gradientAccent} />
           <View style={s.contentInner}>
             <View style={s.iconRow}>
@@ -138,15 +140,15 @@ export default function DealerSlide({ onBack, onContinue }: Props) {
               </View>
             </View>
             <Text style={[s.cardTitle, { color: THEME.primary }]}>PARTNERSHIP</Text>
-            <Text style={s.cardSubtitle}>Thank You for Being the Channel Partner</Text>
-            <Text style={s.cardDesc}>
+            <Text style={[s.cardSubtitle, { color: darkMode ? '#CBD5E1' : '#4B5563' }]}>Thank You for Being the Channel Partner</Text>
+            <Text style={[s.cardDesc, { color: darkMode ? '#94A3B8' : '#6B7280' }]}>
               Let us build a strong relationship to ensure the distribution of SRV product range to the every corner of India.
             </Text>
           </View>
         </AView>
 
         <View style={s.statsRow}>
-          <View style={[s.statBox, { backgroundColor: THEME.light }]}>
+          <View style={[s.statBox, { backgroundColor: darkMode ? '#1E293B' : THEME.light }]}>
             <Svg width={ws(24)} height={ws(24)} viewBox="0 0 24 24" fill="none">
               <Path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke={THEME.primary} strokeWidth="1.8" fill="none" strokeLinecap="round"/>
               <Circle cx="9" cy="7" r="4" stroke={THEME.primary} strokeWidth="1.8" fill="none"/>
@@ -162,7 +164,7 @@ export default function DealerSlide({ onBack, onContinue }: Props) {
             <Text style={[s.statNumber, { color: '#FFFFFF' }]}>₹5L+</Text>
             <Text style={[s.statLabel, { color: '#FFFFFF' }]}>REWARDS</Text>
           </View>
-          <View style={[s.statBox, { backgroundColor: THEME.light }]}>
+          <View style={[s.statBox, { backgroundColor: darkMode ? '#1E293B' : THEME.light }]}>
             <Svg width={ws(24)} height={ws(24)} viewBox="0 0 24 24" fill="none">
               <Path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" stroke={THEME.primary} strokeWidth="1.8" fill="none"/>
               <Circle cx="12" cy="9" r="2.5" stroke={THEME.primary} strokeWidth="1.8" fill="none"/>
@@ -178,8 +180,9 @@ export default function DealerSlide({ onBack, onContinue }: Props) {
               opacity: chipAnims[i],
               transform: [{ scale: chipAnims[i].interpolate({ inputRange: [0,1], outputRange: [0.7, 1] }) }],
               borderColor: THEME.primary,
+              backgroundColor: darkMode ? '#1E293B' : '#EEF3FB',
             }]}>
-              <Text style={s.productChipText} numberOfLines={1} adjustsFontSizeToFit>{name}</Text>
+              <Text style={[s.productChipText, { color: darkMode ? '#93C5FD' : '#102A63' }]} numberOfLines={1} adjustsFontSizeToFit>{name}</Text>
             </AView>
           ))}
         </View>
@@ -188,7 +191,7 @@ export default function DealerSlide({ onBack, onContinue }: Props) {
 
         <View style={s.actionButtons}>
           {onBack && (
-            <TouchableOpacity style={[s.switchButton, { borderColor: THEME.primary }]} onPress={onBack}>
+            <TouchableOpacity style={[s.switchButton, { borderColor: THEME.primary, backgroundColor: darkMode ? '#111827' : '#FFFFFF' }]} onPress={onBack}>
               <Text style={[s.switchIcon, { color: THEME.primary }]}>‹</Text>
               <Text style={[s.switchButtonText, { color: THEME.primary }]}>Back</Text>
             </TouchableOpacity>

@@ -14,6 +14,7 @@ import { AppIcon, C, PageHeader, Screen } from '../components/ProfileShared';
 import { usePreferenceContext } from '@/shared/preferences';
 import { walletApi, dealerApi } from '@/shared/api';
 import { useAuth } from '@/shared/context/AuthContext';
+import { useAppPageContent } from '@/shared/hooks';
 
 const transferImage = require('../assets/transfer.png');
 
@@ -28,6 +29,7 @@ export function TransferPointsPage({
 }) {
   const { t, tx, theme } = usePreferenceContext();
   const { user } = useAuth();
+  const pageContent = useAppPageContent(currentRole, 'transfer_points');
   const [mobile, setMobile] = useState('');
   const [points, setPoints] = useState('');
   const [searching, setSearching] = useState(false);
@@ -81,7 +83,7 @@ export function TransferPointsPage({
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.bg }}>
-      <PageHeader title={t('transferPoint')} onBack={onBack} />
+      <PageHeader title={pageContent.pageTitle || t('transferPoint')} onBack={onBack} />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View
           style={[
@@ -98,17 +100,17 @@ export function TransferPointsPage({
         {/* Balance pill */}
         <View style={[styles.balanceCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
           <AppIcon name="star" size={18} color={theme.accent} />
-          <Text style={[styles.balanceLabel, { color: theme.textMuted }]}>{tx('Available Points')}</Text>
+          <Text style={[styles.balanceLabel, { color: theme.textMuted }]}>{pageContent.cardTitle || tx('Available Points')}</Text>
           <Text style={[styles.balanceValue, { color: theme.textPrimary }]}>{availablePoints.toLocaleString('en-IN')}</Text>
         </View>
 
         {/* Search user */}
         <View style={[styles.searchCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-          <Text style={[styles.sectionLabel, { color: theme.textMuted }]}>{tx('Receiver Mobile Number')}</Text>
+          <Text style={[styles.sectionLabel, { color: theme.textMuted }]}>{pageContent.inputLabel || tx('Receiver Mobile Number')}</Text>
           <View style={styles.searchRow}>
             <TextInput
               style={[styles.searchInput, { backgroundColor: theme.bg, borderColor: theme.border, color: theme.textPrimary }]}
-              placeholder={tx('Enter 10-digit mobile number')}
+              placeholder={pageContent.searchPlaceholder || tx('Enter 10-digit mobile number')}
               placeholderTextColor={theme.textMuted}
               value={mobile}
               onChangeText={(v) => { setMobile(v.replace(/\D/g, '').slice(0, 10)); setFoundUser(null); setSearchError(''); }}
@@ -154,7 +156,7 @@ export function TransferPointsPage({
             >
               {transferring
                 ? <ActivityIndicator color="#fff" size="small" />
-                : <Text style={styles.transferBtnText}>{tx('Transfer Points')}</Text>
+                : <Text style={styles.transferBtnText}>{pageContent.primaryCtaLabel || tx('Transfer Points')}</Text>
               }
             </TouchableOpacity>
           </View>
@@ -176,7 +178,7 @@ export function TransferPointsPage({
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={[styles.scannerTitleWhite, { color: theme.textPrimary }]}>{tx('Scan & Transfer')}</Text>
-                <Text style={[styles.scannerSubWhite, { color: theme.textSecondary }]}>{tx('Scan any SRV product QR to transfer points to dealers instantly.')}</Text>
+                <Text style={[styles.scannerSubWhite, { color: theme.textSecondary }]}>{pageContent.supportText || tx('Scan any SRV product QR to transfer points to dealers instantly.')}</Text>
               </View>
             </View>
             <TouchableOpacity
@@ -184,7 +186,7 @@ export function TransferPointsPage({
               onPress={() => onNavigate('scan')}
               activeOpacity={0.85}
             >
-              <Text style={[styles.scanQrBtnText, { color: theme.accent }]}>{tx('Open Scanner')}</Text>
+              <Text style={[styles.scanQrBtnText, { color: theme.accent }]}>{pageContent.secondaryCtaLabel || tx('Open Scanner')}</Text>
               <AppIcon name="chevronRight" size={20} color={theme.accent} />
             </TouchableOpacity>
           </View>

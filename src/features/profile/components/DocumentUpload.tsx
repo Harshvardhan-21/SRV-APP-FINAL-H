@@ -12,7 +12,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import { profileApi } from '@/shared/api';
 
-type DocumentType = 'aadhar-front' | 'aadhar-back' | 'pan' | 'gst';
+type DocumentType = 'aadhar-front' | 'pan' | 'gst';
 
 interface DocumentUploadProps {
   label: string;

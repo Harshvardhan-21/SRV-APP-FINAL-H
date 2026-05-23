@@ -390,6 +390,15 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   // Initial load — include `role` so banners/offers refetch when session role is available or changes
   useEffect(() => { void refreshAll(); }, [refreshAll]);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (AppState.currentState !== 'active') return;
+      settingsApi.getAppSettings().then(setAppSettings).catch(() => {});
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   // AppState polling — refresh when app comes to foreground
   useEffect(() => {
     const sub = AppState.addEventListener('change', (next) => {

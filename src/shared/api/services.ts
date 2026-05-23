@@ -1,6 +1,7 @@
 import { api } from './client';
 import { API_BASE_URL as apiBaseUrl } from './config';
 import { storage } from './storage';
+import type { AppPageContentMap } from '@/shared/config/appPageContent';
 
 function sanitizeDealerSignupPayload(data: {
   name: string;
@@ -52,7 +53,6 @@ function sanitizeUserProfileUpdatePayload(data: Partial<UserProfile>) {
     profileImage: data.profileImage,
     // KYC document fields
     aadharFrontImage: data.aadharFrontImage,
-    aadharBackImage: data.aadharBackImage,
     panDocument: data.panDocument,
     gstDocument: data.gstDocument,
   };
@@ -481,7 +481,20 @@ export const profileApi = {
     }
 
     const result = await response.json();
-    return result.url as string;
+    const url = result.url as string;
+
+    // Map documentType to the correct profile field and save to DB
+    const fieldMap: Record<string, string> = {
+      'aadhar-front': 'aadharFrontImage',
+      'pan':          'panDocument',
+      'gst':          'gstDocument',
+    };
+    const field = fieldMap[documentType];
+    if (field) {
+      await api.patch('/mobile/auth/profile', { [field]: url }, true);
+    }
+
+    return url;
   },
 };
 
@@ -570,7 +583,6 @@ export type UserProfile = {
   accountHolderName?: string;
   // KYC documents
   aadharFrontImage?: string | null;
-  aadharBackImage?: string | null;
   panDocument?: string | null;
   gstDocument?: string | null;
   // Legacy compat
@@ -694,6 +706,7 @@ export type AppSettings = {
   dealerCatalogPdfUrl?: string | null;
   catalogPdfUrl?: string | null;
   rolePageControls?: Record<string, Record<string, boolean>> | null;
+  appPageContent?: AppPageContentMap | null;
 };
 
 export type ScanResult = {

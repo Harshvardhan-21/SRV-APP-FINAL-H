@@ -35,7 +35,7 @@ import {
 import { WebsitePromoSection } from '@/shared/components/WebsitePromoSection';
 import { BannerCarousel } from '@/shared/components/BannerCarousel';
 import { ElectricianTierIcon, getElectricianTier } from './ElectricianTierScreen';
-import { useCatalogDownload } from '@/shared/hooks';
+import { useAppPageContent, useCatalogDownload } from '@/shared/hooks';
 import { API_BASE_URL } from '@/shared/api';
 
 // ── Category color system (same as ProductScreen) ─────────────────────
@@ -428,6 +428,7 @@ export function HomeScreen({
   } = useAppData();
   const { user: authUser } = useAuth();
   const { openCatalog } = useCatalogDownload();
+  const pageContent = useAppPageContent('electrician', 'home');
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const [apiBannerSlides, setApiBannerSlides] = useState<{ image: { uri: string }; resizeMode: 'cover' | 'contain'; backgroundColor: string }[]>([]);
@@ -865,15 +866,15 @@ export function HomeScreen({
             <View style={styles.sectionHeader}>
               <View>
                 <Text style={[styles.sectionEyebrow, darkMode ? styles.sectionEyebrowDark : null]}>
-                  {tx('Shop by Category')}
+                  {pageContent.sectionTitle || tx('Shop by Category')}
                 </Text>
                 <Text style={[styles.sectionTitle, darkMode ? styles.sectionTitleDark : null]}>
-                  {tx('Browse Categories')}
+                  {pageContent.sectionSubtitle || tx('Browse Categories')}
                 </Text>
               </View>
               {showProduct && categories.length > 4 && (
                 <TouchableOpacity onPress={() => onNavigate('product')} style={styles.inlineAction} activeOpacity={0.85}>
-                  <Text style={styles.viewAllText}>{tx('View all')}</Text>
+                  <Text style={styles.viewAllText}>{pageContent.primaryCtaLabel || tx('View all')}</Text>
                   <ChevronRight color="#173E80" />
                 </TouchableOpacity>
               )}

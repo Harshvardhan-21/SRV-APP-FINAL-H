@@ -8,5 +8,5 @@ export function ProductScreen({
   onNavigate: (screen: Screen) => void;
   initialCategory?: string;
 }) {
-  return <ElectricianProductScreen onNavigate={onNavigate} initialCategory={initialCategory} />;
+  return <ElectricianProductScreen onNavigate={onNavigate} initialCategory={initialCategory} role="dealer" />;
 }

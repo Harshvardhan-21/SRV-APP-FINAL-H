@@ -2,6 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useCallback, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
+import { useAppPageContent } from '@/shared/hooks';
 import { usePreferenceContext } from '@/shared/preferences';
 import { createShadow } from '@/shared/theme/shadows';
 import type { Screen, UserRole } from '@/shared/types/navigation';
@@ -102,6 +103,7 @@ export function NotificationScreen({
   onNotificationsSeen?: () => void;
 }) {
   const { darkMode, tx } = usePreferenceContext();
+  const pageContent = useAppPageContent('counterboy', 'notifications');
   const { user } = useAuth();
   const [notifItems, setNotifItems] = useState<NotifItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -155,10 +157,10 @@ export function NotificationScreen({
       >
         <View style={styles.heroTop}>
           <View style={styles.heroCopy}>
-            <Text style={styles.heroEyebrow}>{tx('Notification Center')}</Text>
-            <Text style={styles.heroTitle}>{tx('Stay updated with SRV')}</Text>
+            <Text style={styles.heroEyebrow}>{pageContent.pageTitle || tx('Notification Center')}</Text>
+            <Text style={styles.heroTitle}>{pageContent.heroTitle || tx('Stay updated with SRV')}</Text>
             <Text style={styles.heroSub}>
-              {tx('Important price updates, reward alerts, and account notices in one place.')}
+              {pageContent.heroSubtitle || tx('Important price updates, reward alerts, and account notices in one place.')}
             </Text>
           </View>
           <View style={styles.heroIconWrap}>
@@ -167,10 +169,10 @@ export function NotificationScreen({
         </View>
         <View style={styles.heroActions}>
           <TouchableOpacity style={styles.heroActionBtn} activeOpacity={0.85} onPress={() => onNavigate('home')}>
-            <Text style={styles.heroActionText}>{tx('Back Home')}</Text>
+            <Text style={styles.heroActionText}>{pageContent.primaryCtaLabel || tx('Back Home')}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.heroGhostBtn} activeOpacity={0.85} onPress={() => onNavigate('profile')}>
-            <Text style={styles.heroGhostText}>{tx('More')}</Text>
+            <Text style={styles.heroGhostText}>{pageContent.secondaryCtaLabel || tx('More')}</Text>
           </TouchableOpacity>
         </View>
       </LinearGradient>
@@ -178,7 +180,7 @@ export function NotificationScreen({
       {notifItems.length > 0 && (
         <View style={styles.headerRow}>
           <Text style={[styles.sectionTitle, darkMode ? styles.sectionTitleDark : null]}>
-            {tx('Latest updates')}
+            {pageContent.sectionTitle || tx('Latest updates')}
           </Text>
           <View style={styles.unreadPill}>
             <Text style={styles.unreadText}>{notifItems.length} {tx('new')}</Text>
@@ -192,10 +194,10 @@ export function NotificationScreen({
             <BellIcon color={darkMode ? '#64748B' : '#94A3B8'} size={32} />
           </View>
           <Text style={[styles.emptyTitle, darkMode ? styles.emptyTitleDark : null]}>
-            {tx('No notifications yet')}
+            {pageContent.emptyStateTitle || tx('No notifications yet')}
           </Text>
           <Text style={[styles.emptySub, darkMode ? styles.emptySubDark : null]}>
-            {tx("You're all caught up. New updates will appear here.")}
+            {pageContent.emptyStateSubtitle || tx("You're all caught up. New updates will appear here.")}
           </Text>
         </View>
       )}

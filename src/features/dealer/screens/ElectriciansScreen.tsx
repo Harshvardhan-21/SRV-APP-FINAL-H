@@ -22,6 +22,7 @@ import { usePreferenceContext } from '@/shared/preferences';
 import { createShadow } from '@/shared/theme/shadows';
 import type { Screen } from '@/shared/types/navigation';
 import { electriciansApi } from '@/shared/api';
+import { useAppPageContent } from '@/shared/hooks';
 
 type ElectricianStatus = 'Active' | 'Pending';
 
@@ -121,6 +122,7 @@ function StatCard({
 
 export function ElectriciansScreen({ onNavigate }: { onNavigate?: (screen: Screen) => void }) {
   const { tx, darkMode, theme } = usePreferenceContext();
+  const pageContent = useAppPageContent('dealer', 'electricians');
   const [electricians, setElectricians] = useState<Electrician[]>([]);
   const [apiLoaded, setApiLoaded] = useState(false);
   const [apiLoading, setApiLoading] = useState(true);
@@ -306,10 +308,10 @@ export function ElectriciansScreen({ onNavigate }: { onNavigate?: (screen: Scree
               <TeamIcon size={28} />
             </Animated.View>
           </View>
-          <Text style={styles.heroEyebrow}>{tx('Dealer Network')}</Text>
-          <Text style={styles.heroTitle}>{tx('Connected electricians')}</Text>
+          <Text style={styles.heroEyebrow}>{pageContent.pageTitle || tx('Dealer Network')}</Text>
+          <Text style={styles.heroTitle}>{pageContent.heroTitle || tx('Connected electricians')}</Text>
           <Text style={styles.heroSub}>
-            {tx(
+            {pageContent.heroSubtitle || tx(
               'Dealers can review every connected electrician here and add new electricians to their network from the same page.'
             )}
           </Text>
@@ -322,7 +324,7 @@ export function ElectriciansScreen({ onNavigate }: { onNavigate?: (screen: Scree
             activeOpacity={0.9}
           >
             <PlusIcon />
-            <Text style={styles.heroButtonText}>{tx('Add Electrician')}</Text>
+            <Text style={styles.heroButtonText}>{pageContent.primaryCtaLabel || tx('Add Electrician')}</Text>
           </TouchableOpacity>
         </LinearGradient>
 
@@ -354,14 +356,14 @@ export function ElectriciansScreen({ onNavigate }: { onNavigate?: (screen: Scree
           <TextInput
             value={query}
             onChangeText={setQuery}
-            placeholder={tx('Search by name, phone, or city')}
+            placeholder={pageContent.searchPlaceholder || tx('Search by name, phone, or city')}
             placeholderTextColor={darkMode ? '#64748B' : '#97A4B3'}
             style={[styles.searchInput, { color: theme.textPrimary }]}
           />
         </View>
 
         <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>{tx('Electrician directory')}</Text>
+          <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>{pageContent.sectionTitle || tx('Electrician directory')}</Text>
           <Text style={[styles.sectionSub, { color: theme.textMuted }]}>
             {filtered.length} {tx('records')}
           </Text>
@@ -373,7 +375,7 @@ export function ElectriciansScreen({ onNavigate }: { onNavigate?: (screen: Scree
           ) : filtered.length === 0 ? (
             <View style={[styles.memberCard, { backgroundColor: theme.surface, borderColor: theme.border, alignItems: 'center', paddingVertical: 32 }]}>
               <Text style={{ color: theme.textMuted, fontSize: 14, textAlign: 'center' }}>
-                {tx('No electricians connected yet. Add your first electrician!')}
+                {pageContent.emptyStateTitle || tx('No electricians connected yet. Add your first electrician!')}
               </Text>
             </View>
           ) : (

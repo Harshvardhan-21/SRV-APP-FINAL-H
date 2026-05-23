@@ -13,6 +13,7 @@ import { useFonts } from 'expo-font';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, Path, Rect, Line, Polyline } from 'react-native-svg';
 import { hs, isSmallDevice, isTablet, rf, screenWidth, ws } from '@/shared/hooks/useResponsive';
+import { usePreferenceContext } from '@/shared/preferences';
 
 export type UserRole = 'user' | 'dealer' | 'electrician' | 'counter-boy';
 
@@ -204,17 +205,26 @@ export default function MainSlide({ onRoleSelect }: MainSlideProps) {
     LaconicBold: require('../../../assets/fonts/Laconic_Bold.otf'),
   });
   const insets = useSafeAreaInsets();
+  const { darkMode } = usePreferenceContext();
   const compact = isSmallDevice;
   const cardWidth: DimensionValue = isTablet ? '49%' : '49.1%';
   const cornerTop = insets.top + hs(8);
 
+  const bg = darkMode ? '#0B1220' : PAGE_BG;
+  const titleColor = darkMode ? '#F1F5F9' : DARK_NAVY;
+  const subtitleColor = darkMode ? '#94A3B8' : '#1E2640';
+  const featureCardBg = darkMode ? '#111827' : '#FFFFFF';
+  const featureCardBorder = darkMode ? '#1E293B' : '#E8E1DB';
+  const featureTextColor = darkMode ? '#E2E8F0' : '#1A2237';
+  const dividerColor = darkMode ? '#94A3B8' : DARK_NAVY;
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: bg }]}>
       <View
         style={[
           styles.content,
           compact ? styles.contentCompact : null,
-          { paddingTop: Math.max(insets.top, hs(8)) + hs(18) },
+          { paddingTop: Math.max(insets.top, hs(8)) + hs(18), backgroundColor: bg },
         ]}
       >
         <TopCornerOrnament side="left" top={cornerTop} />
@@ -231,15 +241,16 @@ export default function MainSlide({ onRoleSelect }: MainSlideProps) {
             styles.welcomeTitle,
             compact ? styles.welcomeTitleCompact : null,
             fontsLoaded ? styles.welcomeTitleLaconic : null,
+            { color: titleColor },
           ]}
         >
           SRV WELCOMES YOU
         </Text>
-        <Text style={styles.welcomeSubtitle}>
+        <Text style={[styles.welcomeSubtitle, { color: subtitleColor }]}>
           North India&apos;s Largest Metal Box Manufacturer
         </Text>
 
-        <DividerTitle label="CHOOSE YOUR PROFILE" />
+        <DividerTitle label="CHOOSE YOUR PROFILE" color={dividerColor} />
 
         <View style={styles.grid}>
           {CARD_DATA.map((item) => (
@@ -254,9 +265,9 @@ export default function MainSlide({ onRoleSelect }: MainSlideProps) {
 
         <View style={styles.featuresGrid}>
           {FEATURE_BADGES.map((badge) => (
-            <View key={badge.title} style={styles.featureCard}>
+            <View key={badge.title} style={[styles.featureCard, { backgroundColor: featureCardBg, borderColor: featureCardBorder }]}>
               <FeatureIcon icon={badge.icon} accent={badge.accent} />
-              <Text style={styles.featureText}>{badge.title}</Text>
+              <Text style={[styles.featureText, { color: featureTextColor }]}>{badge.title}</Text>
             </View>
           ))}
         </View>

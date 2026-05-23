@@ -3,9 +3,13 @@ import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-nat
 import { AppIcon, C, PageHeader } from '../components/ProfileShared';
 import { usePreferenceContext } from '@/shared/preferences';
 import { walletApi } from '@/shared/api';
+import { useAuth } from '@/shared/context/AuthContext';
+import { useAppPageContent } from '@/shared/hooks';
 
 export function ScanHistoryPage({ onBack }: { onBack: () => void }) {
   const { t, tx, theme } = usePreferenceContext();
+  const { role } = useAuth();
+  const pageContent = useAppPageContent((role ?? 'electrician') as any, 'scan_history');
   const [loading, setLoading] = useState(true);
   const [totalScans, setTotalScans] = useState(0);
   const [totalPoints, setTotalPoints] = useState(0);
@@ -39,7 +43,7 @@ export function ScanHistoryPage({ onBack }: { onBack: () => void }) {
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.bg }}>
-      <PageHeader title={t('scanHistory')} onBack={onBack} />
+      <PageHeader title={pageContent.pageTitle || t('scanHistory')} onBack={onBack} />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={[styles.totalCard, { borderColor: theme.border }]}>
           <View>
@@ -60,7 +64,7 @@ export function ScanHistoryPage({ onBack }: { onBack: () => void }) {
         ) : scanHistory.length === 0 ? (
           <View style={[styles.emptyCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
             <Text style={[styles.emptyText, { color: theme.textMuted }]}>
-              {tx('No scans yet. Start scanning products to earn points!')}
+              {pageContent.emptyStateTitle || tx('No scans yet. Start scanning products to earn points!')}
             </Text>
           </View>
         ) : (

@@ -13,12 +13,16 @@ import {
 import { AppIcon, C, IconName, PageHeader } from '../components/ProfileShared';
 import { usePreferenceContext } from '@/shared/preferences';
 import { useAppData } from '@/shared/context/AppDataContext';
+import { useAuth } from '@/shared/context/AuthContext';
+import { useAppPageContent } from '@/shared/hooks';
 
 const referImage = require('../assets/referfriend.png');
 
 export function ReferFriendPage({ onBack }: { onBack: () => void }) {
   const { t, tx, theme } = usePreferenceContext();
+  const { role } = useAuth();
   const { referral } = useAppData();
+  const pageContent = useAppPageContent((role ?? 'electrician') as any, 'refer_friend');
 
   const referCode = referral?.code ?? '';
   const referralLink = referral?.link ?? `https://srvelectricals.com/join?ref=${referCode}`;
@@ -49,7 +53,7 @@ export function ReferFriendPage({ onBack }: { onBack: () => void }) {
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.bg }}>
-      <PageHeader title={t('referFriend')} onBack={onBack} />
+      <PageHeader title={pageContent.pageTitle || t('referFriend')} onBack={onBack} />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View
           style={[styles.heroCard, { backgroundColor: theme.surface, borderColor: theme.border }]}

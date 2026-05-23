@@ -2,6 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Path, Rect } from 'react-native-svg';
 import { useEffect, useState } from 'react';
+import { useAppPageContent } from '@/shared/hooks';
 import { usePreferenceContext } from '@/shared/preferences';
 import { colors } from '@/shared/theme/colors';
 import { createShadow } from '@/shared/theme/shadows';
@@ -239,6 +240,8 @@ export function WalletScreen({
   const { darkMode, tx } = usePreferenceContext();
   const isDealer = role === 'dealer';
   const t = ROLE_THEME[role] ?? ROLE_THEME.electrician;
+  const contentRole = role === 'user' ? 'user' : role;
+  const pageContent = useAppPageContent(contentRole as any, 'wallet');
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
@@ -419,13 +422,13 @@ export function WalletScreen({
         </View>
 
         <Text style={[styles.eyebrow, { color: t.eyebrowColor }]}>
-          {tx(walletTitle)}
+          {pageContent.pageTitle || tx(walletTitle)}
         </Text>
         <Text style={styles.heroTitle}>
           {totalPoints} {tx(isDealer ? 'Dealer Bonus Points' : 'Total Points')}
         </Text>
         <Text style={styles.heroSub}>
-          {tx(walletSubtitle)}
+          {pageContent.heroSubtitle || tx(walletSubtitle)}
         </Text>
 
         <View style={styles.heroStats}>
@@ -450,10 +453,10 @@ export function WalletScreen({
         <View style={styles.sectionHeader}>
           <View>
             <Text style={[styles.sectionEyebrow, { color: darkMode ? t.eyebrowColor : t.sectionEyebrow }]}>
-              {tx('Quick Actions')}
+              {pageContent.pageSubtitle || tx('Quick Actions')}
             </Text>
             <Text style={[styles.sectionTitle, darkMode ? styles.sectionTitleDark : null]}>
-              {tx(quickActionTitle)}
+              {pageContent.sectionTitle || tx(quickActionTitle)}
             </Text>
           </View>
           <View style={[styles.sectionIconWrap, { backgroundColor: darkMode ? '#1E293B' : t.sectionIconBg }]}>
@@ -489,10 +492,10 @@ export function WalletScreen({
         <View style={styles.sectionHeader}>
           <View>
             <Text style={[styles.sectionEyebrow, { color: darkMode ? t.eyebrowColor : t.sectionEyebrow }]}>
-              {tx('Redeem Point History')}
+              {pageContent.sectionSubtitle || tx('Redeem Point History')}
             </Text>
             <Text style={[styles.sectionTitle, darkMode ? styles.sectionTitleDark : null]}>
-              {tx('Activity Timeline')}
+              {pageContent.cardTitle || tx('Activity Timeline')}
             </Text>
           </View>
           <View style={[styles.sectionIconWrap, { backgroundColor: darkMode ? '#1E293B' : t.sectionIconBg }]}>
@@ -559,10 +562,10 @@ export function WalletScreen({
               <HistoryGlyph />
             </View>
             <Text style={[styles.emptyTitle, { color: darkMode ? '#F8FAFC' : t.emptyTitleColor }]}>
-              {tx('No detailed records yet')}
+              {pageContent.emptyStateTitle || tx('No detailed records yet')}
             </Text>
             <Text style={[styles.emptySub, darkMode ? styles.emptySubDark : null]}>
-              {tx(
+              {pageContent.emptyStateSubtitle || tx(
                 isDealer
                   ? 'Your complete wallet history will appear here once bank payouts or dealer bonus activity starts.'
                   : 'Start scanning products and your reward credits will appear here automatically.'

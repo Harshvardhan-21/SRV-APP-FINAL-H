@@ -18,11 +18,13 @@ import { usePreferenceContext } from '@/shared/preferences';
 import { walletApi } from '@/shared/api';
 import { useAuth } from '@/shared/context/AuthContext';
 import { useAppData } from '@/shared/context/AppDataContext';
+import { useAppPageContent } from '@/shared/hooks';
 
 export function PartnerCommissionPage({ onBack }: { onBack: () => void }) {
   const { theme, tx } = usePreferenceContext();
-  const { user } = useAuth();
+  const { role, user } = useAuth();
   const { dealerBonus, electricians, refreshAll } = useAppData();
+  const pageContent = useAppPageContent((role ?? 'dealer') as any, 'dealer_bonus');
   const glow = useRef(new Animated.Value(0)).current;
   const floatY = useRef(new Animated.Value(0)).current;
   const [withdrawAmount, setWithdrawAmount] = useState('');
@@ -74,7 +76,7 @@ export function PartnerCommissionPage({ onBack }: { onBack: () => void }) {
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.bg }}>
-      <PageHeader title={tx('Dealer Bonus')} onBack={onBack} />
+      <PageHeader title={pageContent.pageTitle || tx('Dealer Bonus')} onBack={onBack} />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <Animated.View style={{ transform: [{ translateY: floatY }] }}>
           <LinearGradient
@@ -87,11 +89,11 @@ export function PartnerCommissionPage({ onBack }: { onBack: () => void }) {
           <View style={styles.heroTop}>
             <View style={[styles.heroBadge, { backgroundColor: theme.textPrimary === '#F8FAFC' ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.62)' }]}>
               <AppIcon name="transfer" size={18} color={theme.accent} />
-              <Text style={[styles.heroBadgeText, { color: theme.textPrimary }]}>{tx('5% Auto Bonus')}</Text>
+              <Text style={[styles.heroBadgeText, { color: theme.textPrimary }]}>{pageContent.cardTitle || tx('5% Auto Bonus')}</Text>
             </View>
-            <Text style={[styles.heroTitle, { color: theme.textPrimary }]}>{tx('GET YOUR BONUS')}</Text>
+            <Text style={[styles.heroTitle, { color: theme.textPrimary }]}>{pageContent.heroTitle || tx('GET YOUR BONUS')}</Text>
             <Text style={[styles.heroSub, { color: theme.textSecondary }]}>
-              {tx('5% of the points redeemed by any electrician will be credited to your dealer wallet. 1 point = 1 INR, and you can withdraw it directly to your bank account.')}
+              {pageContent.heroSubtitle || tx('5% of the points redeemed by any electrician will be credited to your dealer wallet. 1 point = 1 INR, and you can withdraw it directly to your bank account.')}
             </Text>
           </View>
           <View style={styles.heroFooter}>
@@ -136,7 +138,7 @@ export function PartnerCommissionPage({ onBack }: { onBack: () => void }) {
         </View>
 
         <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-          <Text style={[styles.cardTitle, { color: theme.textPrimary }]}>{tx('How it works')}</Text>
+          <Text style={[styles.cardTitle, { color: theme.textPrimary }]}>{pageContent.sectionTitle || tx('How it works')}</Text>
           {[
             { num: '1', bg: theme.accentSoft, color: theme.accent, text: tx('Electrician points redeem hote hi 5% dealer bonus auto-credit ho jata hai.') },
             { num: '2', bg: theme.soft, color: theme.accentDeep, text: tx('Bonus balance update hota rahega and 1 point ki value 1 INR rahegi.') },
@@ -154,7 +156,7 @@ export function PartnerCommissionPage({ onBack }: { onBack: () => void }) {
         <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
           <View style={styles.withdrawHeader}>
             <View>
-              <Text style={[styles.cardTitle, { color: theme.textPrimary }]}>{tx('Withdraw to bank')}</Text>
+              <Text style={[styles.cardTitle, { color: theme.textPrimary }]}>{pageContent.pageSubtitle || tx('Withdraw to bank')}</Text>
               <Text style={[styles.withdrawSub, { color: theme.textMuted }]}>
                 {user?.bankLinked ? `${user?.bankName ?? ''} ${user?.bankAccount ? `•••• ${user.bankAccount.slice(-4)}` : ''}`.trim() : tx('Link bank account first')}
               </Text>
@@ -163,7 +165,7 @@ export function PartnerCommissionPage({ onBack }: { onBack: () => void }) {
           <TextInput
             value={withdrawAmount}
             onChangeText={(v) => setWithdrawAmount(v.replace(/\D/g, ''))}
-            placeholder={tx('Enter amount in rupees')}
+            placeholder={pageContent.inputLabel || tx('Enter amount in rupees')}
             placeholderTextColor={theme.textMuted}
             keyboardType="number-pad"
             style={[styles.input, { backgroundColor: theme.bg, borderColor: theme.border, color: theme.textPrimary }]}
@@ -188,7 +190,7 @@ export function PartnerCommissionPage({ onBack }: { onBack: () => void }) {
           >
             {submitting
               ? <ActivityIndicator color="#fff" size="small" />
-              : <Text style={styles.withdrawButtonText}>{tx('Request bank transfer')}</Text>
+              : <Text style={styles.withdrawButtonText}>{pageContent.primaryCtaLabel || tx('Request bank transfer')}</Text>
             }
           </TouchableOpacity>
         </View>

@@ -3,9 +3,13 @@ import { Alert, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } 
 import { AppIcon, C, IconName, PageHeader } from '../components/ProfileShared';
 import { usePreferenceContext } from '@/shared/preferences';
 import { settingsApi } from '@/shared/api';
+import { useAuth } from '@/shared/context/AuthContext';
+import { useAppPageContent } from '@/shared/hooks';
 
 export function ContactSupportPage({ onBack }: { onBack: () => void }) {
   const { t, tx, theme } = usePreferenceContext();
+  const { role } = useAuth();
+  const pageContent = useAppPageContent((role ?? 'electrician') as any, 'contact_support');
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<'contact' | 'faq'>('contact');
   const [supportPhone, setSupportPhone] = useState('8837668004');
@@ -72,7 +76,7 @@ export function ContactSupportPage({ onBack }: { onBack: () => void }) {
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.bg }}>
-      <PageHeader title={t('contactSupport')} onBack={onBack} />
+      <PageHeader title={pageContent.pageTitle || t('contactSupport')} onBack={onBack} />
       <View
         style={[styles.tabSwitcher, { backgroundColor: theme.soft, borderColor: theme.border }]}
       >

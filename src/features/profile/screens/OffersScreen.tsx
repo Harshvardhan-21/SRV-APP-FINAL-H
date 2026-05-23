@@ -3,9 +3,13 @@ import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-nat
 import { AppIcon, C, PageHeader } from '../components/ProfileShared';
 import { usePreferenceContext } from '@/shared/preferences';
 import { offersApi } from '@/shared/api';
+import { useAuth } from '@/shared/context/AuthContext';
+import { useAppPageContent } from '@/shared/hooks';
 
 export function OffersPage({ onBack }: { onBack: () => void }) {
   const { t, tx, theme } = usePreferenceContext();
+  const { role } = useAuth();
+  const pageContent = useAppPageContent((role ?? 'electrician') as any, 'offers');
   const [loading, setLoading] = useState(true);
   const [offers, setOffers] = useState<
     { id: string; title: string; body: string; tag: string; validTo?: string }[]
@@ -28,14 +32,14 @@ export function OffersPage({ onBack }: { onBack: () => void }) {
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.bg }}>
-      <PageHeader title={t('offer')} onBack={onBack} />
+      <PageHeader title={pageContent.pageTitle || t('offer')} onBack={onBack} />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {loading ? (
           <ActivityIndicator color={C.primary} style={{ marginTop: 32 }} />
         ) : offers.length === 0 ? (
           <View style={[styles.emptyCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
             <Text style={[styles.emptyText, { color: theme.textMuted }]}>
-              {tx('No active offers right now. Check back soon!')}
+              {pageContent.emptyStateTitle || tx('No active offers right now. Check back soon!')}
             </Text>
           </View>
         ) : (

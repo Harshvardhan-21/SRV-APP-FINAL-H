@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import Svg, { Circle, Rect, Path, G, Line } from 'react-native-svg';
 import { ws, hs, rf } from '../../shared/hooks/useResponsive';
+import { usePreferenceContext } from '@/shared/preferences';
 const AView = Animated.View as any;
 const CIRCLE_SIZE = ws(240);
 const electricianImage = require('../../../assets/Electrician.png');
@@ -65,6 +66,7 @@ function Character() {
 interface Props { onBack?: () => void; onContinue?: () => void; }
 
 export default function ElectricianSlide({ onBack, onContinue }: Props) {
+  const { darkMode } = usePreferenceContext();
   const fadeAnim  = useRef(new Animated.Value(0)).current;
   const slideUp   = useRef(new Animated.Value(40)).current;
   const scaleAnim = useRef(new Animated.Value(0.92)).current;
@@ -104,10 +106,10 @@ export default function ElectricianSlide({ onBack, onContinue }: Props) {
   const floatY = floatAnim.interpolate({ inputRange: [0, 1], outputRange: [0, -12] });
 
   return (
-    <AView style={[s.root, { opacity: fadeAnim }]}>
+    <AView style={[s.root, { opacity: fadeAnim, backgroundColor: darkMode ? '#0B1220' : '#FFFFFF' }]}>
 
       <AView style={[s.circleWrap, { transform: [{ scale: scaleAnim }, { translateY: floatY }] }]}>
-        <View style={[s.circle, { backgroundColor: THEME.circle }]}>
+        <View style={[s.circle, { backgroundColor: darkMode ? '#111827' : THEME.circle }]}>
           <BgIcons />
           <Character />
         </View>
@@ -119,12 +121,12 @@ export default function ElectricianSlide({ onBack, onContinue }: Props) {
           <Text style={s.titleButtonText}>FOR OUR SRV ELECTRICIANS</Text>
         </View>
         
-        <AView style={[s.contentCard, { opacity: descFade, transform: [{ scale: descScale }] }]}>
+        <AView style={[s.contentCard, { opacity: descFade, transform: [{ scale: descScale }], backgroundColor: darkMode ? '#111827' : '#FFFFFF', borderColor: darkMode ? '#1E293B' : THEME.light }]}>
           <View style={s.gradientAccent} />
           <View style={s.contentInner}>
-            <Text style={[s.mainTitle, { color: '#1F2937', textAlign: 'center' }]}>Scan Products</Text>
+            <Text style={[s.mainTitle, { color: darkMode ? '#F1F5F9' : '#1F2937', textAlign: 'center' }]}>Scan Products</Text>
             <Text style={[s.mainSubtitle, { color: THEME.primary, textAlign: 'center' }]}>Earn Rewards</Text>
-            <Text style={s.cardDesc}>
+            <Text style={[s.cardDesc, { color: darkMode ? '#94A3B8' : '#6B7280' }]}>
               Get paid instantly for every SRV product you install
             </Text>
           </View>
@@ -139,14 +141,14 @@ export default function ElectricianSlide({ onBack, onContinue }: Props) {
             </Svg>
             <Text style={s.stepText}>Scan QR</Text>
           </View>
-          <Text style={s.arrow}>→</Text>
+          <Text style={[s.arrow, { color: darkMode ? '#475569' : '#9CA3AF' }]}>→</Text>
           <View style={[s.stepBox, { backgroundColor: THEME.secondary }]}>
             <Svg width={ws(22)} height={ws(22)} viewBox="0 0 24 24" fill="none">
               <Path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="#FFFFFF" strokeWidth="1.8" fill="none" strokeLinejoin="round"/>
             </Svg>
             <Text style={s.stepText}>Get Points</Text>
           </View>
-          <Text style={s.arrow}>→</Text>
+          <Text style={[s.arrow, { color: darkMode ? '#475569' : '#9CA3AF' }]}>→</Text>
           <View style={[s.stepBox, { backgroundColor: THEME.primary }]}>
             <Svg width={ws(22)} height={ws(22)} viewBox="0 0 24 24" fill="none">
               <Path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="#FFFFFF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
@@ -166,7 +168,7 @@ export default function ElectricianSlide({ onBack, onContinue }: Props) {
             <Text style={[s.statNumber, { color: '#FFFFFF' }]}>₹5L+</Text>
             <Text style={[s.statLabel, { color: '#FFFFFF' }]}>REWARDS PAID</Text>
           </View>
-          <View style={[s.statBox, { backgroundColor: THEME.light }]}>
+          <View style={[s.statBox, { backgroundColor: darkMode ? '#1E293B' : THEME.light }]}>
             <Svg width={ws(24)} height={ws(24)} viewBox="0 0 24 24" fill="none">
               <Path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke={THEME.primary} strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
             </Svg>
@@ -179,7 +181,7 @@ export default function ElectricianSlide({ onBack, onContinue }: Props) {
 
         <View style={s.actionButtons}>
           {onBack && (
-            <TouchableOpacity style={[s.switchButton, { borderColor: THEME.primary }]} onPress={onBack}>
+            <TouchableOpacity style={[s.switchButton, { borderColor: THEME.primary, backgroundColor: darkMode ? '#111827' : '#FFFFFF' }]} onPress={onBack}>
               <Text style={[s.switchIcon, { color: THEME.primary }]}>‹</Text>
               <Text style={[s.switchButtonText, { color: THEME.primary }]}>Back</Text>
             </TouchableOpacity>

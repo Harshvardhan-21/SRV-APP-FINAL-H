@@ -35,7 +35,7 @@ import {
 import { WebsitePromoSection } from '@/shared/components/WebsitePromoSection';
 import { BannerCarousel, type BannerSlide as CarouselSlide } from '@/shared/components/BannerCarousel';
 import { getElectricianTier, type ElectricianTierName } from './ElectricianTierScreen';
-import { useCatalogDownload } from '@/shared/hooks';
+import { useAppPageContent, useCatalogDownload } from '@/shared/hooks';
 import { API_BASE_URL } from '@/shared/api/config';
 import { bannersApi } from '@/shared/api';
 import { CUSTOMER_THEME } from '@/features/user/theme';
@@ -448,6 +448,7 @@ export function HomeScreen({
   } = useAppData();
   const { user: authUser } = useAuth();
   const { openCatalog } = useCatalogDownload();
+  const pageContent = useAppPageContent('user', 'home');
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const [apiBannerSlides, setApiBannerSlides] = useState<CarouselSlide[]>([]);
@@ -899,10 +900,10 @@ export function HomeScreen({
             <View style={styles.sectionHeader}>
               <View>
                 <Text style={[styles.sectionEyebrow, darkMode ? styles.sectionEyebrowDark : null]}>
-                  {tx('Shop by Category')}
+                  {pageContent.sectionTitle || tx('Shop by Category')}
                 </Text>
                 <Text style={[styles.sectionTitle, darkMode ? styles.sectionTitleDark : null]}>
-                  {tx('Browse Categories')}
+                  {pageContent.sectionSubtitle || tx('Browse Categories')}
                 </Text>
               </View>
               {showProduct && categories.length > 4 && (
@@ -913,7 +914,7 @@ export function HomeScreen({
                       { color: darkMode ? '#E8D4C8' : CUSTOMER_THEME.primaryDeep },
                     ]}
                   >
-                    {tx('View all')}
+                    {pageContent.primaryCtaLabel || tx('View all')}
                   </Text>
                   <ChevronRight color={darkMode ? '#E8D4C8' : CUSTOMER_THEME.primaryDeep} />
                 </TouchableOpacity>

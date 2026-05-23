@@ -35,7 +35,7 @@ import {
   isRoleFeatureEnabled,
   resolveRolePageControls,
 } from '@/shared/config/rolePageControls';
-import { useCatalogDownload } from '@/shared/hooks';
+import { useAppPageContent, useCatalogDownload } from '@/shared/hooks';
 import { API_BASE_URL } from '@/shared/api/config';
 
 const logoImage = require('../../../../assets/srv logo white.jpeg');
@@ -412,6 +412,7 @@ export function HomeScreen({
     appSettings,
   } = useAppData();
   const { openCatalog } = useCatalogDownload();
+  const pageContent = useAppPageContent('dealer', 'home');
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const statPulse = useRef(new Animated.Value(1)).current;
@@ -839,15 +840,15 @@ export function HomeScreen({
             <View style={styles.sectionHeader}>
               <View>
                 <Text style={[styles.sectionEyebrow, darkMode ? styles.sectionEyebrowDark : null]}>
-                  {tx('Shop by Category')}
+                  {pageContent.sectionTitle || tx('Shop by Category')}
                 </Text>
                 <Text style={[styles.sectionTitle, darkMode ? styles.sectionTitleDark : null]}>
-                  {tx('Browse Categories')}
+                  {pageContent.sectionSubtitle || tx('Browse Categories')}
                 </Text>
               </View>
               {showProduct && categories.length > 4 && (
                 <TouchableOpacity onPress={() => onNavigate('product')} style={styles.inlineAction} activeOpacity={0.85}>
-                  <Text style={styles.viewAllText}>{tx('View all')}</Text>
+                  <Text style={styles.viewAllText}>{pageContent.primaryCtaLabel || tx('View all')}</Text>
                   <ChevronRight />
                 </TouchableOpacity>
               )}

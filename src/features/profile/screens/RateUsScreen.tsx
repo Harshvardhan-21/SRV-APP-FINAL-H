@@ -4,9 +4,13 @@ import { AppIcon, C, PageHeader } from '../components/ProfileShared';
 import { usePreferenceContext } from '@/shared/preferences';
 import { createShadow } from '@/shared/theme/shadows';
 import { ratingApi } from '@/shared/api';
+import { useAuth } from '@/shared/context/AuthContext';
+import { useAppPageContent } from '@/shared/hooks';
 
 export function RateUsPage({ onBack }: { onBack: () => void }) {
   const { tx, theme, language } = usePreferenceContext();
+  const { role } = useAuth();
+  const pageContent = useAppPageContent((role ?? 'electrician') as any, 'rate_us');
   const [rating, setRating] = useState(0);
   const [review, setReview] = useState('');
   const [submitted, setSubmitted] = useState(false);
@@ -81,7 +85,7 @@ export function RateUsPage({ onBack }: { onBack: () => void }) {
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.bg }}>
-      <PageHeader title={tx('Rate Us')} onBack={onBack} />
+      <PageHeader title={pageContent.pageTitle || tx('Rate Us')} onBack={onBack} />
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={styles.scrollContent}
@@ -131,7 +135,7 @@ export function RateUsPage({ onBack }: { onBack: () => void }) {
               <View style={styles.heroIconWrap}>
                 <AppIcon name="star" size={24} color={theme.accent} />
               </View>
-              <Text style={[styles.heroEyebrow, { color: theme.textMuted }]}>{tx('Rate Us')}</Text>
+              <Text style={[styles.heroEyebrow, { color: theme.textMuted }]}>{pageContent.pageTitle || tx('Rate Us')}</Text>
               <Text style={[styles.rateTitle, { color: theme.textPrimary }]}>
                 {tx('Rate the App')}
               </Text>

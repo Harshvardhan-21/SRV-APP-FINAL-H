@@ -24,7 +24,7 @@ import {
 import { WebsitePromoSection } from '@/shared/components/WebsitePromoSection';
 import ProfileFlipCard from '@/shared/components/ProfileFlipCard';
 import type { Screen } from '@/shared/types/navigation';
-import { useCatalogDownload } from '@/shared/hooks';
+import { useAppPageContent, useCatalogDownload } from '@/shared/hooks';
 import { API_BASE_URL } from '@/shared/api/config';
 import { counterboyTheme as cb } from '@/features/counterboy/theme';
 
@@ -196,6 +196,7 @@ export function HomeScreen({
   const { user: authUser } = useAuth();
   const { banners: ctxBanners, testimonials: ctxTestimonials, appSettings, categories: ctxCategories } = useAppData();
   const { openCatalog } = useCatalogDownload();
+  const pageContent = useAppPageContent('counterboy', 'home');
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const [apiBannerSlides, setApiBannerSlides] = useState<any[]>([]);
@@ -432,15 +433,15 @@ export function HomeScreen({
         <View style={styles.sectionHeader}>
           <View>
             <Text style={[styles.sectionEyebrow, darkMode ? styles.sectionEyebrowDark : null]}>
-              {tx('Shop by Category')}
+              {pageContent.sectionTitle || tx('Shop by Category')}
             </Text>
             <Text style={[styles.sectionTitle, darkMode ? styles.sectionTitleDark : null]}>
-              {tx('Browse Categories')}
+              {pageContent.sectionSubtitle || tx('Browse Categories')}
             </Text>
           </View>
           {showProduct ? (
             <TouchableOpacity onPress={() => onNavigate('product')} style={styles.inlineAction} activeOpacity={0.85}>
-              <Text style={[styles.viewAllText, darkMode ? styles.viewAllTextDark : null]}>{tx('View all')}</Text>
+              <Text style={[styles.viewAllText, darkMode ? styles.viewAllTextDark : null]}>{pageContent.primaryCtaLabel || tx('View all')}</Text>
               <ChevronRight color={darkMode ? cb.slate : CB_PRIMARY} size={14} />
             </TouchableOpacity>
           ) : null}

@@ -3,9 +3,13 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { AppIcon, C, PageHeader } from '../components/ProfileShared';
 import { usePreferenceContext } from '@/shared/preferences';
 import { createShadow } from '@/shared/theme/shadows';
+import { useAuth } from '@/shared/context/AuthContext';
+import { useAppPageContent } from '@/shared/hooks';
 
 export function PrivacyPolicyPage({ onBack }: { onBack: () => void }) {
   const { tx, theme, language } = usePreferenceContext();
+  const { role } = useAuth();
+  const pageContent = useAppPageContent((role ?? 'electrician') as any, 'privacy_policy');
 
   const privacyCopy =
     language === 'Hindi'
@@ -196,7 +200,7 @@ export function PrivacyPolicyPage({ onBack }: { onBack: () => void }) {
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.bg }}>
-      <PageHeader title={tx('Privacy Policy')} onBack={onBack} />
+      <PageHeader title={pageContent.pageTitle || tx('Privacy Policy')} onBack={onBack} />
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={styles.scrollContent}
@@ -216,7 +220,7 @@ export function PrivacyPolicyPage({ onBack }: { onBack: () => void }) {
             </View>
             <View style={styles.heroMeta}>
               <Text style={[styles.heroEyebrow, { color: theme.textMuted }]}>
-                {tx('Privacy Policy')}
+                {pageContent.pageTitle || tx('Privacy Policy')}
               </Text>
               <Text style={[styles.heroTitle, { color: theme.textPrimary }]}>
                 {privacyCopy.heroTitle}

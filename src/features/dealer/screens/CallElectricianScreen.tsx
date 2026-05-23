@@ -2,6 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useState } from 'react';
 import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
+import { useAppPageContent } from '@/shared/hooks';
 import { usePreferenceContext } from '@/shared/preferences';
 import { electriciansApi } from '@/shared/api';
 
@@ -37,6 +38,7 @@ function WhatsAppIcon({ color = '#FFFFFF', size = 18 }: { color?: string; size?:
 
 export function CallElectricianScreen() {
   const { tx, darkMode } = usePreferenceContext();
+  const pageContent = useAppPageContent('dealer', 'call_electrician');
   const [electricians, setElectricians] = useState<{ id: string; name: string; phone: string; city?: string }[]>([]);
 
   useEffect(() => {
@@ -82,10 +84,10 @@ export function CallElectricianScreen() {
         <View style={styles.heroGlowOne} />
         <View style={styles.heroGlowTwo} />
 
-        <Text style={styles.heroEyebrow}>{tx('Dealer Calling Desk')}</Text>
-        <Text style={styles.heroTitle}>{tx('Reach your electricians instantly')}</Text>
+        <Text style={styles.heroEyebrow}>{pageContent.pageTitle || tx('Dealer Calling Desk')}</Text>
+        <Text style={styles.heroTitle}>{pageContent.heroTitle || tx('Reach your electricians instantly')}</Text>
         <Text style={styles.heroSub}>
-          {tx(
+          {pageContent.heroSubtitle || tx(
             'Use normal phone call or WhatsApp call actions to connect with any associated electrician.'
           )}
         </Text>
@@ -94,7 +96,7 @@ export function CallElectricianScreen() {
         <View style={styles.heroPill}>
           <View style={styles.heroPillDot} />
           <Text style={styles.heroPillText}>
-            {electricians.length} {tx('electricians in your network')}
+            {electricians.length} {pageContent.supportText || tx('electricians in your network')}
           </Text>
         </View>
       </LinearGradient>
@@ -114,10 +116,10 @@ export function CallElectricianScreen() {
             </Svg>
           </View>
           <Text style={[styles.emptyTitle, darkMode ? styles.emptyTitleDark : null]}>
-            {tx('No electricians yet')}
+            {pageContent.emptyStateTitle || tx('No electricians yet')}
           </Text>
           <Text style={[styles.emptySub, darkMode ? styles.emptySubDark : null]}>
-            {tx('Associate electricians from the home screen to see them here.')}
+            {pageContent.emptyStateSubtitle || tx('Associate electricians from the home screen to see them here.')}
           </Text>
         </View>
       )}

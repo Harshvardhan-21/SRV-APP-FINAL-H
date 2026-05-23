@@ -14,6 +14,7 @@ import { withWebSafeNativeDriver } from '@/shared/animations/nativeDriver';
 import { usePreferenceContext } from '@/shared/preferences';
 import { createShadow } from '@/shared/theme/shadows';
 import { useAuth } from '@/shared/context/AuthContext';
+import { useAppPageContent } from '@/shared/hooks';
 
 function BackIcon({ color = '#173E80', size = 18 }: { color?: string; size?: number }) {
   return (
@@ -150,6 +151,7 @@ function getTier(count: number): TierInfo {
 export function MemberTierScreen({ onBack }: { onBack: () => void }) {
   const { darkMode, tx, language, theme } = usePreferenceContext();
   const { user: authUser } = useAuth();
+  const pageContent = useAppPageContent('dealer', 'member_tier');
   const count = authUser?.electricianCount ?? 0;
   const getRange = (range: string) => {
     if (language === 'Hindi') {
@@ -229,7 +231,7 @@ export function MemberTierScreen({ onBack }: { onBack: () => void }) {
           <BackIcon color={darkMode ? '#F8FAFC' : '#173E80'} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, darkMode ? styles.headerTitleDark : null]}>
-          {tx('Member Tier')}
+          {pageContent.pageTitle || tx('Member Tier')}
         </Text>
         <View style={styles.headerSpacer} />
       </View>
@@ -249,12 +251,11 @@ export function MemberTierScreen({ onBack }: { onBack: () => void }) {
               <TierIcon tier={currentTier.tier} size={34} />
             </View>
             <Text style={[styles.heroEyebrow, { color: currentTier.accent }]}>
-              {tx('Current Dealer Level')}
+              {pageContent.pageSubtitle || tx('Current Dealer Level')}
             </Text>
             <Text style={styles.heroTitle}>{tx(currentTier.tier)}</Text>
             <Text style={styles.heroSub}>
-              {tx('You have')} {count} {tx('connected electricians')}.{' '}
-              {tx('Your current grading is based on the size of your active dealer network.')}
+              {pageContent.heroSubtitle || `${tx('You have')} ${count} ${tx('connected electricians')}. ${tx('Your current grading is based on the size of your active dealer network.')}`}
             </Text>
             <View style={styles.heroStatsRow}>
               <View style={styles.heroStatBox}>
@@ -277,7 +278,7 @@ export function MemberTierScreen({ onBack }: { onBack: () => void }) {
           ]}
         >
           <Text style={[styles.sectionTitle, darkMode ? styles.sectionTitleDark : null]}>
-            {tx('Grading system')}
+            {pageContent.sectionTitle || tx('Grading system')}
           </Text>
           {tierLevels.map((level, index) => {
             const active = level.tier === currentTier.tier;
@@ -332,7 +333,7 @@ export function MemberTierScreen({ onBack }: { onBack: () => void }) {
           ]}
         >
           <Text style={[styles.sectionTitle, darkMode ? styles.sectionTitleDark : null]}>
-            {tx('How dealer level works')}
+            {pageContent.cardTitle || tx('How dealer level works')}
           </Text>
           <View style={styles.pointRow}>
             <View style={[styles.pointDot, { backgroundColor: '#CBD5E1' }]} />
@@ -475,5 +476,4 @@ const styles = StyleSheet.create({
   pointText: { flex: 1, fontSize: 13.5, lineHeight: 21, color: '#52667F', fontWeight: '600' },
   pointTextDark: { color: '#94A3B8' },
 });
-
 

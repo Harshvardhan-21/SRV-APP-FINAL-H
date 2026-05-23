@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import Svg, { Path, Rect, Circle } from 'react-native-svg';
 import { withWebSafeNativeDriver } from '@/shared/animations/nativeDriver';
+import { useAppPageContent } from '@/shared/hooks';
 import { type AppLanguage, usePreferenceContext } from '@/shared/preferences';
 import { createShadow } from '@/shared/theme/shadows';
 import { useAppData } from '@/shared/context/AppDataContext';
@@ -545,6 +546,7 @@ export function ProductScreen({
 }) {
   const { darkMode, tx, language } = usePreferenceContext();
   const { products: apiProducts, categories: apiCategories, catalogLoading } = useAppData();
+  const pageContent = useAppPageContent('user', 'product');
   const { width } = useWindowDimensions();
   const [category, setCategory] = useState(initialCategory);
   const [search, setSearch] = useState('');
@@ -603,7 +605,7 @@ export function ProductScreen({
       <View style={[styles.screen, darkMode ? styles.screenDark : null, { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 }]}>
         <Text style={{ fontSize: 32 }}>⚡</Text>
         <Text style={{ fontSize: 15, fontWeight: '700', color: darkMode ? '#94A3B8' : '#64748B' }}>
-          Loading products...
+          {pageContent.helperText || 'Loading products...'}
         </Text>
       </View>
     );
@@ -615,7 +617,7 @@ export function ProductScreen({
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      <Text style={[styles.pageTitle, darkMode ? styles.pageTitleDark : null]}>{tx('All Products')}</Text>
+      <Text style={[styles.pageTitle, darkMode ? styles.pageTitleDark : null]}>{pageContent.pageTitle || tx('All Products')}</Text>
 
       {/* Search */}
       <View style={[styles.searchWrap, darkMode ? styles.searchWrapDark : null]}>
@@ -623,7 +625,7 @@ export function ProductScreen({
         <TextInput
           value={search}
           onChangeText={setSearch}
-          placeholder={tx('Search all products...')}
+          placeholder={pageContent.searchPlaceholder || tx('Search all products...')}
           placeholderTextColor={Colors.textMuted}
           style={[styles.searchInput, darkMode ? styles.searchInputDark : null]}
         />

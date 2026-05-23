@@ -4,6 +4,7 @@ import { AppIcon, C, PageHeader, Screen } from '../components/ProfileShared';
 import { usePreferenceContext } from '@/shared/preferences';
 import type { UserRole } from '@/shared/types/navigation';
 import { redemptionsApi } from '@/shared/api';
+import { useAppPageContent } from '@/shared/hooks';
 
 const noDataImage = require('../assets/nodata.png');
 const buySchemeImage = require('../assets/giftstore.png');
@@ -27,6 +28,7 @@ export function RedemptionPage({
   currentRole: UserRole;
 }) {
   const { t, tx, theme } = usePreferenceContext();
+  const pageContent = useAppPageContent(currentRole, 'my_redemption');
   const [activeTab, setActiveTab] = useState<RedemptionTab>('Buy Schemes');
   const [activeFilter, setActiveFilter] = useState<FilterRange>('This Month');
   const [loading, setLoading] = useState(true);
@@ -105,7 +107,7 @@ export function RedemptionPage({
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.bg }}>
-      <PageHeader title={t('redemptionHistory')} onBack={onBack} />
+      <PageHeader title={pageContent.pageTitle || t('redemptionHistory')} onBack={onBack} />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.summaryRow}>
           <View
@@ -139,7 +141,7 @@ export function RedemptionPage({
         <View
           style={[styles.pointsCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
         >
-          <Text style={[styles.pointsSub, { color: theme.accent }]}>{tx('Redemption History')}</Text>
+          <Text style={[styles.pointsSub, { color: theme.accent }]}>{pageContent.sectionTitle || tx('Redemption History')}</Text>
           <View style={styles.tabRow}>
             {tabs.map((tab) => {
               const isActive = activeTab === tab;
@@ -279,6 +281,12 @@ export function RedemptionPage({
             ]}
           >
             <Image source={noDataImage} style={styles.emptyImage} resizeMode="contain" />
+            <Text style={[styles.emptyTitle, { color: theme.textPrimary }]}>
+              {pageContent.emptyStateTitle || tx('No redemption history yet')}
+            </Text>
+            <Text style={[styles.emptySubtitle, { color: theme.textMuted }]}>
+              {pageContent.emptyStateSubtitle || tx('Your future redemption activity will appear here.')}
+            </Text>
           </View>
         )}
       </ScrollView>
@@ -332,4 +340,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   emptyImage: { width: 240, height: 240 },
+  emptyTitle: { fontSize: 16, fontWeight: '800', marginTop: 6, textAlign: 'center' },
+  emptySubtitle: { fontSize: 13, lineHeight: 19, textAlign: 'center', marginTop: 6, paddingHorizontal: 24 },
 });

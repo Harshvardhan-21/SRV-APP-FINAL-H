@@ -4,10 +4,12 @@ import { AppIcon, C, PageHeader } from '../components/ProfileShared';
 import { usePreferenceContext } from '@/shared/preferences';
 import { notificationsApi } from '@/shared/api';
 import { useAuth } from '@/shared/context/AuthContext';
+import { useAppPageContent } from '@/shared/hooks';
 
 export function NotificationsPage({ onBack }: { onBack: () => void }) {
   const { t, tx, theme } = usePreferenceContext();
   const { role, user } = useAuth();
+  const pageContent = useAppPageContent((role ?? 'electrician') as any, 'notifications');
   const [readIds, setReadIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -69,14 +71,14 @@ export function NotificationsPage({ onBack }: { onBack: () => void }) {
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.bg }}>
-      <PageHeader title={t('notification')} onBack={onBack} />
+      <PageHeader title={pageContent.pageTitle || t('notification')} onBack={onBack} />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {loading ? (
           <ActivityIndicator color={theme.accent} style={{ marginTop: 32 }} />
         ) : notifData.length === 0 ? (
           <View style={[styles.emptyCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
             <Text style={[styles.emptyText, { color: theme.textMuted }]}>
-              {tx('No notifications yet.')}
+              {pageContent.emptyStateTitle || tx('No notifications yet.')}
             </Text>
           </View>
         ) : (
