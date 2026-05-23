@@ -9,9 +9,11 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCallback, useEffect, useState } from 'react';
+import { Platform } from 'react-native';
 import { useAppData } from '../context/AppDataContext';
 import { MaintenanceScreen } from './MaintenanceScreen';
 import { ForceUpdateScreen } from './ForceUpdateScreen';
+import { isAppPreviewSearch } from '../preview/appPreviewStore';
 
 // ── Current app version — keep in sync with app.json ─────────────────────────
 export const APP_VERSION = '1.0.0';
@@ -25,6 +27,14 @@ export function AppGate({ children }: Props) {
   const { appSettings, refreshAll } = useAppData();
   const [showForceUpdate, setShowForceUpdate] = useState(false);
   const [checked, setChecked] = useState(false);
+  const isPreviewMode =
+    Platform.OS === 'web' &&
+    typeof globalThis.location?.search === 'string' &&
+    isAppPreviewSearch(globalThis.location.search);
+
+  if (isPreviewMode) {
+    return <>{children}</>;
+  }
 
   // Check if this force-update has already been dismissed for this version
   useEffect(() => {

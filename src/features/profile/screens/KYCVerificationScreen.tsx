@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { AppIcon } from '../components/ProfileShared';
 import { DocumentUpload } from '../components/DocumentUpload';
-import { usePreferenceValue } from '@/shared/preferences';
+import { usePreferenceContext } from '@/shared/preferences';
 import { useAuth } from '@/shared/context/AuthContext';
 import { authApi } from '@/shared/api';
 
@@ -20,7 +20,7 @@ interface KYCVerificationScreenProps {
 
 export function KYCVerificationScreen({ onBack, currentRole }: KYCVerificationScreenProps) {
   const { user: authUser, refreshProfile } = useAuth();
-  const { theme, tx } = usePreferenceValue({} as any);
+  const { theme, tx, darkMode } = usePreferenceContext();
   
   const [draftAadhar, setDraftAadhar] = useState<string | null>(null);
   const [draftPan, setDraftPan] = useState<string | null>(null);
@@ -128,11 +128,11 @@ export function KYCVerificationScreen({ onBack, currentRole }: KYCVerificationSc
           </View>
 
           {kycStatus === 'rejected' && authUser?.kycRejectionReason && (
-            <View style={[styles.rejectionBox, { backgroundColor: '#FEE2E2', borderColor: '#FCA5A5' }]}>
-              <Text style={[styles.rejectionTitle, { color: '#991B1B' }]}>
+            <View style={[styles.rejectionBox, { backgroundColor: darkMode ? '#7F1D1D' : '#FEE2E2', borderColor: darkMode ? '#991B1B' : '#FCA5A5' }]}>
+              <Text style={[styles.rejectionTitle, { color: darkMode ? '#FCA5A5' : '#991B1B' }]}>
                 {tx('Rejection Reason')}:
               </Text>
-              <Text style={[styles.rejectionText, { color: '#DC2626' }]}>
+              <Text style={[styles.rejectionText, { color: darkMode ? '#FEE2E2' : '#DC2626' }]}>
                 {authUser.kycRejectionReason}
               </Text>
             </View>

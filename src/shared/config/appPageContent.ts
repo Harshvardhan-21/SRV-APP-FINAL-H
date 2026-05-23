@@ -35,6 +35,7 @@ export type AppContentPage =
 export type AppPageContentFieldKey =
   | 'pageTitle'
   | 'pageSubtitle'
+  | 'eyebrowText'
   | 'heroTitle'
   | 'heroSubtitle'
   | 'sectionTitle'
@@ -48,7 +49,21 @@ export type AppPageContentFieldKey =
   | 'searchPlaceholder'
   | 'inputLabel'
   | 'cardTitle'
-  | 'cardSubtitle';
+  | 'cardSubtitle'
+  | 'flipHintText'
+  | 'codeLabel'
+  | 'locationLabel'
+  | 'nameLabel'
+  | 'thirdDetailLabel'
+  | 'actionLabel'
+  | 'actionSubtitle'
+  | 'statLabel'
+  | 'statValue'
+  | 'statHint'
+  | 'testimonialEyebrow'
+  | 'testimonialTitle'
+  | 'testimonialSubtitle'
+  | 'cardButtonLabel';
 
 export type AppPageContentFields = Partial<Record<AppPageContentFieldKey, string>>;
 
@@ -60,6 +75,7 @@ export type AppPageContentMap = Record<
 export const APP_PAGE_CONTENT_FIELDS: AppPageContentFieldKey[] = [
   'pageTitle',
   'pageSubtitle',
+  'eyebrowText',
   'heroTitle',
   'heroSubtitle',
   'sectionTitle',
@@ -74,6 +90,20 @@ export const APP_PAGE_CONTENT_FIELDS: AppPageContentFieldKey[] = [
   'inputLabel',
   'cardTitle',
   'cardSubtitle',
+  'flipHintText',
+  'codeLabel',
+  'locationLabel',
+  'nameLabel',
+  'thirdDetailLabel',
+  'actionLabel',
+  'actionSubtitle',
+  'statLabel',
+  'statValue',
+  'statHint',
+  'testimonialEyebrow',
+  'testimonialTitle',
+  'testimonialSubtitle',
+  'cardButtonLabel',
 ];
 
 const EMPTY_FIELDS: AppPageContentFields = {};
@@ -134,4 +164,80 @@ export function getAppPageContent(
   page: AppContentPage
 ) {
   return content[role]?.[page] ?? EMPTY_FIELDS;
+}
+
+// ─── Page Section Order ──────────────────────────────────────────
+
+export type HomePageSectionKey =
+  | 'hero_banner'
+  | 'home_banner'
+  | 'quick_actions'
+  | 'browse_categories'
+  | 'testimonials'
+  | 'website_promo';
+
+export type PageSectionKey = HomePageSectionKey;
+
+export type PageSectionOrder = Record<
+  AppContentRole,
+  Partial<Record<AppContentPage, PageSectionKey[]>>
+>;
+
+export const DEFAULT_PAGE_SECTION_ORDER: PageSectionOrder = {
+  electrician: {
+    home: ['hero_banner', 'home_banner', 'quick_actions', 'browse_categories', 'testimonials', 'website_promo'],
+  },
+  dealer: {
+    home: ['hero_banner', 'home_banner', 'quick_actions', 'browse_categories', 'testimonials', 'website_promo'],
+  },
+  user: {
+    home: ['hero_banner', 'home_banner', 'quick_actions', 'browse_categories', 'testimonials', 'website_promo'],
+  },
+  counterboy: {
+    home: ['hero_banner', 'home_banner', 'quick_actions', 'browse_categories', 'testimonials', 'website_promo'],
+  },
+};
+
+export const SECTION_LABELS: Record<PageSectionKey, string> = {
+  hero_banner: 'Hero & Banner',
+  home_banner: 'Banner Carousel',
+  quick_actions: 'Quick Actions',
+  browse_categories: 'Browse Categories',
+  testimonials: 'Testimonials',
+  website_promo: 'Website Promo',
+};
+
+export function resolvePageSectionOrder(input?: unknown): PageSectionOrder {
+  const normalized: PageSectionOrder = JSON.parse(JSON.stringify(DEFAULT_PAGE_SECTION_ORDER));
+
+  if (!input || typeof input !== 'object') return normalized;
+
+  for (const role of Object.keys(DEFAULT_PAGE_SECTION_ORDER) as AppContentRole[]) {
+    const roleData = (input as Record<string, unknown>)[role];
+    if (!roleData || typeof roleData !== 'object') continue;
+
+    for (const page of Object.keys(DEFAULT_PAGE_SECTION_ORDER[role]) as AppContentPage[]) {
+      const pageData = (roleData as Record<string, unknown>)[page];
+      if (!Array.isArray(pageData)) continue;
+
+      const validSections = pageData.filter((s): s is PageSectionKey =>
+        typeof s === 'string' && SECTION_LABELS[s as PageSectionKey] !== undefined
+      );
+      if (validSections.length > 0) {
+        normalized[role][page] = validSections;
+      }
+    }
+  }
+
+  return normalized;
+}
+
+export function useAppPageSections(
+  role: AppContentRole,
+  page: AppContentPage,
+  sectionOrder: PageSectionOrder | null
+): PageSectionKey[] {
+  return sectionOrder?.[role]?.[page]
+    ?? DEFAULT_PAGE_SECTION_ORDER[role]?.[page]
+    ?? [];
 }

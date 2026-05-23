@@ -24,7 +24,8 @@ import {
 import { WebsitePromoSection } from '@/shared/components/WebsitePromoSection';
 import ProfileFlipCard from '@/shared/components/ProfileFlipCard';
 import type { Screen } from '@/shared/types/navigation';
-import { useAppPageContent, useCatalogDownload } from '@/shared/hooks';
+import { useAppPageContent, useAppPageSections, useCatalogDownload } from '@/shared/hooks';
+import type { HomePageSectionKey } from '@/shared/config/appPageContent';
 import { API_BASE_URL } from '@/shared/api/config';
 import { counterboyTheme as cb } from '@/features/counterboy/theme';
 
@@ -328,6 +329,102 @@ export function HomeScreen({
     },
   ].filter((item) => !item.hidden);
 
+  const homeSections = useAppPageSections('counterboy', 'home');
+
+  const renderBodySections = (): React.ReactNode[] => {
+    if (!homeSections.length) return [];
+
+    const sectionMap: Record<HomePageSectionKey, React.ReactNode | null> = {
+      home_banner: null,
+      quick_actions: (
+        <View key="quick_actions" style={styles.quickGrid}>
+          {quickActions.map((item) => {
+            const Icon = item.icon;
+            return (
+              <TouchableOpacity
+                key={item.title}
+                style={[styles.quickCard, darkMode ? styles.quickCardDark : null, { width: cardW }]}
+                onPress={item.onPress}
+                activeOpacity={0.9}
+              >
+                <LinearGradient colors={item.iconColors} style={styles.quickIconBox}>
+                  <Icon color={item.iconTint} size={24} />
+                </LinearGradient>
+                <Text style={[styles.quickTitle, darkMode ? styles.quickTitleDark : null]}>{item.title}</Text>
+                <Text style={[styles.quickSub, darkMode ? styles.quickSubDark : null]}>{item.sub}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      ),
+      browse_categories: (
+        <View key="browse_categories">
+          <View style={styles.sectionHeader}>
+            <View>
+              <Text style={[styles.sectionEyebrow, darkMode ? styles.sectionEyebrowDark : null]}>
+                {pageContent.sectionTitle || tx('Shop by Category')}
+              </Text>
+              <Text style={[styles.sectionTitle, darkMode ? styles.sectionTitleDark : null]}>
+                {pageContent.sectionSubtitle || tx('Browse Categories')}
+              </Text>
+            </View>
+            {showProduct ? (
+              <TouchableOpacity onPress={() => onNavigate('product')} style={styles.inlineAction} activeOpacity={0.85}>
+                <Text style={[styles.viewAllText, darkMode ? styles.viewAllTextDark : null]}>{pageContent.primaryCtaLabel || tx('View all')}</Text>
+                <ChevronRight color={darkMode ? cb.slate : CB_PRIMARY} size={14} />
+              </TouchableOpacity>
+            ) : null}
+          </View>
+          <View style={styles.homeCatGrid}>
+            {browseCategoriesFour.map((cat) => (
+              <TouchableOpacity
+                key={cat.id}
+                style={[styles.cbCatCard, darkMode ? styles.cbCatCardDark : null, { width: catCardW }]}
+                onPress={() => onOpenProductCategory(cat.id)}
+                activeOpacity={0.88}
+              >
+                <View style={[styles.cbCatImgZone, darkMode ? styles.cbCatImgZoneDark : null]}>
+                  <Image
+                    source={{ uri: getCbHomeCatImage(cat.id, cat.imageUrl) }}
+                    style={styles.cbCatImage}
+                    resizeMode="contain"
+                  />
+                </View>
+                <View style={[styles.cbCatAccent, { backgroundColor: CB_PRIMARY }]} />
+                <View style={[styles.cbCatInfo, darkMode ? styles.cbCatInfoDark : null]}>
+                  <Text style={[styles.cbCatLabel, darkMode ? styles.cbCatLabelDark : null]} numberOfLines={2}>
+                    {tx(cat.label)}
+                  </Text>
+                  <View style={[styles.cbCatPill, darkMode ? styles.cbCatPillDark : null]}>
+                    <Text style={[styles.cbCatPillText, darkMode ? styles.cbCatPillTextDark : null]}>
+                      {pageContent.cardButtonLabel || tx('View Products')}
+                    </Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      ),
+      testimonials: showTestimonials ? (
+        <TestimonialShowcase
+          key="testimonials"
+          eyebrow={pageContent.testimonialEyebrow || tx('Electrician Testimonials')}
+          title={pageContent.testimonialTitle || tx('What Members Say')}
+          subtitle={pageContent.testimonialSubtitle || tx('Trusted feedback from the SRV network')}
+          items={testimonials}
+          darkMode={darkMode}
+        />
+      ) : null,
+      website_promo: <WebsitePromoSection key="website_promo" darkMode={darkMode} />,
+    };
+
+    return homeSections
+      .filter((key) => key !== 'hero_banner')
+      .map((key) => sectionMap[key])
+      .filter(Boolean) as React.ReactNode[];
+  };
+
   const cardW = (width - 28 - 12) / 2;
   const catCardW = Math.floor((width - 28 - 12) / 2);
 
@@ -409,85 +506,7 @@ export function HomeScreen({
       </LinearGradient>
 
       <View style={styles.body}>
-        {/* Quick Actions */}
-        <View style={styles.quickGrid}>
-          {quickActions.map((item) => {
-            const Icon = item.icon;
-            return (
-              <TouchableOpacity
-                key={item.title}
-                style={[styles.quickCard, darkMode ? styles.quickCardDark : null, { width: cardW }]}
-                onPress={item.onPress}
-                activeOpacity={0.9}
-              >
-                <LinearGradient colors={item.iconColors} style={styles.quickIconBox}>
-                  <Icon color={item.iconTint} size={24} />
-                </LinearGradient>
-                <Text style={[styles.quickTitle, darkMode ? styles.quickTitleDark : null]}>{item.title}</Text>
-                <Text style={[styles.quickSub, darkMode ? styles.quickSubDark : null]}>{item.sub}</Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-
-        <View style={styles.sectionHeader}>
-          <View>
-            <Text style={[styles.sectionEyebrow, darkMode ? styles.sectionEyebrowDark : null]}>
-              {pageContent.sectionTitle || tx('Shop by Category')}
-            </Text>
-            <Text style={[styles.sectionTitle, darkMode ? styles.sectionTitleDark : null]}>
-              {pageContent.sectionSubtitle || tx('Browse Categories')}
-            </Text>
-          </View>
-          {showProduct ? (
-            <TouchableOpacity onPress={() => onNavigate('product')} style={styles.inlineAction} activeOpacity={0.85}>
-              <Text style={[styles.viewAllText, darkMode ? styles.viewAllTextDark : null]}>{pageContent.primaryCtaLabel || tx('View all')}</Text>
-              <ChevronRight color={darkMode ? cb.slate : CB_PRIMARY} size={14} />
-            </TouchableOpacity>
-          ) : null}
-        </View>
-
-        <View style={styles.homeCatGrid}>
-          {browseCategoriesFour.map((cat) => (
-            <TouchableOpacity
-              key={cat.id}
-              style={[styles.cbCatCard, darkMode ? styles.cbCatCardDark : null, { width: catCardW }]}
-              onPress={() => onOpenProductCategory(cat.id)}
-              activeOpacity={0.88}
-            >
-              <View style={[styles.cbCatImgZone, darkMode ? styles.cbCatImgZoneDark : null]}>
-                <Image
-                  source={{ uri: getCbHomeCatImage(cat.id, cat.imageUrl) }}
-                  style={styles.cbCatImage}
-                  resizeMode="contain"
-                />
-              </View>
-              <View style={[styles.cbCatAccent, { backgroundColor: CB_PRIMARY }]} />
-              <View style={[styles.cbCatInfo, darkMode ? styles.cbCatInfoDark : null]}>
-                <Text style={[styles.cbCatLabel, darkMode ? styles.cbCatLabelDark : null]} numberOfLines={2}>
-                  {tx(cat.label)}
-                </Text>
-                <View style={[styles.cbCatPill, darkMode ? styles.cbCatPillDark : null]}>
-                  <Text style={[styles.cbCatPillText, darkMode ? styles.cbCatPillTextDark : null]}>
-                    {tx('View Products')}
-                  </Text>
-                </View>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {showTestimonials ? (
-          <TestimonialShowcase
-            eyebrow={tx('Electrician Testimonials')}
-            title={tx('What Members Say')}
-            subtitle={tx('Trusted feedback from the SRV network')}
-            items={testimonials}
-            darkMode={darkMode}
-          />
-        ) : null}
-
-        <WebsitePromoSection darkMode={darkMode} />
+        {renderBodySections()}
       </View>
     </ScrollView>
   );
@@ -517,9 +536,10 @@ const styles = StyleSheet.create({
   redDot: { position: 'absolute', top: 8, right: 8, width: 8, height: 8, borderRadius: 4, backgroundColor: CB_PRIMARY, borderWidth: 1.5, borderColor: '#FFFFFF' },
   heroBannerWrap: { marginTop: 8, marginBottom: 4 },
   body: { paddingHorizontal: 14, paddingTop: 18, paddingBottom: 120 },
-  quickGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 22 },
+  quickGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 22 },
   quickCard: {
     borderRadius: 20, backgroundColor: '#FFFFFF', padding: 14,
+    marginBottom: 12,
     ...createShadow({ color: CB_PRIMARY, offsetY: 4, blur: 10, opacity: 0.07, elevation: 3 }),
   },
   quickCardDark: { backgroundColor: cb.darkSurface, borderColor: cb.darkBorder },

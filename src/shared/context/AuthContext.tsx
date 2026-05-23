@@ -1,8 +1,9 @@
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { AppState } from 'react-native';
 import { authApi, profileApi, type UserProfile } from '../api/services';
 import { storage } from '../api/storage';
 import type { UserRole } from '@/shared/types/navigation';
+import { useAppPreviewState } from '../preview/appPreviewStore';
 
 type AuthState = {
   isLoading: boolean;
@@ -20,7 +21,80 @@ type AuthContextType = AuthState & {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+function buildPreviewUser(role: UserRole): UserProfile {
+  const base = {
+    id: `preview-${role}`,
+    name:
+      role === 'dealer'
+        ? 'Preview Dealer'
+        : role === 'user'
+        ? 'Preview Customer'
+        : role === 'counterboy'
+        ? 'Preview Counter Boy'
+        : 'Preview Electrician',
+    phone: '9876543210',
+    email: 'preview@srv.app',
+    role,
+    profileImage: null,
+    city: 'Mansa',
+    town: 'Mansa',
+    district: 'Mansa',
+    state: 'Punjab',
+    address: 'SRV Preview Street, Mansa, Punjab',
+    status: 'active',
+    totalPoints: role === 'dealer' ? 4200 : 1280,
+    totalScans: role === 'dealer' ? 84 : 31,
+    walletBalance: role === 'dealer' ? 210 : 1280,
+    totalRedemptions: 14,
+    bankLinked: true,
+  } satisfies Partial<UserProfile>;
+
+  if (role === 'dealer') {
+    return {
+      ...base,
+      dealerCode: 'DLR-1024',
+      dealerName: 'Preview Dealer',
+      electricianCount: 18,
+      gstNumber: '03ABCDE1234F1Z5',
+    } as UserProfile;
+  }
+
+  if (role === 'user') {
+    return {
+      ...base,
+      userCode: 'CUS-2048',
+      dealerName: 'SRV Dealer Hub',
+      dealerPhone: '9988776655',
+      dealerTown: 'Mansa',
+      dealerCode: 'DLR-1024',
+    } as UserProfile;
+  }
+
+  if (role === 'counterboy') {
+    return {
+      ...base,
+      counterboyCode: 'CB-512',
+      dealerName: 'SRV Dealer Hub',
+      dealerPhone: '9988776655',
+      dealerTown: 'Mansa',
+      dealerCode: 'DLR-1024',
+    } as UserProfile;
+  }
+
+  return {
+    ...base,
+    electricianCode: 'ELX-4096',
+    dealerName: 'SRV Dealer Hub',
+    dealerPhone: '9988776655',
+    dealerTown: 'Mansa',
+    dealerCode: 'DLR-1024',
+    subCategory: 'Wiring Expert',
+    tier: 'Gold',
+  } as UserProfile;
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const previewState = useAppPreviewState();
   const [state, setState] = useState<AuthState>({
     isLoading: true,
     isAuthenticated: false,
@@ -108,8 +182,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const previewOverride = useMemo<AuthContextType | null>(() => {
+    if (!previewState.enabled) {
+      return null;
+    }
+
+    const previewRole = previewState.role;
+    const previewUser =
+      previewState.authMode === 'authenticated' ? buildPreviewUser(previewRole) : null;
+
+    return {
+      isLoading: false,
+      isAuthenticated: previewState.authMode === 'authenticated',
+      user: previewUser,
+      role: previewState.authMode === 'authenticated' ? previewRole : null,
+      login: () => {},
+      logout: async () => {},
+      refreshProfile: async () => {},
+      updateUser: () => {},
+    };
+  }, [previewState.authMode, previewState.enabled, previewState.role]);
+
+  const value = previewOverride ?? { ...state, login, logout, refreshProfile, updateUser };
+
   return (
-    <AuthContext.Provider value={{ ...state, login, logout, refreshProfile, updateUser }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

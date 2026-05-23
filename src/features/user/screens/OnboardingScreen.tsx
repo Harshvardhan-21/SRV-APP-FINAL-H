@@ -488,16 +488,16 @@ function Field({
   inputTestID?: string;
   actionTestID?: string;
 }) {
-  const { tx } = usePreferenceContext();
+  const { tx, darkMode } = usePreferenceContext();
   const hasAction = Boolean(actionLabel || actionContent);
   const isWideAction = actionLabel === 'Current Address';
   return (
     <View style={s.group}>
-      <Text style={s.label}>{tx(label)}</Text>
-      <View style={[s.shell, error ? s.shellError : null]}>
+      <Text style={[s.label, darkMode ? { color: '#94A3B8' } : null]}>{tx(label)}</Text>
+      <View style={[s.shell, error ? s.shellError : null, darkMode ? { backgroundColor: '#1E293B', borderColor: '#334155' } : null]}>
         {prefix ? (
           <View style={s.prefixWrap}>
-            <Text style={s.prefix}>{prefix}</Text>
+            <Text style={[s.prefix, darkMode ? { color: '#94A3B8' } : null]}>{prefix}</Text>
           </View>
         ) : null}
         <View style={[s.inputWrap, hasAction ? s.inputWrapWithAction : null]}>
@@ -508,11 +508,12 @@ function Field({
               s.input,
               hasAction ? s.inputWithAction : null,
               isWideAction ? s.inputWithWideAction : null,
+              darkMode ? { color: '#F1F5F9' } : null,
             ]}
             value={value}
             onChangeText={onChangeText}
             placeholder={tx(placeholder)}
-            placeholderTextColor="#90A0BB"
+            placeholderTextColor={darkMode ? '#475569' : '#90A0BB'}
             keyboardType={keyboardType ?? 'default'}
             secureTextEntry={secureTextEntry}
             autoCapitalize="none"
@@ -704,7 +705,7 @@ export function OnboardingScreen({
 }): React.ReactElement {
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
-  const { language, setLanguage, tx } = usePreferenceContext();
+  const { language, setLanguage, tx, darkMode } = usePreferenceContext();
   const reveal = useReveal();
   const scrollRef = useRef<ScrollView | null>(null);
   const loginPhoneRef = useRef<TextInput | null>(null);
@@ -1624,9 +1625,9 @@ export function OnboardingScreen({
   };
 
   return (
-    <View style={s.root}>
+    <View style={[s.root, darkMode ? { backgroundColor: '#0B1220' } : null]}>
       <StatusBar hidden />
-      <LinearGradient colors={[C.heroA, C.heroB, C.heroC]} style={s.bg}>
+      <LinearGradient colors={darkMode ? ['#0B1220', '#0F172A', '#111827'] : [C.heroA, C.heroB, C.heroC]} style={s.bg}>
         <View style={s.glow1} />
         <View style={s.glow2} />
         <View style={s.glow3} />
@@ -1724,11 +1725,11 @@ export function OnboardingScreen({
                 </Text>
                 {phase === 'language' ? (
                   <View
-                    style={[s.card, s.languageCard, isCompactPhone ? s.introCardCompact : null]}
+                    style={[s.card, s.languageCard, isCompactPhone ? s.introCardCompact : null, darkMode ? { backgroundColor: '#111827', borderColor: '#243043' } : null]}
                   >
-                    <Text style={s.sectionEyebrow}>{tx('App Preferences')}</Text>
-                    <Text style={s.sectionTitle}>{tx('CHOOSE YOUR LANGUAGE')}</Text>
-                    <Text style={s.sectionText}>
+                    <Text style={[s.sectionEyebrow, darkMode ? { color: '#94A3B8' } : null]}>{tx('App Preferences')}</Text>
+                    <Text style={[s.sectionTitle, darkMode ? { color: '#F1F5F9' } : null]}>{tx('CHOOSE YOUR LANGUAGE')}</Text>
+                    <Text style={[s.sectionText, darkMode ? { color: '#94A3B8' } : null]}>
                       {tx('Use the same language across the complete SRV app experience.')}
                     </Text>
                     <View style={s.languageOptionList}>
@@ -1844,9 +1845,9 @@ export function OnboardingScreen({
                     />
                   </View>
                 ) : (
-                  <View style={s.card}>
-                    <Text style={s.sectionEyebrow}>{tx('Authentication')}</Text>
-                    <Text style={s.sectionTitle}>
+                  <View style={[s.card, darkMode ? { backgroundColor: '#111827', borderColor: '#243043' } : null]}>
+                    <Text style={[s.sectionEyebrow, darkMode ? { color: '#94A3B8' } : null]}>{tx('Authentication')}</Text>
+                    <Text style={[s.sectionTitle, darkMode ? { color: '#F1F5F9' } : null]}>
                       {mode === 'login' ? tx('Welcome back') : tx('Create your account')}
                     </Text>
                     <Tabs

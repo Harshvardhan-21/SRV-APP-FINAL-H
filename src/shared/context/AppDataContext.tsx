@@ -39,6 +39,7 @@ import {
 } from '../api/services';
 import { storage } from '../api/storage';
 import { useAuth } from './AuthContext';
+import { useAppPreviewState } from '../preview/appPreviewStore';
 
 const debugLog = (...args: unknown[]) => {
   if (__DEV__) {
@@ -147,6 +148,7 @@ const AppDataContext = createContext<AppDataContextType>(defaultCtx);
 
 export function AppDataProvider({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, user, role, logout } = useAuth();
+  const previewState = useAppPreviewState();
   const appStateRef = useRef(AppState.currentState);
 
   const [loading, setLoading] = useState(false);
@@ -252,6 +254,11 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   }, [logout]);
 
   const loadPrivateData = useCallback(async () => {
+    if (previewState.enabled) {
+      debugLog('Preview mode active, skipping private data');
+      return;
+    }
+
     if (!isAuthenticated) {
       debugLog('⚠️ User not authenticated, skipping private data');
       return;
@@ -352,7 +359,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error('❌ Private data loading failed:', error);
     }
-  }, [handleSessionExpired, isAuthenticated, role, user?.id]);
+  }, [handleSessionExpired, isAuthenticated, previewState.enabled, role, user?.id]);
 
   const refreshAll = useCallback(async () => {
     setLoading(true);
@@ -393,7 +400,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const interval = setInterval(() => {
       if (AppState.currentState !== 'active') return;
-      settingsApi.getAppSettings().then(setAppSettings).catch(() => {});
+      settingsApi.getAppSettings().then(setAppSettings).catch((err) => console.warn('Settings poll failed:', err));
     }, 10000);
 
     return () => clearInterval(interval);

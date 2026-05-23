@@ -707,6 +707,7 @@ export type AppSettings = {
   catalogPdfUrl?: string | null;
   rolePageControls?: Record<string, Record<string, boolean>> | null;
   appPageContent?: AppPageContentMap | null;
+  pageSectionOrder?: Record<string, Record<string, string[]>> | null;
 };
 
 export type ScanResult = {

@@ -36,6 +36,7 @@ import { WalletScreen as UserWalletScreen } from '@/features/user/screens/Wallet
 import { AuthLandingScreen } from '@/features/profile/screens/AuthLandingScreen';
 import { AccessFeatureGateScreen } from '@/features/profile/screens/AccessFeatureGateScreen';
 import { ApprovalPendingScreen } from '@/features/profile/screens/ApprovalPendingScreen';
+import { KYCPendingWalletScreen } from '@/features/profile/screens/KYCPendingWalletScreen';
 import type { SubPage } from '@/features/profile/components/ProfileShared';
 import {
   WalletBankDetailsScreen,
@@ -50,10 +51,15 @@ import { GetStartedScreen } from '@/features/onboarding/GetStartedScreen';
 import { useAuth } from '@/shared/context/AuthContext';
 import { useAppData } from '@/shared/context/AppDataContext';
 import { storage } from '@/shared/api';
+import type { AppContentPage } from '@/shared/config/appPageContent';
 import {
   isRoleFeatureEnabled,
   resolveRolePageControls,
 } from '@/shared/config/rolePageControls';
+import {
+  useAppPreviewBridge,
+  useAppPreviewState,
+} from '@/shared/preview/appPreviewStore';
 
 type OnboardingStartOptions = {
   passwordConfigured?: boolean;
@@ -69,6 +75,61 @@ function isApprovedAccountStatus(status?: string | null) {
   return normalized === 'active' || normalized === 'approved';
 }
 
+function resolvePreviewTarget(
+  role: UserRole,
+  page: AppContentPage
+): { screen: Screen; subPage: Exclude<SubPage, null> | null } {
+  switch (page) {
+    case 'home':
+    case 'product':
+    case 'play':
+    case 'categories':
+    case 'cart':
+    case 'wallet':
+    case 'profile':
+    case 'rewards':
+    case 'scan':
+    case 'electricians':
+    case 'call_electrician':
+    case 'bank_details':
+    case 'dealer_bonus':
+    case 'transfer_points':
+    case 'support':
+      return { screen: page as Screen, subPage: null };
+    case 'notifications':
+      return { screen: 'notification', subPage: null };
+    case 'member_tier':
+      return {
+        screen: role === 'dealer' ? 'dealer_tier' : 'electrician_tier',
+        subPage: null,
+      };
+    case 'need_help':
+      return { screen: 'profile', subPage: 'Need Help' };
+    case 'contact_support':
+      return { screen: 'profile', subPage: 'Contact Support' };
+    case 'offers':
+      return { screen: 'profile', subPage: 'Offers & Promotions' };
+    case 'my_orders':
+      return { screen: 'profile', subPage: 'My Orders' };
+    case 'my_redemption':
+      return { screen: 'profile', subPage: 'My Redemption' };
+    case 'refer_friend':
+      return { screen: 'profile', subPage: 'Refer To A Friend' };
+    case 'scan_history':
+      return { screen: 'profile', subPage: 'Scan History' };
+    case 'privacy_policy':
+      return { screen: 'profile', subPage: 'Privacy Policy' };
+    case 'password':
+      return { screen: 'profile', subPage: 'Password' };
+    case 'app_settings':
+      return { screen: 'profile', subPage: 'App Settings' };
+    case 'rate_us':
+      return { screen: 'profile', subPage: 'Rate Us' };
+    default:
+      return { screen: 'home', subPage: null };
+  }
+}
+
 export default function Index() {
   return <AppContent />;
 }
@@ -76,9 +137,11 @@ export default function Index() {
 function AppContent() {
   const { isAuthenticated, isLoading: authLoading, user, role: authRole, login, logout } = useAuth();
   const { appSettings } = useAppData();
+  useAppPreviewBridge();
+  const previewState = useAppPreviewState();
   const [currentScreen, setCurrentScreen] = useState<Screen>('home');
   const [screenResetKey, setScreenResetKey] = useState(0);
-  const [showOnboarding, setShowOnboarding] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(!previewState.enabled);
   const [currentRole, setCurrentRole] = useState<UserRole>('electrician');
   const [authResolved, setAuthResolved] = useState(false);
   const [selectedProductCategory, setSelectedProductCategory] = useState('all');
@@ -114,24 +177,46 @@ function AppContent() {
   const [electricianRewardHistory, setElectricianRewardHistory] = useState<RewardHistoryItem[]>([]);
   const [hasUnreadNotif, setHasUnreadNotif] = useState(false);
   const [userCartItems, setUserCartItems] = useState<CartItem[]>([]);
-  const [userProfileInitialSubPage, setUserProfileInitialSubPage] = useState<Exclude<SubPage, null> | null>(null);
+  const [profileInitialSubPage, setProfileInitialSubPage] = useState<Exclude<SubPage, null> | null>(
+    null
+  );
+  const isPreviewMode = previewState.enabled;
+  const previewTarget = useMemo(
+    () => resolvePreviewTarget(previewState.role, previewState.page),
+    [previewState.page, previewState.role]
+  );
 
   const isDealer = currentRole === 'dealer';
   const isUser = currentRole === 'user';
   const isCounterBoy = currentRole === 'counterboy';
   const rolePageControls = useMemo(
-    () => resolveRolePageControls(appSettings?.rolePageControls),
-    [appSettings?.rolePageControls]
+    () =>
+      resolveRolePageControls(
+        isPreviewMode && previewState.rolePageControls
+          ? previewState.rolePageControls
+          : appSettings?.rolePageControls
+      ),
+    [appSettings?.rolePageControls, isPreviewMode, previewState.rolePageControls]
   );
-  const pendingApprovalRole = roleNeedsAdminApproval(authRole) && isAuthenticated && !isApprovedAccountStatus(user?.status)
+  const pendingApprovalRole = !isPreviewMode && roleNeedsAdminApproval(authRole) && isAuthenticated && !isApprovedAccountStatus(user?.status)
     ? authRole
     : null;
-  const resolvedCurrentScreen = isRoleFeatureEnabled(rolePageControls, currentRole, currentScreen)
+  const resolvedCurrentScreen = isPreviewMode || isRoleFeatureEnabled(rolePageControls, currentRole, currentScreen)
     ? currentScreen
     : 'home';
 
   // Once auth loading is done, set initial state
   useEffect(() => {
+    if (isPreviewMode) {
+      setAuthResolved(true);
+      setCurrentRole(previewState.role);
+      setCurrentScreen(previewTarget.screen);
+      setProfileInitialSubPage(previewTarget.subPage);
+      setShowOnboarding(false);
+      setGuestAuthRole(null);
+      return;
+    }
+
     if (!authLoading && !authResolved) {
       setAuthResolved(true);
       if (isAuthenticated && user && authRole) {
@@ -142,7 +227,17 @@ function AppContent() {
         setShowOnboarding(false);
       }
     }
-  }, [authLoading, authResolved, isAuthenticated, user, authRole]);
+  }, [
+    authLoading,
+    authResolved,
+    authRole,
+    isAuthenticated,
+    isPreviewMode,
+    previewState.role,
+    previewTarget.screen,
+    previewTarget.subPage,
+    user,
+  ]);
 
   // Keep points/scans in sync when user profile updates (admin changes reflected)
   // Always use server value — admin can increase OR decrease points
@@ -170,6 +265,7 @@ function AppContent() {
 
   // Fetch unread notification count — poll every 30s when authenticated
   useEffect(() => {
+    if (isPreviewMode) return;
     if (!isAuthenticated || !user) return;
     const checkUnread = async () => {
       try {
@@ -184,7 +280,7 @@ function AppContent() {
     void checkUnread();
     const interval = setInterval(checkUnread, 30000);
     return () => clearInterval(interval);
-  }, [isAuthenticated, user, authRole]);
+  }, [authRole, isAuthenticated, isPreviewMode, user]);
 
   const preferenceValue = usePreferenceValue({
     language,
@@ -248,6 +344,10 @@ function AppContent() {
   }, []);
 
   const handleSignOut = useCallback(() => {
+    if (isPreviewMode) {
+      return;
+    }
+
     void (async () => {
       await logout(); // clears storage + resets AuthContext state
       setShowOnboarding(true);
@@ -259,7 +359,7 @@ function AppContent() {
       setElectricianRewardHistory([]);
       setHasUnreadNotif(false);
     })();
-  }, [logout]);
+  }, [isPreviewMode, logout]);
 
   const handleNotificationsSeen = useCallback(() => {
     setHasUnreadNotif(false);
@@ -466,7 +566,7 @@ function AppContent() {
     };
 
     if (isDealer) {
-      if (!isAuthenticated && isGuestBlockedScreen('dealer', resolvedCurrentScreen)) {
+      if (!isPreviewMode && !isAuthenticated && isGuestBlockedScreen('dealer', resolvedCurrentScreen)) {
         if (resolvedCurrentScreen === 'profile') {
           return renderGuestAuthLanding('dealer');
         }
@@ -493,7 +593,19 @@ function AppContent() {
           return <ElectricianNotificationScreen onNavigate={handleNavigate} role="dealer" onNotificationsSeen={handleNotificationsSeen} />;
         case 'rewards':
           return <ElectricianRewardsScreen onBack={() => setCurrentScreen('profile')} />;
-        case 'wallet':
+        case 'wallet': {
+          const dealerKycStatus = user?.kycStatus ?? 'not_submitted';
+          if (dealerKycStatus !== 'verified') {
+            return (
+              <KYCPendingWalletScreen
+                onBack={() => setCurrentScreen('home')}
+                onGoToKYC={() => {
+                  setProfileInitialSubPage('KYC Verification');
+                  setCurrentScreen('profile');
+                }}
+              />
+            );
+          }
           return (
             <ElectricianWalletScreen
               role="dealer"
@@ -503,6 +615,7 @@ function AppContent() {
               historyItems={electricianRewardHistory}
             />
           );
+        }
         case 'profile':
           return (
             <DealerProfileScreen
@@ -524,6 +637,8 @@ function AppContent() {
               onProfilePhotoChange={(photoUri) =>
                 setProfilePhotoByRole((current) => ({ ...current, dealer: photoUri }))
               }
+              initialSubPage={profileInitialSubPage}
+              onInitialSubPageConsumed={() => setProfileInitialSubPage(null)}
             />
           );
         case 'dealer_tier':
@@ -575,7 +690,7 @@ function AppContent() {
     }
 
     if (isUser) {
-      if (!isAuthenticated && isGuestBlockedScreen('user', resolvedCurrentScreen)) {
+      if (!isPreviewMode && !isAuthenticated && isGuestBlockedScreen('user', resolvedCurrentScreen)) {
         if (resolvedCurrentScreen === 'profile') {
           return renderGuestAuthLanding('user');
         }
@@ -588,7 +703,7 @@ function AppContent() {
             <UserHomeScreen
               onNavigate={handleNavigate}
               onOpenNeedHelp={() => {
-                setUserProfileInitialSubPage('Need Help');
+                setProfileInitialSubPage('Need Help');
                 setCurrentScreen('profile');
               }}
               onOpenProductCategory={handleOpenProductCategory}
@@ -640,8 +755,8 @@ function AppContent() {
               }
               totalPoints={electricianRewardPoints}
               totalScans={electricianRewardScans}
-              initialSubPage={userProfileInitialSubPage}
-              onInitialSubPageConsumed={() => setUserProfileInitialSubPage(null)}
+              initialSubPage={profileInitialSubPage}
+              onInitialSubPageConsumed={() => setProfileInitialSubPage(null)}
             />
           );
         case 'wallet':
@@ -659,7 +774,7 @@ function AppContent() {
             <UserHomeScreen
               onNavigate={handleNavigate}
               onOpenNeedHelp={() => {
-                setUserProfileInitialSubPage('Need Help');
+                setProfileInitialSubPage('Need Help');
                 setCurrentScreen('profile');
               }}
               onOpenProductCategory={handleOpenProductCategory}
@@ -673,7 +788,7 @@ function AppContent() {
     }
 
     if (isCounterBoy) {
-      if (!isAuthenticated && isGuestBlockedScreen('counterboy', resolvedCurrentScreen)) {
+      if (!isPreviewMode && !isAuthenticated && isGuestBlockedScreen('counterboy', resolvedCurrentScreen)) {
         if (resolvedCurrentScreen === 'profile') {
           return renderGuestAuthLanding('counterboy');
         }
@@ -729,6 +844,8 @@ function AppContent() {
               }
               totalPoints={electricianRewardPoints}
               totalScans={electricianRewardScans}
+              initialSubPage={profileInitialSubPage}
+              onInitialSubPageConsumed={() => setProfileInitialSubPage(null)}
             />
           );
         case 'bank_details':
@@ -766,7 +883,7 @@ function AppContent() {
       }
     }
 
-    if (!isAuthenticated && isGuestBlockedScreen('electrician', resolvedCurrentScreen)) {
+    if (!isPreviewMode && !isAuthenticated && isGuestBlockedScreen('electrician', resolvedCurrentScreen)) {
       if (resolvedCurrentScreen === 'profile') {
         return renderGuestAuthLanding('electrician');
       }
@@ -827,6 +944,8 @@ function AppContent() {
             }
             totalPoints={electricianRewardPoints}
             totalScans={electricianRewardScans}
+            initialSubPage={profileInitialSubPage}
+            onInitialSubPageConsumed={() => setProfileInitialSubPage(null)}
           />
         );
       case 'wallet':
@@ -923,10 +1042,11 @@ function AppContent() {
     appSettings?.whatsappNumber,
     pendingApprovalRole,
     handleUseAnotherApprovalNumber,
-    userProfileInitialSubPage,
+    profileInitialSubPage,
+    isPreviewMode,
   ]);
 
-  if (showOnboarding) {
+  if (showOnboarding && !isPreviewMode) {
     return (
       <View style={styles.root}>
         <ExpoStatusBar style={statusBarStyle} />

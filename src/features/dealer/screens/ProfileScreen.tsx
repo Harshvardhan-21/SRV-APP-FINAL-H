@@ -1,5 +1,6 @@
 import React from 'react';
 import { ProfileScreen as SharedProfileScreen } from '@/features/profile/screens/ProfileScreen';
+import type { SubPage } from '@/features/profile/components/ProfileShared';
 import type { AppLanguage } from '@/shared/preferences';
 import type { Screen } from '@/shared/types/navigation';
 
@@ -16,6 +17,8 @@ export function ProfileScreen({
   onDarkModeChange,
   profilePhotoUri,
   onProfilePhotoChange,
+  initialSubPage,
+  onInitialSubPageConsumed,
 }: {
   onNavigate: (screen: Screen) => void;
   onSignOut: () => void;
@@ -29,6 +32,8 @@ export function ProfileScreen({
   onDarkModeChange: (enabled: boolean) => void;
   profilePhotoUri: string | null;
   onProfilePhotoChange: (photoUri: string | null) => void;
+  initialSubPage?: Exclude<SubPage, null> | null;
+  onInitialSubPageConsumed?: () => void;
 }) {
   return (
     <SharedProfileScreen
@@ -45,6 +50,8 @@ export function ProfileScreen({
       onDarkModeChange={onDarkModeChange}
       profilePhotoUri={profilePhotoUri}
       onProfilePhotoChange={onProfilePhotoChange}
+      initialSubPage={initialSubPage}
+      onInitialSubPageConsumed={onInitialSubPageConsumed}
     />
   );
 }

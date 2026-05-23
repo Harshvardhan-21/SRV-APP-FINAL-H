@@ -496,17 +496,17 @@ function Field({
   inputTestID?: string;
   actionTestID?: string;
 }) {
-  const { tx } = usePreferenceContext();
+  const { tx, darkMode } = usePreferenceContext();
   const hasAction = Boolean(actionLabel || actionContent);
   const isWideAction = actionLabel === 'Current Address';
   const isHintMessage = Boolean(error?.startsWith('Dev OTP:'));
   return (
     <View style={s.group}>
-      <Text style={s.label}>{tx(label)}</Text>
-      <View style={[s.shell, error ? (isHintMessage ? s.shellHint : s.shellError) : null]}>
+      <Text style={[s.label, darkMode ? { color: '#94A3B8' } : null]}>{tx(label)}</Text>
+      <View style={[s.shell, error ? (isHintMessage ? s.shellHint : s.shellError) : null, darkMode ? { backgroundColor: '#1E293B', borderColor: '#334155' } : null]}>
         {prefix ? (
           <View style={s.prefixWrap}>
-            <Text style={s.prefix}>{prefix}</Text>
+            <Text style={[s.prefix, darkMode ? { color: '#94A3B8' } : null]}>{prefix}</Text>
           </View>
         ) : null}
         <View style={[s.inputWrap, hasAction ? s.inputWrapWithAction : null]}>
@@ -517,11 +517,12 @@ function Field({
               s.input,
               hasAction ? s.inputWithAction : null,
               isWideAction ? s.inputWithWideAction : null,
+              darkMode ? { color: '#F1F5F9' } : null,
             ]}
             value={value}
             onChangeText={onChangeText}
             placeholder={tx(placeholder)}
-            placeholderTextColor="#90A0BB"
+            placeholderTextColor={darkMode ? '#475569' : '#90A0BB'}
             keyboardType={keyboardType ?? 'default'}
             secureTextEntry={secureTextEntry}
             autoCapitalize="none"
@@ -723,7 +724,7 @@ export function OnboardingScreen({
 }): React.ReactElement {
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
-  const { language, setLanguage, tx } = usePreferenceContext();
+  const { language, setLanguage, tx, darkMode } = usePreferenceContext();
   const reveal = useReveal();
   const scrollRef = useRef<ScrollView | null>(null);
   const loginPhoneRef = useRef<TextInput | null>(null);
@@ -793,8 +794,13 @@ export function OnboardingScreen({
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const keyboardHeightRef = useRef(0);
   const isCompactPhone = width <= 360 || height <= 760;
-  const authBackgroundColors: [string, string, string] =
-    role === 'dealer'
+  const authBackgroundColors: [string, string, string] = darkMode
+    ? role === 'dealer'
+      ? ['#0B1220', '#111827', '#0F172A']
+      : role === 'counterboy'
+        ? ['#120A07', '#1A0F0A', '#0F0806']
+        : ['#0B1220', '#0F172A', '#111827']
+    : role === 'dealer'
       ? ['#E8F1FF', '#F4F8FF', '#EAF3FF']
       : role === 'counterboy'
         ? ['#F9F4ED', '#F5EDE4', '#F0DFD0']
@@ -1710,10 +1716,10 @@ export function OnboardingScreen({
   };
 
   return (
-    <View style={s.root}>
+    <View style={[s.root, darkMode ? { backgroundColor: '#0B1220' } : null]}>
       <StatusBar hidden />
       <LinearGradient
-        colors={phase === 'auth' ? authBackgroundColors : [C.heroA, C.heroB, C.heroC]}
+        colors={phase === 'auth' ? authBackgroundColors : darkMode ? ['#0B1220', '#0F172A', '#111827'] : [C.heroA, C.heroB, C.heroC]}
         style={s.bg}
       >
         {phase === 'auth' ? (
@@ -1888,11 +1894,11 @@ export function OnboardingScreen({
                 </Text>
                 {phase === 'language' ? (
                   <View
-                    style={[s.card, s.languageCard, isCompactPhone ? s.introCardCompact : null]}
+                    style={[s.card, s.languageCard, isCompactPhone ? s.introCardCompact : null, darkMode ? { backgroundColor: '#111827', borderColor: '#243043' } : null]}
                   >
-                    <Text style={s.sectionEyebrow}>{tx('App Preferences')}</Text>
-                    <Text style={s.sectionTitle}>{tx('CHOOSE YOUR LANGUAGE')}</Text>
-                    <Text style={s.sectionText}>
+                    <Text style={[s.sectionEyebrow, darkMode ? { color: '#94A3B8' } : null]}>{tx('App Preferences')}</Text>
+                    <Text style={[s.sectionTitle, darkMode ? { color: '#F1F5F9' } : null]}>{tx('CHOOSE YOUR LANGUAGE')}</Text>
+                    <Text style={[s.sectionText, darkMode ? { color: '#94A3B8' } : null]}>
                       {tx('Use the same language across the complete SRV app experience.')}
                     </Text>
                     <View style={s.languageOptionList}>
@@ -1970,9 +1976,9 @@ export function OnboardingScreen({
                       isCompactPhone ? s.roleSetupCardCompact : null,
                     ]}
                   >
-                    <Text style={s.sectionEyebrow}>{tx('Account Setup')}</Text>
-                    <Text style={s.sectionTitle}>{tx('CHOOSE YOUR ROLE')}</Text>
-                    <Text style={s.sectionText}>
+                    <Text style={[s.sectionEyebrow, darkMode ? { color: '#94A3B8' } : null]}>{tx('Account Setup')}</Text>
+                    <Text style={[s.sectionTitle, darkMode ? { color: '#F1F5F9' } : null]}>{tx('CHOOSE YOUR ROLE')}</Text>
+                    <Text style={[s.sectionText, darkMode ? { color: '#94A3B8' } : null]}>
                       {tx('This keeps rewards, verification and account setup perfectly aligned.')}
                     </Text>
                     <View style={[s.roleGrid, isCompactPhone ? s.roleGridCompact : null]}>
@@ -2008,7 +2014,7 @@ export function OnboardingScreen({
                     />
                   </View>
                 ) : (
-                  <View style={[s.card, s.authCard, role === 'electrician' ? s.authCardElectrician : role === 'counterboy' ? s.authCardCounterboy : s.authCardDealer]}>
+                  <View style={[s.card, s.authCard, role === 'electrician' ? s.authCardElectrician : role === 'counterboy' ? s.authCardCounterboy : s.authCardDealer, darkMode ? { backgroundColor: '#111827', borderColor: '#243043' } : null]}>
                     {role === 'electrician' ? (
                       <LinearGradient
                         colors={['#173E80', '#285AB3', '#78AFFF']}
@@ -2114,6 +2120,7 @@ export function OnboardingScreen({
                                 style={[
                                   s.loginChoiceCard,
                                   electricianLoginMethod === 'otp' ? s.loginChoiceCardActive : null,
+                                  darkMode && electricianLoginMethod !== 'otp' ? { backgroundColor: '#1E293B', borderColor: '#334155' } : null,
                                 ]}
                                 testID="onboarding-login-method-otp"
                               >

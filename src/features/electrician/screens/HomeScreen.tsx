@@ -35,7 +35,8 @@ import {
 import { WebsitePromoSection } from '@/shared/components/WebsitePromoSection';
 import { BannerCarousel } from '@/shared/components/BannerCarousel';
 import { ElectricianTierIcon, getElectricianTier } from './ElectricianTierScreen';
-import { useAppPageContent, useCatalogDownload } from '@/shared/hooks';
+import { useAppPageContent, useAppPageSections, useCatalogDownload } from '@/shared/hooks';
+import type { HomePageSectionKey } from '@/shared/config/appPageContent';
 import { API_BASE_URL } from '@/shared/api';
 
 // ── Category color system (same as ProductScreen) ─────────────────────
@@ -217,12 +218,14 @@ function HomeCategoryCard({
   cardW,
   darkMode,
   onPress,
+  buttonLabel,
 }: {
   cat: { id: string; label: string; imageUrl?: string | null };
   index: number;
   cardW: number;
   darkMode: boolean;
   onPress: () => void;
+  buttonLabel?: string;
 }) {
   const pressScale = useRef(new Animated.Value(1)).current;
   const tiltX      = useRef(new Animated.Value(0)).current;
@@ -278,7 +281,7 @@ function HomeCategoryCard({
             </Text>
             <View style={[homeCatStyles.pill, { backgroundColor: darkMode ? 'rgba(255,255,255,0.08)' : '#F5F8FB' }]}>
               <Text style={[homeCatStyles.pillText, { color: darkMode ? '#94A3B8' : '#4A637B' }]}>
-                View Products
+                {buttonLabel ?? 'View Products'}
               </Text>
             </View>
           </View>
@@ -646,6 +649,95 @@ export function HomeScreen({
       },
   ].filter((item) => !item.hidden);
 
+  const homeSections = useAppPageSections('electrician', 'home');
+
+  const renderBodySections = (): React.ReactNode[] => {
+    if (!homeSections.length) return [];
+
+    const sectionMap: Record<HomePageSectionKey, React.ReactNode | null> = {
+      home_banner: authUser && apiBannerSlides.length > 0 ? (
+        <View key="home_banner">
+          <BannerCarousel slides={apiBannerSlides} height={heroImageHeight} darkMode={darkMode} />
+        </View>
+      ) : null,
+      quick_actions: (
+        <View key="quick_actions" style={styles.quickGrid}>
+          {quickActions.map((item) => {
+            const Icon = item.icon;
+            return (
+              <TouchableOpacity
+                key={item.title}
+                style={[styles.quickCard, darkMode ? styles.quickCardDark : null, { width: cardW }]}
+                onPress={item.onPress}
+                activeOpacity={0.9}
+                testID={item.testID}
+                accessible
+                accessibilityRole="button"
+                accessibilityLabel={item.accessibilityLabel}
+              >
+                <LinearGradient colors={item.iconColors} style={styles.quickIconBox}>
+                  <Icon color={item.iconTint} size={24} />
+                </LinearGradient>
+                <Text style={[styles.quickTitle, darkMode ? styles.quickTitleDark : null]}>
+                  {item.title}
+                </Text>
+                <Text style={[styles.quickSub, darkMode ? styles.quickSubDark : null]}>
+                  {item.sub}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      ),
+      browse_categories: categories.length > 0 ? (
+        <View key="browse_categories">
+          <View style={styles.sectionHeader}>
+            <View>
+              <Text style={[styles.sectionEyebrow, darkMode ? styles.sectionEyebrowDark : null]}>
+                {pageContent.sectionTitle || tx('Shop by Category')}
+              </Text>
+              <Text style={[styles.sectionTitle, darkMode ? styles.sectionTitleDark : null]}>
+                {pageContent.sectionSubtitle || tx('Browse Categories')}
+              </Text>
+            </View>
+            {showProduct && categories.length > 4 && (
+              <TouchableOpacity onPress={() => onNavigate('product')} style={styles.inlineAction} activeOpacity={0.85}>
+                <Text style={styles.viewAllText}>{pageContent.primaryCtaLabel || tx('View all')}</Text>
+                <ChevronRight color="#173E80" />
+              </TouchableOpacity>
+            )}
+          </View>
+          <View style={styles.homeCatGrid}>
+            {displayedCategories.map((cat, index) => (
+              <HomeCategoryCard
+                key={cat.id} cat={cat} index={index}
+                cardW={catCardW} darkMode={darkMode}
+                onPress={() => onOpenProductCategory(cat.id)}
+                buttonLabel={pageContent.cardButtonLabel || 'View Products'}
+              />
+            ))}
+          </View>
+        </View>
+      ) : null,
+      testimonials: showTestimonials ? (
+        <TestimonialShowcase
+          key="testimonials"
+          eyebrow={pageContent.testimonialEyebrow || tx('Electrician Testimonials')}
+          title={pageContent.testimonialTitle || tx('What Electricians Say')}
+          subtitle={pageContent.testimonialSubtitle || tx('Testimonial subtitle')}
+          items={testimonials}
+          darkMode={darkMode}
+        />
+      ) : null,
+      website_promo: <WebsitePromoSection key="website_promo" darkMode={darkMode} />,
+    };
+
+    return homeSections
+      .filter((key) => key !== 'hero_banner')
+      .map((key) => sectionMap[key])
+      .filter(Boolean) as React.ReactNode[];
+  };
+
   return (
     <ScrollView
       style={[styles.container, darkMode ? styles.containerDark : null]}
@@ -824,89 +916,7 @@ export function HomeScreen({
       </LinearGradient>
 
       <View style={styles.body}>
-        {authUser && apiBannerSlides.length > 0 ? (
-          <BannerCarousel
-            slides={apiBannerSlides}
-            height={heroImageHeight}
-            darkMode={darkMode}
-          />
-        ) : null}
-
-        <View style={styles.quickGrid}>
-          {quickActions.map((item) => {
-            const Icon = item.icon;
-            return (
-              <TouchableOpacity
-                key={item.title}
-                style={[styles.quickCard, darkMode ? styles.quickCardDark : null, { width: cardW }]}
-                onPress={item.onPress}
-                activeOpacity={0.9}
-                testID={item.testID}
-                accessible
-                accessibilityRole="button"
-                accessibilityLabel={item.accessibilityLabel}
-              >
-                <LinearGradient colors={item.iconColors} style={styles.quickIconBox}>
-                  <Icon color={item.iconTint} size={24} />
-                </LinearGradient>
-                <Text style={[styles.quickTitle, darkMode ? styles.quickTitleDark : null]}>
-                  {item.title}
-                </Text>
-                <Text style={[styles.quickSub, darkMode ? styles.quickSubDark : null]}>
-                  {item.sub}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-
-        {/* Browse by Category */}
-        {categories.length > 0 && (
-          <>
-            <View style={styles.sectionHeader}>
-              <View>
-                <Text style={[styles.sectionEyebrow, darkMode ? styles.sectionEyebrowDark : null]}>
-                  {pageContent.sectionTitle || tx('Shop by Category')}
-                </Text>
-                <Text style={[styles.sectionTitle, darkMode ? styles.sectionTitleDark : null]}>
-                  {pageContent.sectionSubtitle || tx('Browse Categories')}
-                </Text>
-              </View>
-              {showProduct && categories.length > 4 && (
-                <TouchableOpacity onPress={() => onNavigate('product')} style={styles.inlineAction} activeOpacity={0.85}>
-                  <Text style={styles.viewAllText}>{pageContent.primaryCtaLabel || tx('View all')}</Text>
-                  <ChevronRight color="#173E80" />
-                </TouchableOpacity>
-              )}
-            </View>
-
-            <View style={styles.homeCatGrid}>
-              {displayedCategories.map((cat, index) => (
-                <HomeCategoryCard
-                  key={cat.id}
-                  cat={cat}
-                  index={index}
-                  cardW={catCardW}
-                  darkMode={darkMode}
-                  onPress={() => onOpenProductCategory(cat.id)}
-                />
-              ))}
-            </View>
-          </>
-        )}
-
-        {showTestimonials ? (
-          <TestimonialShowcase
-            eyebrow={tx('Electrician Testimonials')}
-            title={tx('What Electricians Say')}
-            subtitle={tx('Testimonial subtitle')}
-            items={testimonials}
-            darkMode={darkMode}
-          />
-        ) : null}
-
-        <WebsitePromoSection darkMode={darkMode} />
-
+        {renderBodySections()}
         <View style={{ height: Math.max(30, insets.bottom + 18) }} />
       </View>
     </ScrollView>
@@ -1110,11 +1120,12 @@ const styles = StyleSheet.create({
   dotDark: { backgroundColor: '#334155' },
   dotActive: { width: 28, backgroundColor: '#0F172A' },
   dotActiveDark: { width: 28, backgroundColor: '#E2E8F0' },
-  quickGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 22 },
+  quickGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 22 },
   quickCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 22,
     padding: 14,
+    marginBottom: 12,
     ...createShadow({ color: '#0F172A', offsetY: 8, blur: 18, opacity: 0.07, elevation: 4 }),
   },
   quickCardDark: {
