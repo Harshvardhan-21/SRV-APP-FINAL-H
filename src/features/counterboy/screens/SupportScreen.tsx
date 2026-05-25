@@ -4,6 +4,7 @@ import Svg, { Path, Rect } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePreferenceContext } from '@/shared/preferences';
 import { settingsApi } from '@/shared/api';
+import { useAppPageContent } from '@/shared/hooks';
 import { createShadow } from '@/shared/theme/shadows';
 import type { Screen } from '@/shared/types/navigation';
 import { counterboyTheme as cb } from '@/features/counterboy/theme';
@@ -37,6 +38,7 @@ function MailIcon({ color, size }: { color: string; size: number }) {
 export function SupportScreen({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
   const { tx } = usePreferenceContext();
   const insets = useSafeAreaInsets();
+  const pageContent = useAppPageContent('counterboy', 'support');
   const [supportPhone, setSupportPhone] = useState('8837668004');
   const [supportEmail] = useState('info@srvelectricals.com');
 
@@ -93,8 +95,8 @@ export function SupportScreen({ onNavigate }: { onNavigate: (screen: Screen) => 
               <Path d="M9.5 10a2.5 2.5 0 015 0c0 1.5-2.5 2-2.5 3" stroke="#FFFFFF" strokeWidth={2} strokeLinecap="round" />
             </Svg>
           </View>
-          <Text style={s.heroTitle}>{tx('Get in Touch')}</Text>
-          <Text style={s.heroDesc}>{tx('Have a question or need assistance? We are just a tap away.')}</Text>
+          <Text style={s.heroTitle}>{pageContent.pageTitle || pageContent.heroTitle || tx('Get in Touch')}</Text>
+          <Text style={s.heroDesc}>{pageContent.pageSubtitle || pageContent.heroSubtitle || tx('Have a question or need assistance? We are just a tap away.')}</Text>
         </View>
 
         {/* Contact cards */}
@@ -124,7 +126,7 @@ export function SupportScreen({ onNavigate }: { onNavigate: (screen: Screen) => 
 
         {/* Info footer */}
         <View style={s.footer}>
-          <Text style={s.footerText}>{tx('Our team typically responds within 24 hours.')}</Text>
+          <Text style={s.footerText}>{pageContent.supportText || tx('Our team typically responds within 24 hours.')}</Text>
         </View>
       </ScrollView>
     </View>

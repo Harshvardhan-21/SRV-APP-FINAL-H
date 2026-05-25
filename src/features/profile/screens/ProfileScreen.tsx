@@ -46,6 +46,7 @@ import { ReferFriendPage } from './ReferFriendScreen';
 import { ScanHistoryPage } from './ScanHistoryScreen';
 import { TransferPointsPage } from './TransferPointsScreen';
 import { createShadow } from '@/shared/theme/shadows';
+import { KYCVerificationScreen } from './KYCVerificationScreen';
 import { TierIcon } from '@/features/dealer/screens/MemberTierScreen';
 import { counterboyTheme as cbPalette } from '@/features/counterboy/theme';
 import { CUSTOMER_THEME as cuTheme } from '@/features/user/theme';
@@ -659,6 +660,7 @@ export function ProfileScreen({
     'Contact Support': <ContactSupportPage onBack={() => setSubPage(null)} />,
     'Privacy Policy': <PrivacyPolicyPage onBack={() => setSubPage(null)} />,
     'Rate Us': <RateUsPage onBack={() => setSubPage(null)} />,
+    'KYC Verification': <KYCVerificationScreen onBack={() => setSubPage(null)} currentRole={currentRole} />,
   };
 
   if (subPage) {
@@ -671,9 +673,8 @@ export function ProfileScreen({
 
   const roleColor = theme.accent;
   const roleSoft = theme.accentSoft;
-  const hasCompletedKyc = Boolean(
-    getTaxIdentityValue(profile).trim() && getTaxHolderValue(profile).trim()
-  );
+  const kycStatus = authUser?.kycStatus ?? 'not_submitted';
+  const showKycBanner = kycStatus !== 'verified';
   const visibleDetailRows =
     currentRole === 'dealer'
       ? detailRows
@@ -927,19 +928,64 @@ export function ProfileScreen({
                 </Text>
               </TouchableOpacity>
             </View>
-            {currentRole === 'dealer' && !hasCompletedKyc ? (
-              <View style={styles.kycBanner}>
-                <View style={styles.kycIcon}>
-                  <AppIcon name="warning" size={18} color="#B45309" />
+            {showKycBanner ? (
+              <TouchableOpacity 
+                style={[
+                  styles.kycBanner,
+                  kycStatus === 'rejected'
+                    ? { backgroundColor: '#FEF2F2', borderColor: '#FECACA' }
+                    : { backgroundColor: '#FFFBEB', borderColor: '#FDE68A' },
+                ]}
+                onPress={() => setSubPage('KYC Verification')}
+                activeOpacity={0.7}
+              >
+                <View style={[
+                  styles.kycIcon,
+                  kycStatus === 'rejected'
+                    ? { backgroundColor: '#FEE2E2' }
+                    : { backgroundColor: '#FEF3C7' },
+                ]}>
+                  <AppIcon
+                    name={kycStatus === 'rejected' ? 'warning' : kycStatus === 'pending' ? 'clock' : 'warning'}
+                    size={18}
+                    color={kycStatus === 'rejected' ? '#DC2626' : '#B45309'}
+                  />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.kycTitle}>Complete KYC to unlock all features</Text>
-                  <Text style={styles.kycSub}>Add PAN & GST details to get verified</Text>
+                  <Text style={[
+                    styles.kycTitle,
+                    kycStatus === 'rejected' ? { color: '#991B1B' } : { color: '#92400E' },
+                  ]}>
+                    {kycStatus === 'rejected'
+                      ? 'KYC Rejected — Tap to resubmit'
+                      : kycStatus === 'pending'
+                        ? 'KYC under review'
+                        : 'Complete KYC to unlock all features'}
+                  </Text>
+                  <Text style={[
+                    styles.kycSub,
+                    kycStatus === 'rejected' ? { color: '#DC2626' } : { color: '#B45309' },
+                  ]}>
+                    {kycStatus === 'rejected'
+                      ? (authUser?.kycRejectionReason ?? 'Documents were rejected')
+                      : kycStatus === 'pending'
+                        ? 'Admin will verify your documents soon'
+                        : 'Tap to upload documents'}
+                  </Text>
                 </View>
-                <View style={styles.kycBadge}>
-                  <Text style={styles.kycBadgeTxt}>Pending</Text>
+                <View style={[
+                  styles.kycBadge,
+                  kycStatus === 'rejected'
+                    ? { backgroundColor: '#EF4444' }
+                    : kycStatus === 'pending'
+                      ? { backgroundColor: '#F59E0B' }
+                      : { backgroundColor: '#F59E0B' },
+                ]}>
+                  <Text style={styles.kycBadgeTxt}>
+                    {kycStatus === 'rejected' ? 'Rejected' : kycStatus === 'pending' ? 'Pending' : 'Pending'}
+                  </Text>
                 </View>
-              </View>
+              </TouchableOpacity>
             ) : null}
             {visibleDetailRows
               .slice(0, showFullProfile ? visibleDetailRows.length : 4)

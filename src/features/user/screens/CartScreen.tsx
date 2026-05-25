@@ -3,6 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePreferenceContext } from '@/shared/preferences';
+import { useAppPageContent } from '@/shared/hooks';
 import { createShadow } from '@/shared/theme/shadows';
 
 // Customer theme colors matching Customer_Slide
@@ -105,6 +106,7 @@ export function CartScreen({
 }) {
   const { darkMode, tx } = usePreferenceContext();
   const insets = useSafeAreaInsets();
+  const pageContent = useAppPageContent('user', 'cart');
 
   const bg = darkMode ? '#0F172A' : '#F2F3F7';
   const cardBg = darkMode ? '#162132' : '#FFFFFF';
@@ -129,12 +131,12 @@ export function CartScreen({
           <View style={[styles.heroGlow, { backgroundColor: darkMode ? 'rgba(141,74,30,0.16)' : 'rgba(106,47,18,0.12)' }]} />
           <View style={styles.heroTopRow}>
             <View>
-              <Text style={[styles.heroEyebrow, { color: PRIMARY_DARK }]}>{tx('Customer Cart')}</Text>
-              <Text style={[styles.heroTitle, { color: textPrimary }]}>{tx('My Cart')}</Text>
+              <Text style={[styles.heroEyebrow, { color: PRIMARY_DARK }]}>{pageContent.pageTitle || tx('Customer Cart')}</Text>
+              <Text style={[styles.heroTitle, { color: textPrimary }]}>{pageContent.heroTitle || tx('My Cart')}</Text>
               <Text style={[styles.heroSubtitle, { color: textMuted }]}>
-                {cartItems.length
+                {pageContent.heroSubtitle || (cartItems.length
                   ? tx('Review your selected products, adjust quantity and continue with enquiry.')
-                  : tx('Save your favorite items here and enquire when you are ready.')}
+                  : tx('Save your favorite items here and enquire when you are ready.'))}
               </Text>
             </View>
             <CartHeroIcon />
@@ -155,9 +157,9 @@ export function CartScreen({
         {cartItems.length === 0 ? (
           <View style={[styles.emptyCard, { backgroundColor: cardBg, borderColor }]}>
             <EmptyCartIcon />
-            <Text style={[styles.emptyTitle, { color: textPrimary }]}>{tx('Your cart is empty')}</Text>
+            <Text style={[styles.emptyTitle, { color: textPrimary }]}>{pageContent.emptyStateTitle || tx('Your cart is empty')}</Text>
             <Text style={[styles.emptySubtitle, { color: textMuted }]}>
-              {tx('Browse categories, explore products and add items here for a cleaner enquiry flow.')}
+              {pageContent.emptyStateSubtitle || tx('Browse categories, explore products and add items here for a cleaner enquiry flow.')}
             </Text>
             <Pressable
               style={styles.shopButtonShell}
@@ -165,7 +167,7 @@ export function CartScreen({
               android_ripple={{ color: 'rgba(255,255,255,0.18)' }}
             >
               <LinearGradient colors={[PRIMARY, PRIMARY_DARK]} style={styles.shopButton}>
-                <Text style={styles.shopButtonText}>{tx('Browse Products')}</Text>
+                <Text style={styles.shopButtonText}>{pageContent.primaryCtaLabel || tx('Browse Products')}</Text>
               </LinearGradient>
             </Pressable>
           </View>

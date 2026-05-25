@@ -1,6 +1,7 @@
 import { api } from './client';
 import { API_BASE_URL as apiBaseUrl } from './config';
 import { storage } from './storage';
+import type { AppPageContentMap } from '@/shared/config/appPageContent';
 
 function sanitizeDealerSignupPayload(data: {
   name: string;
@@ -50,6 +51,102 @@ function sanitizeUserProfileUpdatePayload(data: Partial<UserProfile>) {
     darkMode: data.darkMode,
     pushEnabled: data.pushEnabled,
     profileImage: data.profileImage,
+    // KYC document fields
+    aadharFrontImage: data.aadharFrontImage,
+    panDocument: data.panDocument,
+    gstDocument: data.gstDocument,
+  };
+}
+
+function buildElectricianCodeFallback(data: {
+  phone: string;
+  state?: string;
+  pincode?: string;
+  district?: string;
+  dealerPhone?: string;
+}) {
+  const stateCodeMap: Record<string, string> = {
+    andhrapradesh: 'AP',
+    arunachalpradesh: 'AR',
+    assam: 'AS',
+    bihar: 'BH',
+    chhattisgarh: 'CG',
+    delhi: 'DL',
+    goa: 'GA',
+    gujarat: 'GJ',
+    haryana: 'HR',
+    himachalpradesh: 'HP',
+    jharkhand: 'JH',
+    karnataka: 'KA',
+    kerala: 'KL',
+    madhyapradesh: 'MP',
+    maharashtra: 'MH',
+    odisha: 'OD',
+    punjab: 'PB',
+    rajasthan: 'RJ',
+    tamilnadu: 'TN',
+    telangana: 'TS',
+    uttarpradesh: 'UP',
+    uttarakhand: 'UK',
+    westbengal: 'WB',
+  };
+  const normalizedState = (data.state ?? data.district ?? '').replace(/[^A-Za-z]/g, '').toLowerCase();
+  const stateCode =
+    stateCodeMap[normalizedState] ||
+    (data.state ?? data.district ?? 'XX').replace(/[^A-Za-z]/g, '').toUpperCase().slice(0, 2).padEnd(2, 'X');
+  const districtCode = '01';
+  const areaCode = (data.pincode ?? data.phone.slice(-6) ?? '')
+    .replace(/\D/g, '')
+    .slice(-6)
+    .padStart(6, '0');
+  const rawDealerSequence = (data.dealerPhone ?? '').replace(/\D/g, '').slice(-3);
+  const dealerSequence = rawDealerSequence ? rawDealerSequence.padStart(3, '0') : '001';
+  const memberSequence = data.phone.replace(/\D/g, '').slice(-3).padStart(3, '0');
+  return `${stateCode}-${districtCode}-${areaCode}-${dealerSequence}-${memberSequence}`;
+}
+
+function sanitizeElectricianPayload(data: {
+  name: string;
+  phone: string;
+  email?: string;
+  city?: string;
+  district?: string;
+  state?: string;
+  address?: string;
+  pincode?: string;
+  dealerPhone?: string;
+  password?: string;
+  subCategory?: string;
+  electricianCode?: string;
+  dealerCode?: string;
+  tier?: 'Silver' | 'Gold' | 'Platinum' | 'Diamond';
+  status?: 'active' | 'pending' | 'inactive' | 'suspended';
+}) {
+  const dealerCodePrefix = data.dealerCode?.trim();
+  return {
+    name: data.name,
+    phone: data.phone,
+    email: data.email,
+    city: data.city?.trim() || data.district?.trim() || '',
+    district: data.district?.trim() || data.city?.trim() || '',
+    state: data.state?.trim() || '',
+    address: data.address?.trim() || undefined,
+    pincode: data.pincode?.trim() || undefined,
+    dealerPhone: data.dealerPhone?.trim() || '',
+    password: data.password?.trim() || undefined,
+    subCategory: data.subCategory?.trim() || undefined,
+    tier: data.tier ?? 'Silver',
+    status: data.status ?? 'pending',
+    electricianCode:
+      data.electricianCode?.trim() ||
+      (dealerCodePrefix ? `${dealerCodePrefix}-001` : '') ||
+      buildElectricianCodeFallback({
+        phone: data.phone,
+        state: data.state,
+        pincode: data.pincode,
+        district: data.district ?? data.city,
+        dealerPhone: data.dealerPhone,
+      }),
   };
 }
 
@@ -185,10 +282,14 @@ export const authApi = {
     dealerPhone: string;
     password?: string;
     subCategory?: string;
+    electricianCode?: string;
+    dealerCode?: string;
+    tier?: 'Silver' | 'Gold' | 'Platinum' | 'Diamond';
+    status?: 'active' | 'pending' | 'inactive' | 'suspended';
   }) => {
     const res = await api.post<{ accessToken: string; refreshToken: string; user: UserProfile }>(
       '/mobile/auth/signup/electrician',
-      data
+      sanitizeElectricianPayload(data)
     );
     await storage.setTokens(res.accessToken, res.refreshToken);
     await storage.setUserProfile(res.user);
@@ -407,8 +508,24 @@ export const electriciansApi = {
   getAll: (page = 1, limit = 50, search?: string) =>
     api.get<PaginatedElectricians>('/mobile/electricians', { page, limit, search }, true),
 
-  add: (data: { name: string; phone: string; city?: string; state?: string }) =>
-    api.post<{ message: string; electrician: ElectricianProfile }>('/mobile/electricians', data, true),
+  add: (data: {
+    name: string;
+    phone: string;
+    city?: string;
+    district?: string;
+    state?: string;
+    pincode?: string;
+    dealerPhone?: string;
+    electricianCode?: string;
+    dealerCode?: string;
+    tier?: 'Silver' | 'Gold' | 'Platinum' | 'Diamond';
+    status?: 'active' | 'pending' | 'inactive' | 'suspended';
+  }) =>
+    api.post<{ message: string; electrician: ElectricianProfile }>(
+      '/mobile/electricians',
+      sanitizeElectricianPayload(data),
+      true
+    ),
 
   getCallList: () =>
     api.get<{ data: CallListItem[] }>('/mobile/electricians/call-list', undefined, true),
@@ -453,6 +570,44 @@ export const profileApi = {
 
   updatePreferences: (data: { language?: string; darkMode?: boolean; pushEnabled?: boolean }) =>
     api.patch<UserProfile>('/mobile/auth/profile', data, true),
+
+  uploadDocument: async (file: { uri: string; type: string; name: string }, documentType: 'aadhar-front' | 'aadhar-back' | 'pan' | 'gst') => {
+    const formData = new FormData();
+    formData.append('file', {
+      uri: file.uri,
+      type: file.type,
+      name: file.name,
+    } as any);
+
+    const accessToken = await storage.getAccessToken();
+    const response = await fetch(`${apiBaseUrl}/upload/aadhar-image`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error('Upload failed');
+    }
+
+    const result = await response.json();
+    const url = result.url as string;
+
+    // Map documentType to the correct profile field and save to DB
+    const fieldMap: Record<string, string> = {
+      'aadhar-front': 'aadharFrontImage',
+      'pan':          'panDocument',
+      'gst':          'gstDocument',
+    };
+    const field = fieldMap[documentType];
+    if (field) {
+      await api.patch('/mobile/auth/profile', { [field]: url }, true);
+    }
+
+    return url;
+  },
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -531,12 +686,17 @@ export type UserProfile = {
   // Common
   status?: string;
   kycStatus?: string;
+  kycRejectionReason?: string;
   bankLinked?: boolean;
   upiId?: string;
   bankAccount?: string;
   ifsc?: string;
   bankName?: string;
   accountHolderName?: string;
+  // KYC documents
+  aadharFrontImage?: string | null;
+  panDocument?: string | null;
+  gstDocument?: string | null;
   // Legacy compat
   fullName?: string;
   pointsBalance?: number;
@@ -636,6 +796,8 @@ export type DealerInfo = {
   town: string;
   district: string;
   state: string;
+  electricianCount?: number;
+  nextElectricianSerial?: number | string;
 };
 
 export type AppSettings = {
@@ -658,6 +820,10 @@ export type AppSettings = {
   dealerCatalogPdfUrl?: string | null;
   catalogPdfUrl?: string | null;
   rolePageControls?: Record<string, Record<string, boolean>> | null;
+  appPageContent?: AppPageContentMap | null;
+  pageSectionOrder?: Record<string, Record<string, string[]>> | null;
+  privacyPolicyContent?: string | null;
+  privacyPolicyUpdated?: string | null;
 };
 
 export type ScanResult = {

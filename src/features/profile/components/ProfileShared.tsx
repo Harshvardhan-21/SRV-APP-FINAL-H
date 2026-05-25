@@ -66,7 +66,8 @@ export type SubPage =
   | 'Scan History'
   | 'Contact Support'
   | 'Privacy Policy'
-  | 'Rate Us';
+  | 'Rate Us'
+  | 'KYC Verification';
 
 export type IconName =
   | 'edit'
@@ -97,6 +98,9 @@ export type IconName =
   | 'whatsapp'
   | 'moon'
   | 'warning'
+  | 'clock'
+  | 'info'
+  | 'circle'
   | 'arrowLeft'
   | 'backArrow'
   | 'check'
@@ -586,6 +590,27 @@ export function AppIcon({
             strokeWidth={strokeWidth}
             strokeLinecap="round"
           />
+        </Svg>
+      );
+    case 'clock':
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+          <Circle cx="12" cy="12" r="8.5" stroke={color} strokeWidth={strokeWidth} />
+          <Path d="M12 7.8v4.6l2.9 1.8" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" />
+        </Svg>
+      );
+    case 'info':
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+          <Circle cx="12" cy="12" r="8.5" stroke={color} strokeWidth={strokeWidth} />
+          <Path d="M12 10.2v5" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" />
+          <Circle cx="12" cy="7.7" r="0.9" fill={color} />
+        </Svg>
+      );
+    case 'circle':
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+          <Circle cx="12" cy="12" r="8.5" stroke={color} strokeWidth={strokeWidth} />
         </Svg>
       );
     case 'arrowLeft':

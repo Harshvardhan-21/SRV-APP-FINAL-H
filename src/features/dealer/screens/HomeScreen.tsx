@@ -35,7 +35,8 @@ import {
   isRoleFeatureEnabled,
   resolveRolePageControls,
 } from '@/shared/config/rolePageControls';
-import { useCatalogDownload } from '@/shared/hooks';
+import { useAppPageContent, useAppPageSections, useCatalogDownload } from '@/shared/hooks';
+import type { HomePageSectionKey } from '@/shared/config/appPageContent';
 import { API_BASE_URL } from '@/shared/api/config';
 
 const logoImage = require('../../../../assets/srv logo white.jpeg');
@@ -47,7 +48,7 @@ const CAT_IMAGES: Record<string, string> = {
   concealedbox: 'https://srvelectricals.com/cdn/shop/files/CRD_PL_3.png?v=1757426566&width=320',
   modular: 'https://srvelectricals.com/cdn/shop/files/3x3_679e5d30-ecf2-446e-9452-354bbf4c4a26.png?v=1757426377&width=320',
   mcb: 'https://srvelectricals.com/cdn/shop/files/MCB_Box_4_Way_GI.png?v=1757426418&width=320',
-  busbar: 'https://srvelectricals.com/cdn/shop/files/Bus_Bar_100A_Super.png?v=1757426672&width=320',
+  busbar: 'https://cdn.shopify.com/s/files/1/0651/4583/1466/files/Bus_Bar_100A_Super.png',
   exhaust: 'https://srvelectricals.com/cdn/shop/files/AP-Turtle-Fan.webp?v=1747938680&width=320',
   led: 'https://srvelectricals.com/cdn/shop/files/FloodLightSleek.png?v=1757426471&width=320',
   changeover: 'https://srvelectricals.com/cdn/shop/files/ACO_100A_FP.png?v=1757426480&width=320',
@@ -286,19 +287,24 @@ function HomeCategoryCard({
   cardW,
   darkMode,
   onPress,
+  buttonLabel,
 }: {
-  cat: { id: string; label: string; imageUrl?: string | null };
+  cat: { id: string; label: string; imageUrl?: string | null; _fallbackImg?: string };
   index: number;
   cardW: number;
   darkMode: boolean;
   onPress: () => void;
+  buttonLabel?: string;
 }) {
   const pressScale = useRef(new Animated.Value(1)).current;
   const tiltX = useRef(new Animated.Value(0)).current;
   const tiltY = useRef(new Animated.Value(0)).current;
   const entryY = useRef(new Animated.Value(50)).current;
   const entryOp = useRef(new Animated.Value(0)).current;
-  const imgUri = getCatImage(cat.id, cat.imageUrl);
+  // Use _fallbackImg if provided (for hardcoded categories with no DB image), else getCatImage
+  const imgUri = cat._fallbackImg && !cat.imageUrl
+    ? cat._fallbackImg
+    : getCatImage(cat.id, cat.imageUrl);
 
   useEffect(() => {
     Animated.parallel([
@@ -344,7 +350,7 @@ function HomeCategoryCard({
             </Text>
             <View style={[homeCatStyles.pill, { backgroundColor: darkMode ? 'rgba(255,255,255,0.08)' : '#F5F8FB' }]}>
               <Text style={[homeCatStyles.pillText, { color: darkMode ? '#94A3B8' : '#4A637B' }]}>
-                View Products
+                {buttonLabel ?? 'View Products'}
               </Text>
             </View>
           </View>
@@ -412,6 +418,7 @@ export function HomeScreen({
     appSettings,
   } = useAppData();
   const { openCatalog } = useCatalogDownload();
+  const pageContent = useAppPageContent('dealer', 'home');
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const statPulse = useRef(new Animated.Value(1)).current;
@@ -519,22 +526,29 @@ export function HomeScreen({
   }, [ctxCategories, ctxProducts]);
   const displayedCategories = useMemo(() => {
     const hardcodedCategories = [
-      { id: 'Fan Box', label: 'Fan Box', searchTerms: ['fan', 'fanbox', 'fan-box'] },
-      { id: 'Concealed Box', label: 'Concealed Box', searchTerms: ['concealed', 'concealedbox', 'concealed-box'] },
-      { id: 'BUS BAR SUPER', label: 'Bus Bar Super', searchTerms: ['bus', 'bar', 'busbar', 'super'] },
-      { id: 'ECO SPN DD MCB BOX', label: 'MCB Box', searchTerms: ['mcb', 'eco', 'spn', 'dd'] },
+      { id: 'Fan Box',          label: 'Fan Box',       fallbackImg: CAT_IMAGES.fanbox,      searchTerms: ['fan', 'fanbox', 'fan-box'] },
+      { id: 'Concealed Box',    label: 'Concealed Box', fallbackImg: CAT_IMAGES.concealedbox, searchTerms: ['concealed', 'concealedbox', 'concealed-box'] },
+      { id: 'BUS BAR SUPER',    label: 'Bus Bar Super', fallbackImg: CAT_IMAGES.busbar,       searchTerms: ['bus bar super', 'busbarsuper'] },
+      { id: 'ECO SPN DD MCB BOX', label: 'MCB Box',    fallbackImg: CAT_IMAGES.mcb,          searchTerms: ['mcb', 'eco', 'spn', 'dd'] },
     ];
-    
-    // Try to match with actual categories from database
+
     return hardcodedCategories.map(hardcoded => {
       const found = categories.find((category) => {
         const cId = category.id.toLowerCase();
         const cLabel = (category.label || '').toLowerCase();
-        return hardcoded.searchTerms.some(term => 
+        return hardcoded.searchTerms.some(term =>
           cId.includes(term.toLowerCase()) || cLabel.includes(term.toLowerCase())
         );
       });
-      return found ? { ...found, label: hardcoded.label } : { id: hardcoded.id, label: hardcoded.label, count: 0 };
+      // If DB has an image use it, otherwise always use the hardcoded fallback
+      const imageUrl = found?.imageUrl ?? null;
+      return {
+        id: found?.id ?? hardcoded.id,
+        label: hardcoded.label,
+        imageUrl: imageUrl,
+        // Pass fallback so HomeCategoryCard can use it when imageUrl is null
+        _fallbackImg: imageUrl ? undefined : hardcoded.fallbackImg,
+      };
     });
   }, [categories]);
   const dealerTestimonials = useMemo<TestimonialItem[]>(() => {
@@ -589,15 +603,6 @@ export function HomeScreen({
       iconColors: ['#EEF5FF', '#DCE8FF'] as const,
       iconTint: '#1D4ED8',
       onPress: () => {
-        const kyc = authUser?.kycStatus;
-        if (kyc !== 'verified') {
-          Alert.alert(
-            tx('KYC Required'),
-            tx('Please complete your KYC verification to access Associate Electrician. Contact your SRV admin to get verified.'),
-            [{ text: tx('OK') }]
-          );
-          return;
-        }
         onNavigate('electricians');
       },
       hidden: !showElectricians,
@@ -639,6 +644,113 @@ export function HomeScreen({
       hidden: !showWhatsapp,
     },
   ].filter((item) => !item.hidden);
+
+  const homeSections = useAppPageSections('dealer', 'home');
+
+  const renderBodySections = (): React.ReactNode[] => {
+    if (!homeSections.length) return [];
+
+    const sectionMap: Record<HomePageSectionKey, React.ReactNode | null> = {
+      home_banner: authUser && activeBannerSlides.length > 0 ? (
+        <View key="home_banner">
+          <BannerCarousel slides={activeBannerSlides} height={heroImageHeight} darkMode={darkMode} />
+        </View>
+      ) : null,
+      quick_actions: (
+        <View key="quick_actions" style={styles.quickGrid}>
+          {quickActions.map((item) => {
+            const Icon = item.icon;
+            return (
+              <TouchableOpacity
+                key={item.title}
+                style={[styles.quickCard, darkMode ? styles.quickCardDark : null, { width: cardW }]}
+                onPress={item.onPress}
+                activeOpacity={0.9}
+                testID={item.testID}
+                accessible
+                accessibilityRole="button"
+                accessibilityLabel={item.accessibilityLabel}
+              >
+                <LinearGradient colors={item.iconColors} style={styles.quickIconBox}>
+                  <Icon color={item.iconTint} size={24} />
+                </LinearGradient>
+                <Text style={[styles.quickTitle, darkMode ? styles.quickTitleDark : null]}>
+                  {item.title}
+                </Text>
+                <Text style={[styles.quickSub, darkMode ? styles.quickSubDark : null]}>
+                  {item.sub}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      ),
+      browse_categories: categories.length > 0 ? (
+        <View key="browse_categories">
+          <View style={styles.sectionHeader}>
+            <View>
+              <Text style={[styles.sectionEyebrow, darkMode ? styles.sectionEyebrowDark : null]}>
+                {pageContent.sectionTitle || tx('Shop by Category')}
+              </Text>
+              <Text style={[styles.sectionTitle, darkMode ? styles.sectionTitleDark : null]}>
+                {pageContent.sectionSubtitle || tx('Browse Categories')}
+              </Text>
+            </View>
+            {showProduct && categories.length > 4 && (
+              <TouchableOpacity onPress={() => onNavigate('product')} style={styles.inlineAction} activeOpacity={0.85}>
+                <Text style={styles.viewAllText}>{pageContent.primaryCtaLabel || tx('View all')}</Text>
+                <ChevronRight />
+              </TouchableOpacity>
+            )}
+          </View>
+          <View style={styles.homeCatGrid}>
+            {displayedCategories.map((cat, index) => (
+              <HomeCategoryCard
+                key={cat.id} cat={cat} index={index}
+                cardW={catCardW} darkMode={darkMode}
+                onPress={() => onOpenProductCategory(cat.id)}
+                buttonLabel={pageContent.cardButtonLabel || 'View Products'}
+              />
+            ))}
+          </View>
+        </View>
+      ) : null,
+      testimonials: showTestimonials ? (
+        <TestimonialShowcase
+          key="testimonials"
+          eyebrow={pageContent.testimonialEyebrow || (
+            language === 'Hindi'
+              ? 'डीलर की राय'
+              : language === 'Punjabi'
+                ? 'ਡੀਲਰ ਦੀ ਰਾਇ'
+                : 'Dealer Testimonials'
+          )}
+          title={pageContent.testimonialTitle || (
+            language === 'Hindi'
+              ? 'हमारे डीलर क्या कहते हैं'
+              : language === 'Punjabi'
+                ? 'ਸਾਡੇ ਡੀਲਰ ਕੀ ਕਹਿੰਦੇ ਹਨ'
+                : 'What Dealers Say'
+          )}
+          subtitle={pageContent.testimonialSubtitle || (
+            language === 'Hindi'
+              ? 'रियल नेटवर्क पार्टनर्स की राय, जिन्होंने एसआरवी के साथ बिजनेस को और मजबूत बनाया।'
+              : language === 'Punjabi'
+                ? 'ਅਸਲ ਨੈੱਟਵਰਕ ਪਾਰਟਨਰਾਂ ਦੀ ਰਾਇ, ਜਿਨ੍ਹਾਂ ਨੇ SRV ਨਾਲ ਆਪਣਾ ਕਾਰੋਬਾਰ ਹੋਰ ਮਜ਼ਬੂਤ ਕੀਤਾ।'
+                : 'Real partner feedback from dealers who are growing faster with SRV.'
+          )}
+          items={dealerTestimonials}
+          darkMode={darkMode}
+        />
+      ) : null,
+      website_promo: <WebsitePromoSection key="website_promo" darkMode={darkMode} />,
+    };
+
+    return homeSections
+      .filter((key) => key !== 'hero_banner')
+      .map((key) => sectionMap[key])
+      .filter(Boolean) as React.ReactNode[];
+  };
 
   return (
     <ScrollView
@@ -798,119 +910,7 @@ export function HomeScreen({
       </LinearGradient>
 
       <View style={styles.body}>
-        {authUser && activeBannerSlides.length > 0 ? (
-          <BannerCarousel
-            slides={activeBannerSlides}
-            height={heroImageHeight}
-            darkMode={darkMode}
-          />
-        ) : null}
-
-        <View style={styles.quickGrid}>
-          {quickActions.map((item) => {
-            const Icon = item.icon;
-            return (
-              <TouchableOpacity
-                key={item.title}
-                style={[styles.quickCard, darkMode ? styles.quickCardDark : null, { width: cardW }]}
-                onPress={item.onPress}
-                activeOpacity={0.9}
-                testID={item.testID}
-                accessible
-                accessibilityRole="button"
-                accessibilityLabel={item.accessibilityLabel}
-              >
-                <LinearGradient colors={item.iconColors} style={styles.quickIconBox}>
-                  <Icon color={item.iconTint} size={24} />
-                </LinearGradient>
-                <Text style={[styles.quickTitle, darkMode ? styles.quickTitleDark : null]}>
-                  {item.title}
-                </Text>
-                <Text style={[styles.quickSub, darkMode ? styles.quickSubDark : null]}>
-                  {item.sub}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-
-        {categories.length > 0 && (
-          <>
-            <View style={styles.sectionHeader}>
-              <View>
-                <Text style={[styles.sectionEyebrow, darkMode ? styles.sectionEyebrowDark : null]}>
-                  {tx('Shop by Category')}
-                </Text>
-                <Text style={[styles.sectionTitle, darkMode ? styles.sectionTitleDark : null]}>
-                  {tx('Browse Categories')}
-                </Text>
-              </View>
-              {showProduct && categories.length > 4 && (
-                <TouchableOpacity onPress={() => onNavigate('product')} style={styles.inlineAction} activeOpacity={0.85}>
-                  <Text style={styles.viewAllText}>{tx('View all')}</Text>
-                  <ChevronRight />
-                </TouchableOpacity>
-              )}
-            </View>
-
-            <View style={styles.homeCatGrid}>
-              {displayedCategories.map((cat, index) => (
-                <HomeCategoryCard
-                  key={cat.id}
-                  cat={cat}
-                  index={index}
-                  cardW={catCardW}
-                  darkMode={darkMode}
-                  onPress={() => onOpenProductCategory(cat.id)}
-                />
-              ))}
-            </View>
-          </>
-        )}
-
-        {showTestimonials ? (
-          <TestimonialShowcase
-            eyebrow={
-              language === 'Hindi'
-                ? 'डीलर की राय'
-                : language === 'Punjabi'
-                  ? 'ਡੀਲਰ ਦੀ ਰਾਇ'
-                  : 'Dealer Testimonials'
-            }
-            title={
-              language === 'Hindi'
-                ? 'हमारे डीलर क्या कहते हैं'
-                : language === 'Punjabi'
-                  ? 'ਸਾਡੇ ਡੀਲਰ ਕੀ ਕਹਿੰਦੇ ਹਨ'
-                  : 'What Dealers Say'
-            }
-            subtitle={
-              language === 'Hindi'
-                ? 'रियल नेटवर्क पार्टनर्स की राय, जिन्होंने एसआरवी के साथ बिजनेस को और मजबूत बनाया।'
-                : language === 'Punjabi'
-                  ? 'ਅਸਲ ਨੈੱਟਵਰਕ ਪਾਰਟਨਰਾਂ ਦੀ ਰਾਇ, ਜਿਨ੍ਹਾਂ ਨੇ SRV ਨਾਲ ਆਪਣਾ ਕਾਰੋਬਾਰ ਹੋਰ ਮਜ਼ਬੂਤ ਕੀਤਾ।'
-                  : 'Real partner feedback from dealers who are growing faster with SRV.'
-            }
-            items={dealerTestimonials}
-            darkMode={darkMode}
-          />
-        ) : null}
-
-        <WebsitePromoSection darkMode={darkMode} />
-
-        <View style={[styles.activityCard, darkMode ? styles.activityCardDark : null]}>
-          <Text style={[styles.activityTitle, darkMode ? styles.activityTitleDark : null]}>
-            {tx('Dealer Growth')}
-          </Text>
-          <Text style={[styles.activityCopy, darkMode ? styles.activityCopyDark : null]}>
-            {language === 'Hindi'
-              ? `डीलर नेटवर्क लगातार बढ़ रहा है और ${connectedCount} जुड़े हुए इलेक्ट्रीशियन हैं। अपने नेटवर्क को मैनेज और बढ़ाने के लिए इलेक्ट्रीशियन पेज खोलें।`
-              : language === 'Punjabi'
-                ? `ਡੀਲਰ ਨੈੱਟਵਰਕ ਲਗਾਤਾਰ ਵੱਧ ਰਿਹਾ ਹੈ ਅਤੇ ${connectedCount} ਜੁੜੇ ਹੋਏ ਇਲੈਕਟ੍ਰੀਸ਼ਨ ਹਨ। ਆਪਣੇ ਨੈੱਟਵਰਕ ਨੂੰ ਸੰਭਾਲਣ ਅਤੇ ਵਧਾਉਣ ਲਈ ਇਲੈਕਟ੍ਰੀਸ਼ਨ ਪੇਜ ਖੋਲ੍ਹੋ।`
-                : `Dealer network is growing steadily with ${connectedCount} associated electricians. Use the electricians page to manage and expand your dealer network.`}
-          </Text>
-        </View>
-
+        {renderBodySections()}
         <View style={{ height: Math.max(30, insets.bottom + 18) }} />
       </View>
     </ScrollView>
@@ -1061,11 +1061,12 @@ const styles = StyleSheet.create({
   dotDark: { backgroundColor: '#334155' },
   dotActive: { width: 28, backgroundColor: '#173E80' },
   dotActiveDark: { width: 28, backgroundColor: '#E2E8F0' },
-  quickGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 22 },
+  quickGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 22 },
   quickCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 22,
     padding: 14,
+    marginBottom: 12,
     ...createShadow({ color: '#0F172A', offsetY: 8, blur: 18, opacity: 0.07, elevation: 4 }),
   },
   quickCardDark: {

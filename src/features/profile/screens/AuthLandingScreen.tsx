@@ -61,6 +61,7 @@ export function AuthLandingScreen({
 
   const isDealer = role === 'dealer';
   const accent = '#173E80';
+  const isDark = theme.bg === '#0B1220' || theme.surface === '#111827'; // detect dark from theme
   const roleTheme = isDealer
     ? {
         p1: '#173E80',
@@ -68,14 +69,14 @@ export function AuthLandingScreen({
         p3: '#88AEEA',
         soft: '#EAF3FF',
         orb: '#CFE0FF',
-        shell: '#F4F8FF',
-        cardBorder: '#D7E7FF',
-        secondaryBg: '#F7FBFF',
-        secondaryBorder: '#C5DAFB',
-        statsBorder: '#D7E7FF',
-        statBg: '#EEF5FF',
-        statCardBorder: '#D7E7FF',
-        backFade: '#F7FBFF',
+        shell: isDark ? '#0B1220' : '#F4F8FF',
+        cardBorder: isDark ? '#243043' : '#D7E7FF',
+        secondaryBg: isDark ? '#111827' : '#F7FBFF',
+        secondaryBorder: isDark ? '#243043' : '#C5DAFB',
+        statsBorder: isDark ? '#243043' : '#D7E7FF',
+        statBg: isDark ? '#1F2937' : '#EEF5FF',
+        statCardBorder: isDark ? '#243043' : '#D7E7FF',
+        backFade: isDark ? '#111827' : '#F7FBFF',
       }
     : {
         p1: '#173E80',
@@ -83,14 +84,14 @@ export function AuthLandingScreen({
         p3: '#6F879F',
         soft: '#EAF3FF',
         orb: '#BFDBFE',
-        shell: '#EEF3F8',
-        cardBorder: '#D7E7FF',
-        secondaryBg: '#F7FBFF',
-        secondaryBorder: '#BFD6F5',
-        statsBorder: '#DCE8F8',
-        statBg: '#EEF5FF',
-        statCardBorder: '#D3E3FF',
-        backFade: '#F7FBFF',
+        shell: isDark ? '#0B1220' : '#EEF3F8',
+        cardBorder: isDark ? '#243043' : '#D7E7FF',
+        secondaryBg: isDark ? '#111827' : '#F7FBFF',
+        secondaryBorder: isDark ? '#243043' : '#BFD6F5',
+        statsBorder: isDark ? '#243043' : '#DCE8F8',
+        statBg: isDark ? '#1F2937' : '#EEF5FF',
+        statCardBorder: isDark ? '#243043' : '#D3E3FF',
+        backFade: isDark ? '#111827' : '#F7FBFF',
       };
   const title = isDealer
     ? tx('Dealer account access')
@@ -108,8 +109,7 @@ export function AuthLandingScreen({
       style={[styles.screen, { backgroundColor: roleTheme.shell }]}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
-    >
-      <LinearGradient colors={[roleTheme.p1, roleTheme.p2, roleTheme.p3]} style={styles.heroCard}>
+    >      <LinearGradient colors={[roleTheme.p1, roleTheme.p2, roleTheme.p3]} style={styles.heroCard}>
         <View style={[styles.heroOrbLarge, { backgroundColor: roleTheme.orb }]} />
         <View style={[styles.heroOrbSmall, { backgroundColor: roleTheme.orb }]} />
         <View style={styles.logoWrap}>
@@ -130,7 +130,7 @@ export function AuthLandingScreen({
         style={[
           styles.actionCard,
           {
-            backgroundColor: '#FFFFFF',
+            backgroundColor: isDark ? '#111827' : '#FFFFFF',
             borderColor: roleTheme.cardBorder,
           },
         ]}

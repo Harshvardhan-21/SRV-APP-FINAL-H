@@ -13,6 +13,8 @@ import {
 import { AppIcon, C, PageHeader } from '../components/ProfileShared';
 import { usePreferenceContext } from '@/shared/preferences';
 import { createShadow } from '@/shared/theme/shadows';
+import { useAuth } from '@/shared/context/AuthContext';
+import { useAppPageContent } from '@/shared/hooks';
 
 type PasswordMode = 'set' | 'change';
 
@@ -177,6 +179,8 @@ export function PasswordSettingsPage({
   onPasswordChange,
 }: PasswordSettingsPageProps) {
   const { tx, theme } = usePreferenceContext();
+  const { role } = useAuth();
+  const pageContent = useAppPageContent((role ?? 'electrician') as any, 'password');
   const [mode, setMode] = useState<PasswordMode>(hasPasswordConfigured ? 'change' : 'set');
   const [setPassword, setSetPassword] = useState('');
   const [confirmSetPassword, setConfirmSetPassword] = useState('');
@@ -352,7 +356,7 @@ export function PasswordSettingsPage({
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 12 : 0}
       >
-        <PageHeader title={tx('Password')} onBack={onBack} />
+        <PageHeader title={pageContent.pageTitle || tx('Password')} onBack={onBack} />
         <ScrollView
           ref={scrollRef}
           showsVerticalScrollIndicator={false}

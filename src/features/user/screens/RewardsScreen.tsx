@@ -17,6 +17,7 @@ import { AppIcon, shared } from '@/features/profile/components/ProfileShared';
 import { withWebSafeNativeDriver } from '@/shared/animations/nativeDriver';
 import { useAppData } from '@/shared/context/AppDataContext';
 import { useAuth } from '@/shared/context/AuthContext';
+import { useAppPageContent } from '@/shared/hooks';
 import { usePreferenceContext } from '@/shared/preferences';
 import { createShadow } from '@/shared/theme/shadows';
 import type { GiftProduct } from '@/shared/api';
@@ -160,6 +161,7 @@ export function RewardsScreen({ onBack }: { onBack?: () => void }) {
   const { darkMode, tx, theme } = usePreferenceContext();
   const { giftProducts, wallet, walletSummary, redeemReward, refreshAll } = useAppData();
   const { role } = useAuth();
+  const pageContent = useAppPageContent((role ?? 'user') as any, 'rewards');
   const { width } = useWindowDimensions();
   const [redeemingId, setRedeemingId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -237,7 +239,7 @@ export function RewardsScreen({ onBack }: { onBack?: () => void }) {
           <TouchableOpacity onPress={onBack} style={shared.backBtn} activeOpacity={0.75}>
             <AppIcon name="backArrow" size={22} color={theme.textPrimary} />
           </TouchableOpacity>
-          <Text style={[shared.title, { color: theme.textPrimary }]}>{tx('Gift Store')}</Text>
+          <Text style={[shared.title, { color: theme.textPrimary }]}>{pageContent.pageTitle || tx('Gift Store')}</Text>
           <View style={{ width: 36 }} />
         </View>
       ) : null}
@@ -257,10 +259,10 @@ export function RewardsScreen({ onBack }: { onBack?: () => void }) {
         >
           <View style={styles.heroTop}>
             <View style={styles.heroCopy}>
-              <Text style={[styles.heroEyebrow, darkMode && styles.heroEyebrowDark]}>{tx('Gift Store')}</Text>
-              <Text style={[styles.heroTitle, darkMode && styles.heroTitleDark]}>{tx('Redeem your SRV rewards')}</Text>
+              <Text style={[styles.heroEyebrow, darkMode && styles.heroEyebrowDark]}>{pageContent.sectionTitle || pageContent.pageTitle || tx('Gift Store')}</Text>
+              <Text style={[styles.heroTitle, darkMode && styles.heroTitleDark]}>{pageContent.heroTitle || tx('Redeem your SRV rewards')}</Text>
               <Text style={[styles.heroSub, darkMode && styles.heroSubDark]}>
-                {tx('Use your earned points to claim gifts, offers, and customer rewards from one place.')}
+                {pageContent.heroSubtitle || tx('Use your earned points to claim gifts, offers, and customer rewards from one place.')}
               </Text>
             </View>
             <View style={[styles.heroCoinWrap, darkMode && styles.heroCoinWrapDark]}>
@@ -297,8 +299,8 @@ export function RewardsScreen({ onBack }: { onBack?: () => void }) {
         {filtered.length === 0 ? (
           <View style={styles.empty}>
             <Text style={styles.emptyEmoji}>🎁</Text>
-            <Text style={[styles.emptyTitle, darkMode && { color: '#F8FAFC' }]}>{tx('No gifts available')}</Text>
-            <Text style={[styles.emptySub, darkMode && { color: '#94A3B8' }]}>{tx('Check back soon!')}</Text>
+            <Text style={[styles.emptyTitle, darkMode && { color: '#F8FAFC' }]}>{pageContent.emptyStateTitle || tx('No gifts available')}</Text>
+            <Text style={[styles.emptySub, darkMode && { color: '#94A3B8' }]}>{pageContent.emptyStateSubtitle || tx('Check back soon!')}</Text>
           </View>
         ) : (
           <View style={styles.grid}>

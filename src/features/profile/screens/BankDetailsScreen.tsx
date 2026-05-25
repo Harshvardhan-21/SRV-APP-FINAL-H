@@ -14,6 +14,7 @@ import { AppIcon, C, PageHeader, PrimaryBtn } from '../components/ProfileShared'
 import { usePreferenceContext } from '@/shared/preferences';
 import { authApi } from '@/shared/api';
 import { useAuth } from '@/shared/context/AuthContext';
+import { useAppPageContent } from '@/shared/hooks';
 
 const bankOptions = [
   'State Bank of India',
@@ -30,7 +31,8 @@ const bankOptions = [
 
 export function BankDetailsPage({ onBack }: { onBack: () => void }) {
   const { t, tx, theme } = usePreferenceContext();
-  const { user, updateUser } = useAuth();
+  const { role, user, updateUser } = useAuth();
+  const pageContent = useAppPageContent((role ?? 'electrician') as any, 'bank_details');
 
   const [saving, setSaving] = useState(false);
   const [accountHolderName, setAccountHolderName] = useState(user?.accountHolderName ?? '');
@@ -107,7 +109,7 @@ export function BankDetailsPage({ onBack }: { onBack: () => void }) {
       style={{ flex: 1, backgroundColor: theme.bg }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <PageHeader title={t('bankDetails')} onBack={onBack} />
+      <PageHeader title={pageContent.pageTitle || t('bankDetails')} onBack={onBack} />
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}

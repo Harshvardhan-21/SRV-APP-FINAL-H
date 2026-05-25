@@ -2,9 +2,13 @@ import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { AppIcon, C, IconName, PageHeader } from '../components/ProfileShared';
 import { type AppLanguage, usePreferenceContext } from '@/shared/preferences';
+import { useAuth } from '@/shared/context/AuthContext';
+import { useAppPageContent } from '@/shared/hooks';
 
 export function AppSettingsPage({ onBack }: { onBack: () => void }) {
   const { language, setLanguage, darkMode, setDarkMode, t, theme } = usePreferenceContext();
+  const { role } = useAuth();
+  const pageContent = useAppPageContent((role ?? 'electrician') as any, 'app_settings');
   const [notifEnabled, setNotifEnabled] = useState(true);
 
   const Toggle = ({ val, onToggle }: { val: boolean; onToggle: () => void }) => (
@@ -19,7 +23,7 @@ export function AppSettingsPage({ onBack }: { onBack: () => void }) {
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.bg }}>
-      <PageHeader title={t('appSettings')} onBack={onBack} />
+      <PageHeader title={pageContent.pageTitle || t('appSettings')} onBack={onBack} />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
           <Text style={[styles.sectionTitle, { color: theme.textMuted }]}>{t('preferences')}</Text>

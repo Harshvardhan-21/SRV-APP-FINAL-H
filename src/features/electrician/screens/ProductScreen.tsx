@@ -17,6 +17,7 @@ import {
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 import { withWebSafeNativeDriver } from '@/shared/animations/nativeDriver';
 import { useAppData } from '@/shared/context/AppDataContext';
+import { useAppPageContent } from '@/shared/hooks';
 import { usePreferenceContext } from '@/shared/preferences';
 import type { Screen } from '@/shared/types/navigation';
 import type { Product as ApiProduct, ProductCategory as ApiProductCategory } from '@/shared/api';
@@ -475,6 +476,8 @@ export function ProductScreen({
   const { darkMode, tx } = usePreferenceContext();
   const { products: apiProducts, categories: apiCategories, catalogLoading, refreshAll } = useAppData();
   const { width } = useWindowDimensions();
+  const contentRole = role === 'customer' ? 'user' : role;
+  const pageContent = useAppPageContent(contentRole as any, 'product');
 
   const [category, setCategory] = useState(normCat(initialCategory) || 'all');
   const [search, setSearch] = useState('');
@@ -493,8 +496,8 @@ export function ProductScreen({
 
   // All categories list including "All"
   const allCategoryItem = useMemo<UiCategory>(
-    () => ({ id: 'all', label: tx('All Products'), count: products.length, imageUrl: DEFAULT_IMAGES.fanbox }),
-    [products.length, tx]
+    () => ({ id: 'all', label: pageContent.pageTitle || tx('All Products'), count: products.length, imageUrl: DEFAULT_IMAGES.fanbox }),
+    [pageContent.pageTitle, products.length, tx]
   );
   const categoryItems = useMemo(() => [allCategoryItem, ...uiCategories], [allCategoryItem, uiCategories]);
 
@@ -546,8 +549,8 @@ export function ProductScreen({
   const isDealer = role === 'dealer';
   const isCustomer = role === 'customer';
   const isCounterboy = role === 'counterboy';
-  const productActionLabel = (isDealer || isCustomer || isCounterboy) ? tx('Buy Now') : tx('Scan to Earn');
-  const bannerActionLabel = (isDealer || isCustomer || isCounterboy) ? tx('Buy Now') : tx('Scan & Earn').replace(' ', '\n');
+  const productActionLabel = pageContent.primaryCtaLabel || ((isDealer || isCustomer || isCounterboy) ? tx('Buy Now') : tx('Scan to Earn'));
+  const bannerActionLabel = pageContent.secondaryCtaLabel || ((isDealer || isCustomer || isCounterboy) ? tx('Buy Now') : tx('Scan & Earn').replace(' ', '\n'));
   const handleScan = useCallback(() => onNavigate((isDealer || isCustomer || isCounterboy) ? 'rewards' : 'scan'), [onNavigate, isDealer, isCustomer, isCounterboy]);
 
   const handleRefresh = useCallback(async () => {
@@ -572,7 +575,7 @@ export function ProductScreen({
   const ListHeader = useMemo(() => (
     <View style={{ gap: 14, paddingBottom: 4 }}>
       {/* Title */}
-      <Text style={[styles.pageTitle, darkMode ? styles.pageTitleDark : null, isCounterboy && { color: '#5C3D2E' }, isCounterboy && darkMode && { color: '#F5EDE4' }]}>{tx('All Products')}</Text>
+      <Text style={[styles.pageTitle, darkMode ? styles.pageTitleDark : null, isCounterboy && { color: '#5C3D2E' }, isCounterboy && darkMode && { color: '#F5EDE4' }]}>{pageContent.pageTitle || tx('All Products')}</Text>
 
       {/* Search bar */}
       <View style={[styles.searchWrap, darkMode ? styles.searchWrapDark : null, isCounterboy && { backgroundColor: '#F9F4ED', borderColor: '#E0D0C0' }, isCounterboy && darkMode && { backgroundColor: '#1A0F0A', borderColor: '#2D1C14' }]}>
@@ -580,7 +583,7 @@ export function ProductScreen({
         <TextInput
           value={search}
           onChangeText={setSearch}
-          placeholder={tx('Search all products...')}
+          placeholder={pageContent.searchPlaceholder || tx('Search all products...')}
           placeholderTextColor={C.textMuted}
           style={[styles.searchInput, darkMode ? styles.searchInputDark : null, isCounterboy && { color: '#2D1A10' }, isCounterboy && darkMode && { color: '#F5EDE4' }]}
         />
@@ -818,7 +821,7 @@ export function ProductScreen({
     <View style={styles.empty}>
       <Text style={styles.emptyEmoji}>{catalogLoading ? '⏳' : '🔍'}</Text>
       <Text style={[styles.emptyText, darkMode ? styles.emptyTextDark : null]}>
-        {catalogLoading ? tx('Loading products...') : tx('No products found')}
+        {catalogLoading ? tx('Loading products...') : pageContent.emptyStateTitle || tx('No products found')}
       </Text>
     </View>
   ), [catalogLoading, darkMode, tx]);

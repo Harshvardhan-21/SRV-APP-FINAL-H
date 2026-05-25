@@ -20,10 +20,14 @@ import { AppIcon, C, PageHeader } from '../components/ProfileShared';
 import { usePreferenceContext } from '@/shared/preferences';
 import { settingsApi } from '@/shared/api';
 import { useAppData } from '@/shared/context/AppDataContext';
+import { useAuth } from '@/shared/context/AuthContext';
+import { useAppPageContent } from '@/shared/hooks';
 
 export function NeedHelpPage({ onBack }: { onBack: () => void }) {
   const { t, tx, theme } = usePreferenceContext();
+  const { role } = useAuth();
   const { submitSupportTicket } = useAppData();
+  const pageContent = useAppPageContent((role ?? 'electrician') as any, 'need_help');
   const [subject, setSubject] = useState('');
   const [comment, setComment] = useState('');
   const [photo, setPhoto] = useState<string | null>(null);
@@ -187,7 +191,7 @@ export function NeedHelpPage({ onBack }: { onBack: () => void }) {
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.bg }}>
-      <PageHeader title={t('needHelp')} onBack={onBack} />
+      <PageHeader title={pageContent.pageTitle || t('needHelp')} onBack={onBack} />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
           <View style={styles.headerRow}>
@@ -196,10 +200,10 @@ export function NeedHelpPage({ onBack }: { onBack: () => void }) {
             </View>
             <View>
               <Text style={[styles.title, { color: theme.textPrimary }]}>
-                {tx('Support Request')}
+                {pageContent.cardTitle || tx('Support Request')}
               </Text>
               <Text style={[styles.sub, { color: theme.textMuted }]}>
-                {tx('We typically respond within 24 hours')}
+                {pageContent.cardSubtitle || tx('We typically respond within 24 hours')}
               </Text>
             </View>
           </View>
@@ -269,11 +273,11 @@ export function NeedHelpPage({ onBack }: { onBack: () => void }) {
           activeOpacity={0.85}
         >
           <Text style={styles.primaryActionText}>
-            {submitting ? tx('Submitting...') : tx('Submit Request')}
+            {submitting ? tx('Submitting...') : pageContent.primaryCtaLabel || tx('Submit Request')}
           </Text>
         </TouchableOpacity>
         <Text style={[styles.helperText, { color: theme.textMuted }]}>
-          {tx('This saves your issue in the SRV system so admin can track and resolve it.')}
+          {pageContent.helperText || tx('This saves your issue in the SRV system so admin can track and resolve it.')}
         </Text>
         <View style={styles.actionGrid}>
           <TouchableOpacity onPress={() => void openWhatsapp()} activeOpacity={0.9}>
@@ -288,7 +292,7 @@ export function NeedHelpPage({ onBack }: { onBack: () => void }) {
               </View>
               <View style={styles.actionCopy}>
                 <Text style={styles.actionTitle}>{tx('Send to WhatsApp')}</Text>
-                <Text style={styles.actionSub}>{tx('Open SRV support chat')}</Text>
+                <Text style={styles.actionSub}>{pageContent.supportText || tx('Open SRV support chat')}</Text>
               </View>
             </LinearGradient>
           </TouchableOpacity>

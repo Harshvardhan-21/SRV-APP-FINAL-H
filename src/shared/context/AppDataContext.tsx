@@ -39,12 +39,31 @@ import {
 } from '../api/services';
 import { storage } from '../api/storage';
 import { useAuth } from './AuthContext';
+import { useAppPreviewState } from '../preview/appPreviewStore';
 
 const debugLog = (...args: unknown[]) => {
   if (__DEV__) {
     console.warn(...args);
   }
 };
+
+function formatLogValue(value: unknown): string {
+  if (typeof value === 'string') return value;
+  if (value instanceof Error) return value.message;
+  if (typeof value === 'number' || typeof value === 'boolean' || value == null) {
+    return String(value);
+  }
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return String(value);
+  }
+}
+
+function logDataWarning(message: string, details?: unknown) {
+  const suffix = details === undefined ? '' : ` ${formatLogValue(details)}`;
+  console.warn(`${message}${suffix}`);
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Context type
@@ -147,6 +166,7 @@ const AppDataContext = createContext<AppDataContextType>(defaultCtx);
 
 export function AppDataProvider({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, user, role, logout } = useAuth();
+  const previewState = useAppPreviewState();
   const appStateRef = useRef(AppState.currentState);
 
   const [loading, setLoading] = useState(false);
@@ -175,35 +195,35 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     try {
       const [prods, cats, roleBans, tests, setts, offs, schemes, gifts] = await Promise.all([
         productsApi.getAll().catch((err) => {
-          console.error('❌ Products API failed:', err.message);
+          logDataWarning('Products API failed.', err?.message ?? err);
           return { data: [] as Product[] };
         }),
         catalogApi.getCategories().catch((err) => {
-          console.error('❌ Categories API failed:', err.message);
+          logDataWarning('Categories API failed.', err?.message ?? err);
           return { data: [] as ProductCategory[] };
         }),
         bannersApi.getAll(role ?? undefined).catch((err) => {
-          console.error('❌ Banners API failed:', err.message);
+          logDataWarning('Banners API failed.', err?.message ?? err);
           return { data: [] as Banner[] };
         }),
         testimonialsApi.getAll().catch((err) => {
-          console.error('❌ Testimonials API failed:', err.message);
+          logDataWarning('Testimonials API failed.', err?.message ?? err);
           return { data: [] as Testimonial[] };
         }),
         settingsApi.getAppSettings().catch((err) => {
-          console.error('❌ Settings API failed:', err.message);
+          logDataWarning('Settings API failed.', err?.message ?? err);
           return null;
         }),
         offersApi.getAll(role ?? undefined).catch((err) => {
-          console.error('❌ Offers API failed:', err.message);
+          logDataWarning('Offers API failed.', err?.message ?? err);
           return { data: [] as Offer[] };
         }),
         rewardSchemesApi.getAll().catch((err) => {
-          console.error('❌ Reward Schemes API failed:', err.message);
+          logDataWarning('Reward schemes API failed.', err?.message ?? err);
           return { data: [] as RewardScheme[] };
         }),
         giftStoreApi.getProducts(role ?? undefined).catch((err) => {
-          console.error('❌ Gift Store API failed:', err.message);
+          logDataWarning('Gift store API failed.', err?.message ?? err);
           return { data: [] as GiftProduct[] };
         }),
       ]);
@@ -224,7 +244,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       if ((bans.data?.length ?? 0) === 0 && role) {
         debugLog('No role-specific banners found, retrying without role filter');
         bans = await bannersApi.getAll().catch((err) => {
-          console.error('Banner fallback API failed:', err.message);
+          logDataWarning('Banner fallback API failed.', err?.message ?? err);
           return { data: [] as Banner[] };
         });
       }
@@ -239,7 +259,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       setGiftProducts(gifts.data ?? []);
       setCatalogLoading(false);
     } catch (error) {
-      console.error('❌ Public data loading failed:', error);
+      logDataWarning('Public data loading failed.', error);
       setCatalogLoading(false);
     }
   }, [role]);
@@ -252,6 +272,11 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   }, [logout]);
 
   const loadPrivateData = useCallback(async () => {
+    if (previewState.enabled) {
+      debugLog('Preview mode active, skipping private data');
+      return;
+    }
+
     if (!isAuthenticated) {
       debugLog('⚠️ User not authenticated, skipping private data');
       return;
@@ -262,29 +287,29 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       const shouldLoadScanHistory = role === 'electrician';
       const [prof, wal, scans, notifs, reds] = await Promise.all([
         profileApi.get().catch((err) => {
-          console.error('❌ Profile API failed:', err.message);
+          logDataWarning('Profile API failed.', err?.message ?? err);
           if (err.message === 'SESSION_EXPIRED') void handleSessionExpired();
           return null;
         }),
         walletApi.get().catch((err) => {
-          console.error('❌ Wallet API failed:', err.message);
+          logDataWarning('Wallet API failed.', err?.message ?? err);
           if (err.message === 'SESSION_EXPIRED') void handleSessionExpired();
           return null;
         }),
         shouldLoadScanHistory
           ? scanApi.getHistory().catch((err) => {
-              console.error('❌ Scan History API failed:', err.message);
+              logDataWarning('Scan history API failed.', err?.message ?? err);
               if (err.message === 'SESSION_EXPIRED') void handleSessionExpired();
               return null;
             })
           : Promise.resolve(null),
         notificationsApi.getAll(role ?? undefined, user?.id).catch((err) => {
-          console.error('❌ Notifications API failed:', err.message);
+          logDataWarning('Notifications API failed.', err?.message ?? err);
           if (err.message === 'SESSION_EXPIRED') void handleSessionExpired();
           return { data: [] as AppNotification[] };
         }),
         redemptionsApi.getHistory().catch((err) => {
-          console.error('❌ Redemptions API failed:', err.message);
+          logDataWarning('Redemptions API failed.', err?.message ?? err);
           if (err.message === 'SESSION_EXPIRED') void handleSessionExpired();
           return { data: [] as RedemptionRecord[], total: 0, page: 1, totalPages: 1 };
         }),
@@ -316,12 +341,12 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         debugLog('🔄 Loading dealer-specific data...');
         const [elecs, bonus] = await Promise.all([
           electriciansApi.getAll().catch((err) => {
-            console.error('❌ Electricians API failed:', err.message);
+            logDataWarning('Electricians API failed.', err?.message ?? err);
             if (err.message === 'SESSION_EXPIRED') void handleSessionExpired();
             return null;
           }),
           walletApi.getDealerBonus().catch((err) => {
-            console.error('❌ Dealer Bonus API failed:', err.message);
+            logDataWarning('Dealer bonus API failed.', err?.message ?? err);
             if (err.message === 'SESSION_EXPIRED') void handleSessionExpired();
             return null;
           }),
@@ -336,7 +361,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
 
       // QR code
       const qr = await profileApi.getQrCode().catch((err) => {
-        console.error('❌ QR Code API failed:', err.message);
+        logDataWarning('QR code API failed.', err?.message ?? err);
         if (err.message === 'SESSION_EXPIRED') void handleSessionExpired();
         return null;
       });
@@ -344,15 +369,15 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
 
       // Referral
       const ref = await referralApi.get().catch((err) => {
-        console.error('❌ Referral API failed:', err.message);
+        logDataWarning('Referral API failed.', err?.message ?? err);
         if (err.message === 'SESSION_EXPIRED') void handleSessionExpired();
         return null;
       });
       if (ref) setReferral(ref);
     } catch (error) {
-      console.error('❌ Private data loading failed:', error);
+      logDataWarning('Private data loading failed.', error);
     }
-  }, [handleSessionExpired, isAuthenticated, role, user?.id]);
+  }, [handleSessionExpired, isAuthenticated, previewState.enabled, role, user?.id]);
 
   const refreshAll = useCallback(async () => {
     setLoading(true);
@@ -373,7 +398,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         debugLog('📊 Health data:', healthData);
       }
     } catch (healthError: any) {
-      console.error('❌ Health check failed:', healthError.message);
+      logDataWarning('Health check failed.', healthError?.message ?? healthError);
       debugLog('🔍 Backend might not be running at:', API_BASE_URL);
     }
 
@@ -381,7 +406,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       await Promise.all([loadPublicData(), loadPrivateData()]);
       debugLog('✅ Data refresh completed successfully');
     } catch (error) {
-      console.error('❌ Data refresh failed:', error);
+      logDataWarning('Data refresh failed.', error);
     } finally {
       setLoading(false);
     }
@@ -389,6 +414,18 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
 
   // Initial load — include `role` so banners/offers refetch when session role is available or changes
   useEffect(() => { void refreshAll(); }, [refreshAll]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (AppState.currentState !== 'active') return;
+      settingsApi
+        .getAppSettings()
+        .then(setAppSettings)
+        .catch((err) => logDataWarning('Settings poll failed.', err?.message ?? err));
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   // AppState polling — refresh when app comes to foreground
   useEffect(() => {

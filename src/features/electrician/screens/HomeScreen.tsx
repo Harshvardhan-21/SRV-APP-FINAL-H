@@ -35,7 +35,8 @@ import {
 import { WebsitePromoSection } from '@/shared/components/WebsitePromoSection';
 import { BannerCarousel } from '@/shared/components/BannerCarousel';
 import { ElectricianTierIcon, getElectricianTier } from './ElectricianTierScreen';
-import { useCatalogDownload } from '@/shared/hooks';
+import { useAppPageContent, useAppPageSections, useCatalogDownload } from '@/shared/hooks';
+import type { HomePageSectionKey } from '@/shared/config/appPageContent';
 import { API_BASE_URL } from '@/shared/api';
 
 // ── Category color system (same as ProductScreen) ─────────────────────
@@ -46,7 +47,7 @@ const CAT_IMAGES: Record<string, string> = {
   concealedbox:  'https://srvelectricals.com/cdn/shop/files/CRD_PL_3.png?v=1757426566&width=320',
   modular:       'https://srvelectricals.com/cdn/shop/files/3x3_679e5d30-ecf2-446e-9452-354bbf4c4a26.png?v=1757426377&width=320',
   mcb:           'https://srvelectricals.com/cdn/shop/files/MCB_Box_4_Way_GI.png?v=1757426418&width=320',
-  busbar:        'https://srvelectricals.com/cdn/shop/files/Bus_Bar_100A_Super.png?v=1757426672&width=320',
+  busbar:        'https://cdn.shopify.com/s/files/1/0651/4583/1466/files/Bus_Bar_100A_Super.png',
   exhaust:       'https://srvelectricals.com/cdn/shop/files/AP-Turtle-Fan.webp?v=1747938680&width=320',
   led:           'https://srvelectricals.com/cdn/shop/files/FloodLightSleek.png?v=1757426471&width=320',
   changeover:    'https://srvelectricals.com/cdn/shop/files/ACO_100A_FP.png?v=1757426480&width=320',
@@ -217,19 +218,24 @@ function HomeCategoryCard({
   cardW,
   darkMode,
   onPress,
+  buttonLabel,
 }: {
-  cat: { id: string; label: string; imageUrl?: string | null };
+  cat: { id: string; label: string; imageUrl?: string | null; _fallbackImg?: string };
   index: number;
   cardW: number;
   darkMode: boolean;
   onPress: () => void;
+  buttonLabel?: string;
 }) {
   const pressScale = useRef(new Animated.Value(1)).current;
   const tiltX      = useRef(new Animated.Value(0)).current;
   const tiltY      = useRef(new Animated.Value(0)).current;
   const entryY     = useRef(new Animated.Value(50)).current;
   const entryOp    = useRef(new Animated.Value(0)).current;
-  const imgUri = getCatImage(cat.id, cat.imageUrl);
+  // Use explicit fallback when DB has no image — avoids wrong keyword-based guessing
+  const imgUri = (cat._fallbackImg && !cat.imageUrl)
+    ? cat._fallbackImg
+    : getCatImage(cat.id, cat.imageUrl);
 
   useEffect(() => {
     Animated.parallel([
@@ -278,7 +284,7 @@ function HomeCategoryCard({
             </Text>
             <View style={[homeCatStyles.pill, { backgroundColor: darkMode ? 'rgba(255,255,255,0.08)' : '#F5F8FB' }]}>
               <Text style={[homeCatStyles.pillText, { color: darkMode ? '#94A3B8' : '#4A637B' }]}>
-                View Products
+                {buttonLabel ?? 'View Products'}
               </Text>
             </View>
           </View>
@@ -428,6 +434,7 @@ export function HomeScreen({
   } = useAppData();
   const { user: authUser } = useAuth();
   const { openCatalog } = useCatalogDownload();
+  const pageContent = useAppPageContent('electrician', 'home');
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const [apiBannerSlides, setApiBannerSlides] = useState<{ image: { uri: string }; resizeMode: 'cover' | 'contain'; backgroundColor: string }[]>([]);
@@ -563,22 +570,29 @@ export function HomeScreen({
   // Show only 4 specific hardcoded categories on home screen
   const displayedCategories = useMemo(() => {
     const hardcodedCategories = [
-      { id: 'Fan Box', label: 'Fan Box', searchTerms: ['fan', 'fanbox', 'fan-box'] },
-      { id: 'Concealed Box', label: 'Concealed Box', searchTerms: ['concealed', 'concealedbox', 'concealed-box'] },
-      { id: 'BUS BAR SUPER', label: 'Bus Bar Super', searchTerms: ['bus', 'bar', 'busbar', 'super'] },
-      { id: 'ECO SPN DD MCB BOX', label: 'MCB Box', searchTerms: ['mcb', 'eco', 'spn', 'dd'] },
+      { id: 'Fan Box',            label: 'Fan Box',       fallbackImg: CAT_IMAGES.fanbox,       searchTerms: ['fan', 'fanbox', 'fan-box'] },
+      { id: 'Concealed Box',      label: 'Concealed Box', fallbackImg: CAT_IMAGES.concealedbox,  searchTerms: ['concealed', 'concealedbox', 'concealed-box'] },
+      { id: 'BUS BAR SUPER',      label: 'Bus Bar Super', fallbackImg: CAT_IMAGES.busbar,        searchTerms: ['bus bar super', 'busbarsuper'] },
+      { id: 'ECO SPN DD MCB BOX', label: 'MCB Box',       fallbackImg: CAT_IMAGES.mcb,           searchTerms: ['mcb', 'eco', 'spn', 'dd'] },
     ];
-    
-    // Try to match with actual categories from database
+
     return hardcodedCategories.map(hardcoded => {
       const found = categories.find((category) => {
         const cId = category.id.toLowerCase();
         const cLabel = (category.label || '').toLowerCase();
-        return hardcoded.searchTerms.some(term => 
+        return hardcoded.searchTerms.some(term =>
           cId.includes(term.toLowerCase()) || cLabel.includes(term.toLowerCase())
         );
       });
-      return found ? { ...found, label: hardcoded.label } : { id: hardcoded.id, label: hardcoded.label, count: 0 };
+      // If DB has an image use it, otherwise always use the hardcoded fallback
+      const imageUrl = found?.imageUrl ?? null;
+      return {
+        id: found?.id ?? hardcoded.id,
+        label: hardcoded.label,
+        imageUrl: imageUrl,
+        // Pass fallback so HomeCategoryCard can use it when imageUrl is null
+        _fallbackImg: imageUrl ? undefined : hardcoded.fallbackImg,
+      };
     });
   }, [categories]);
 
@@ -644,6 +658,95 @@ export function HomeScreen({
       hidden: !showWhatsapp,
       },
   ].filter((item) => !item.hidden);
+
+  const homeSections = useAppPageSections('electrician', 'home');
+
+  const renderBodySections = (): React.ReactNode[] => {
+    if (!homeSections.length) return [];
+
+    const sectionMap: Record<HomePageSectionKey, React.ReactNode | null> = {
+      home_banner: authUser && apiBannerSlides.length > 0 ? (
+        <View key="home_banner">
+          <BannerCarousel slides={apiBannerSlides} height={heroImageHeight} darkMode={darkMode} />
+        </View>
+      ) : null,
+      quick_actions: (
+        <View key="quick_actions" style={styles.quickGrid}>
+          {quickActions.map((item) => {
+            const Icon = item.icon;
+            return (
+              <TouchableOpacity
+                key={item.title}
+                style={[styles.quickCard, darkMode ? styles.quickCardDark : null, { width: cardW }]}
+                onPress={item.onPress}
+                activeOpacity={0.9}
+                testID={item.testID}
+                accessible
+                accessibilityRole="button"
+                accessibilityLabel={item.accessibilityLabel}
+              >
+                <LinearGradient colors={item.iconColors} style={styles.quickIconBox}>
+                  <Icon color={item.iconTint} size={24} />
+                </LinearGradient>
+                <Text style={[styles.quickTitle, darkMode ? styles.quickTitleDark : null]}>
+                  {item.title}
+                </Text>
+                <Text style={[styles.quickSub, darkMode ? styles.quickSubDark : null]}>
+                  {item.sub}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      ),
+      browse_categories: categories.length > 0 ? (
+        <View key="browse_categories">
+          <View style={styles.sectionHeader}>
+            <View>
+              <Text style={[styles.sectionEyebrow, darkMode ? styles.sectionEyebrowDark : null]}>
+                {pageContent.sectionTitle || tx('Shop by Category')}
+              </Text>
+              <Text style={[styles.sectionTitle, darkMode ? styles.sectionTitleDark : null]}>
+                {pageContent.sectionSubtitle || tx('Browse Categories')}
+              </Text>
+            </View>
+            {showProduct && categories.length > 4 && (
+              <TouchableOpacity onPress={() => onNavigate('product')} style={styles.inlineAction} activeOpacity={0.85}>
+                <Text style={styles.viewAllText}>{pageContent.primaryCtaLabel || tx('View all')}</Text>
+                <ChevronRight color="#173E80" />
+              </TouchableOpacity>
+            )}
+          </View>
+          <View style={styles.homeCatGrid}>
+            {displayedCategories.map((cat, index) => (
+              <HomeCategoryCard
+                key={cat.id} cat={cat} index={index}
+                cardW={catCardW} darkMode={darkMode}
+                onPress={() => onOpenProductCategory(cat.id)}
+                buttonLabel={pageContent.cardButtonLabel || 'View Products'}
+              />
+            ))}
+          </View>
+        </View>
+      ) : null,
+      testimonials: showTestimonials ? (
+        <TestimonialShowcase
+          key="testimonials"
+          eyebrow={pageContent.testimonialEyebrow || tx('Electrician Testimonials')}
+          title={pageContent.testimonialTitle || tx('What Electricians Say')}
+          subtitle={pageContent.testimonialSubtitle || tx('Testimonial subtitle')}
+          items={testimonials}
+          darkMode={darkMode}
+        />
+      ) : null,
+      website_promo: <WebsitePromoSection key="website_promo" darkMode={darkMode} />,
+    };
+
+    return homeSections
+      .filter((key) => key !== 'hero_banner')
+      .map((key) => sectionMap[key])
+      .filter(Boolean) as React.ReactNode[];
+  };
 
   return (
     <ScrollView
@@ -823,89 +926,7 @@ export function HomeScreen({
       </LinearGradient>
 
       <View style={styles.body}>
-        {authUser && apiBannerSlides.length > 0 ? (
-          <BannerCarousel
-            slides={apiBannerSlides}
-            height={heroImageHeight}
-            darkMode={darkMode}
-          />
-        ) : null}
-
-        <View style={styles.quickGrid}>
-          {quickActions.map((item) => {
-            const Icon = item.icon;
-            return (
-              <TouchableOpacity
-                key={item.title}
-                style={[styles.quickCard, darkMode ? styles.quickCardDark : null, { width: cardW }]}
-                onPress={item.onPress}
-                activeOpacity={0.9}
-                testID={item.testID}
-                accessible
-                accessibilityRole="button"
-                accessibilityLabel={item.accessibilityLabel}
-              >
-                <LinearGradient colors={item.iconColors} style={styles.quickIconBox}>
-                  <Icon color={item.iconTint} size={24} />
-                </LinearGradient>
-                <Text style={[styles.quickTitle, darkMode ? styles.quickTitleDark : null]}>
-                  {item.title}
-                </Text>
-                <Text style={[styles.quickSub, darkMode ? styles.quickSubDark : null]}>
-                  {item.sub}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-
-        {/* Browse by Category */}
-        {categories.length > 0 && (
-          <>
-            <View style={styles.sectionHeader}>
-              <View>
-                <Text style={[styles.sectionEyebrow, darkMode ? styles.sectionEyebrowDark : null]}>
-                  {tx('Shop by Category')}
-                </Text>
-                <Text style={[styles.sectionTitle, darkMode ? styles.sectionTitleDark : null]}>
-                  {tx('Browse Categories')}
-                </Text>
-              </View>
-              {showProduct && categories.length > 4 && (
-                <TouchableOpacity onPress={() => onNavigate('product')} style={styles.inlineAction} activeOpacity={0.85}>
-                  <Text style={styles.viewAllText}>{tx('View all')}</Text>
-                  <ChevronRight color="#173E80" />
-                </TouchableOpacity>
-              )}
-            </View>
-
-            <View style={styles.homeCatGrid}>
-              {displayedCategories.map((cat, index) => (
-                <HomeCategoryCard
-                  key={cat.id}
-                  cat={cat}
-                  index={index}
-                  cardW={catCardW}
-                  darkMode={darkMode}
-                  onPress={() => onOpenProductCategory(cat.id)}
-                />
-              ))}
-            </View>
-          </>
-        )}
-
-        {showTestimonials ? (
-          <TestimonialShowcase
-            eyebrow={tx('Electrician Testimonials')}
-            title={tx('What Electricians Say')}
-            subtitle={tx('Testimonial subtitle')}
-            items={testimonials}
-            darkMode={darkMode}
-          />
-        ) : null}
-
-        <WebsitePromoSection darkMode={darkMode} />
-
+        {renderBodySections()}
         <View style={{ height: Math.max(30, insets.bottom + 18) }} />
       </View>
     </ScrollView>
@@ -1109,11 +1130,12 @@ const styles = StyleSheet.create({
   dotDark: { backgroundColor: '#334155' },
   dotActive: { width: 28, backgroundColor: '#0F172A' },
   dotActiveDark: { width: 28, backgroundColor: '#E2E8F0' },
-  quickGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 22 },
+  quickGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 22 },
   quickCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 22,
     padding: 14,
+    marginBottom: 12,
     ...createShadow({ color: '#0F172A', offsetY: 8, blur: 18, opacity: 0.07, elevation: 4 }),
   },
   quickCardDark: {

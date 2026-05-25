@@ -3,6 +3,8 @@ import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-nat
 import { AppIcon, C, PageHeader } from '../components/ProfileShared';
 import { usePreferenceContext } from '@/shared/preferences';
 import { ordersApi, type UserOrder } from '@/shared/api';
+import { useAuth } from '@/shared/context/AuthContext';
+import { useAppPageContent } from '@/shared/hooks';
 
 function formatDate(value?: string | null) {
   if (!value) {
@@ -38,6 +40,8 @@ function isClosedStatus(status?: string) {
 
 export function MyOrdersPage({ onBack }: { onBack: () => void }) {
   const { t, tx, theme } = usePreferenceContext();
+  const { role } = useAuth();
+  const pageContent = useAppPageContent((role ?? 'electrician') as any, 'my_orders');
   const [orders, setOrders] = useState<UserOrder[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -68,7 +72,7 @@ export function MyOrdersPage({ onBack }: { onBack: () => void }) {
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.bg }}>
-      <PageHeader title={t('myOrders')} onBack={onBack} />
+      <PageHeader title={pageContent.pageTitle || t('myOrders')} onBack={onBack} />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.summaryRow}>
           <View
@@ -109,7 +113,7 @@ export function MyOrdersPage({ onBack }: { onBack: () => void }) {
             ]}
           >
             <Text style={[styles.emptyText, { color: theme.textMuted }]}>
-              {tx('No orders or redemptions found yet.')}
+              {pageContent.emptyStateTitle || tx('No orders or redemptions found yet.')}
             </Text>
           </View>
         ) : (

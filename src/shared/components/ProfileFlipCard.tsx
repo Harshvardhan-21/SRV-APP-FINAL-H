@@ -16,6 +16,7 @@ import {
 import Svg, { Path } from 'react-native-svg';
 import { withWebSafeNativeDriver } from '@/shared/animations/nativeDriver';
 import { counterboyTheme as cb } from '@/features/counterboy/theme';
+import { useAppPageContent } from '@/shared/hooks/useAppPageContent';
 import { usePreferenceContext } from '@/shared/preferences';
 import { createShadow } from '@/shared/theme/shadows';
 
@@ -152,6 +153,7 @@ function DetailPill({
 
 export default function ProfileFlipCard({ profile, role = 'electrician', photoUri, apiPhotoUri }: Props) {
   const { darkMode, tx, t } = usePreferenceContext();
+  const pageContent = useAppPageContent(role, 'profile');
   // Use local photo first, then API photo from backend (set by admin)
   const effectivePhotoUri = photoUri ?? apiPhotoUri ?? null;
   const [flipped, setFlipped] = useState(false);
@@ -275,6 +277,23 @@ export default function ProfileFlipCard({ profile, role = 'electrician', photoUr
     : tx('Electrician Code');
   const backThirdLabel = usesOwnAccountDetails ? tx('Address') : tx('Phone Number');
   const backThirdValue = usesOwnAccountDetails ? detailAddress : detailPhone;
+  const frontEyebrowText =
+    pageContent.eyebrowText ||
+    (role === 'dealer'
+      ? t('dealerPartner')
+      : role === 'user'
+      ? tx('Customer Account')
+      : role === 'counterboy'
+      ? tx('Counter Boy Account')
+      : t('electricianPartner'));
+  const flipHintText = pageContent.flipHintText || tx('Tap card to view QR & details');
+  const codeLabelText = pageContent.codeLabel || codeLabel;
+  const locationLabelText = pageContent.locationLabel || tx('Location');
+  const detailHeadingText =
+    pageContent.cardTitle ||
+    tx(isDealer ? 'Business Details' : usesOwnAccountDetails ? 'Account Details' : 'Connected Dealer');
+  const nameLabelText = pageContent.nameLabel || tx('Name');
+  const backThirdLabelText = pageContent.thirdDetailLabel || backThirdLabel;
   const exportName =
     (profile?.name || detailName || fallbackText)
       .toLowerCase()
@@ -290,7 +309,7 @@ export default function ProfileFlipCard({ profile, role = 'electrician', photoUr
     const safeDetailLocation = escapeHtml(detailLocation);
     const safeDetailPhone = escapeHtml(detailPhone);
     const safeDetailAddress = escapeHtml(detailAddress);
-    const heading = escapeHtml(tx(isDealer ? 'Business Details' : usesOwnAccountDetails ? 'Account Details' : 'Connected Dealer'));
+    const heading = escapeHtml(detailHeadingText);
     const partnerRole = escapeHtml(
       tx(
         isDealer
@@ -302,10 +321,10 @@ export default function ProfileFlipCard({ profile, role = 'electrician', photoUr
             : 'Electrician Partner',
       ),
     );
-    const safeCodeLabel = escapeHtml(tx('Code'));
-    const safeLocationLabel = escapeHtml(tx('Location'));
-    const safeNameLabel = escapeHtml(tx('Name'));
-    const safeBackThirdLabel = escapeHtml(backThirdLabel);
+    const safeCodeLabel = escapeHtml(codeLabelText);
+    const safeLocationLabel = escapeHtml(locationLabelText);
+    const safeNameLabel = escapeHtml(nameLabelText);
+    const safeBackThirdLabel = escapeHtml(backThirdLabelText);
 
     return `
       <html>
@@ -496,13 +515,7 @@ export default function ProfileFlipCard({ profile, role = 'electrician', photoUr
                         darkMode && isCounterboy ? styles.roleTextCounterboyDark : null,
                       ]}
                     >
-                      {role === 'dealer'
-                        ? t('dealerPartner')
-                        : role === 'user'
-                        ? tx('Customer Account')
-                        : role === 'counterboy'
-                        ? tx('Counter Boy Account')
-                        : t('electricianPartner')}
+                      {frontEyebrowText}
                     </Text>
                     <Text style={[styles.nameText, role === 'user' ? styles.nameTextUser : null, isCounterboy ? styles.nameTextCounterboy : null, counterboyLightCard ? styles.nameTextCounterboyOnLight : null]}>
                       {profile?.name || fallbackText}
@@ -531,7 +544,7 @@ export default function ProfileFlipCard({ profile, role = 'electrician', photoUr
                       ]}
                       numberOfLines={1}
                     >
-                      {tx('Tap card to view QR & details')}
+                      {flipHintText}
                     </Animated.Text>
                   </View>
                 </View>
@@ -539,14 +552,14 @@ export default function ProfileFlipCard({ profile, role = 'electrician', photoUr
 
               <View style={styles.frontBottomRow}>
                 <DetailPill
-                  label={codeLabel}
+                  label={codeLabelText}
                   value={code || fallbackText}
                   isUser={role === 'user'}
                   isCounterboy={isCounterboy}
                   counterboyLight={counterboyLightCard}
                 />
                 <DetailPill
-                  label="Location"
+                  label={locationLabelText}
                   value={frontLocation}
                   isUser={role === 'user'}
                   isCounterboy={isCounterboy}
@@ -615,13 +628,13 @@ export default function ProfileFlipCard({ profile, role = 'electrician', photoUr
                       darkMode && isCounterboy ? styles.backHeadingCounterboyDark : null,
                     ]}
                   >
-                    {tx(isDealer ? 'Business Details' : usesOwnAccountDetails ? 'Account Details' : 'Connected Dealer')}
+                    {detailHeadingText}
                   </Text>
                   <View style={styles.metaStack}>
-                    <DetailPill label="Name" value={detailName} compact isUser={isUser} isCounterboy={isCounterboy} />
-                    <DetailPill label="Location" value={detailLocation} compact lines={2} isUser={isUser} isCounterboy={isCounterboy} />
+                    <DetailPill label={nameLabelText} value={detailName} compact isUser={isUser} isCounterboy={isCounterboy} />
+                    <DetailPill label={locationLabelText} value={detailLocation} compact lines={2} isUser={isUser} isCounterboy={isCounterboy} />
                     <DetailPill
-                      label={backThirdLabel}
+                      label={backThirdLabelText}
                       value={backThirdValue}
                       compact
                       isUser={isUser}

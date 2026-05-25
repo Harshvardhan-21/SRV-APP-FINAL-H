@@ -4,6 +4,7 @@ import {
 } from 'react-native';
 import Svg, { Circle, Rect, Path, G, Line } from 'react-native-svg';
 import { ws, hs, rf } from '../../shared/hooks/useResponsive';
+import { usePreferenceContext } from '@/shared/preferences';
 
 const AView = Animated.View as any;
 const CIRCLE_SIZE = ws(240);
@@ -43,19 +44,21 @@ function BgIcons() {
   );
 }
 
-function Character() {
+const Character = React.memo(function Character() {
   return (
     <Image
       source={customerImage}
       style={{ width: ws(336), height: ws(336), marginTop: -hs(4) }}
       resizeMode="contain"
+      fadeDuration={0}
     />
   );
-}
+});
 
 interface Props { onBack?: () => void; onContinue?: () => void; }
 
 export default function CustomerSlide({ onBack, onContinue }: Props) {
+  const { darkMode } = usePreferenceContext();
   const fadeAnim  = useRef(new Animated.Value(0)).current;
   const slideUp   = useRef(new Animated.Value(40)).current;
   const scaleAnim = useRef(new Animated.Value(0.92)).current;
@@ -95,10 +98,10 @@ export default function CustomerSlide({ onBack, onContinue }: Props) {
   const floatY = floatAnim.interpolate({ inputRange: [0, 1], outputRange: [0, -12] });
 
   return (
-    <AView style={[s.root, { opacity: fadeAnim }]}>
+    <AView style={[s.root, { opacity: fadeAnim, backgroundColor: darkMode ? '#0B1220' : '#FFFFFF' }]}>
 
       <AView style={[s.circleWrap, { transform: [{ scale: scaleAnim }, { translateY: floatY }] }]}>
-        <View style={[s.circle, { backgroundColor: THEME.circle }]}>
+        <View style={[s.circle, { backgroundColor: darkMode ? '#1A100E' : THEME.circle }]}>
           <BgIcons />
           <Character />
         </View>
@@ -110,59 +113,31 @@ export default function CustomerSlide({ onBack, onContinue }: Props) {
           <Text style={s.titleButtonText}>FOR OUR SRV CUSTOMERS</Text>
         </View>
         
-        <AView style={[s.contentCard, { opacity: descFade, transform: [{ scale: descScale }] }]}>
+        <AView style={[s.contentCard, { opacity: descFade, transform: [{ scale: descScale }], backgroundColor: darkMode ? '#111827' : '#FFFFFF', borderColor: darkMode ? '#1E293B' : THEME.light }]}>
           <View style={s.gradientAccent} />
           <View style={s.contentInner}>
             <View style={s.titleRow}>
-              <Text style={[s.mainTitle, { color: '#1F2937' }]}>Your Home Deserves</Text>
+              <Text style={[s.mainTitle, { color: darkMode ? '#F1F5F9' : '#1F2937' }]}>Your Home Deserves</Text>
             </View>
             <Text style={[s.mainSubtitle, { color: THEME.primary }]}>The Best Quality</Text>
-            <Text style={s.cardDesc}>
+            <Text style={[s.cardDesc, { color: darkMode ? '#94A3B8' : '#6B7280' }]}>
               250+ certified products trusted by 5L+ happy customers
             </Text>
           </View>
         </AView>
 
         <View style={s.featuresGrid}>
-          <View style={[s.gridItem, { backgroundColor: THEME.light }]}>
-            <View style={[s.gridIcon, { backgroundColor: THEME.primary }]}>
-              <Svg width={ws(18)} height={ws(18)} viewBox="0 0 24 24" fill="none">
-                <Path d="M3 18v-6a9 9 0 0 1 18 0v6M3 18a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3zM21 18a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z" stroke="#FFFFFF" strokeWidth="1.8" fill="none" strokeLinecap="round"/>
-              </Svg>
+          {[
+            { bg: darkMode ? '#1A100E' : THEME.light, iconBg: THEME.primary, text: 'Instant Services', icon: <Svg width={ws(18)} height={ws(18)} viewBox="0 0 24 24" fill="none"><Path d="M3 18v-6a9 9 0 0 1 18 0v6M3 18a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3zM21 18a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z" stroke="#FFFFFF" strokeWidth="1.8" fill="none" strokeLinecap="round"/></Svg> },
+            { bg: darkMode ? '#1A100E' : '#F3E4D4', iconBg: THEME.secondary, text: 'Verified Quality', icon: <Svg width={ws(18)} height={ws(18)} viewBox="0 0 24 24" fill="none"><Path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#FFFFFF" strokeWidth="1.8" fill="none" strokeLinejoin="round"/><Path d="M9 12l2 2 4-4" stroke="#FFFFFF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none"/></Svg> },
+            { bg: darkMode ? '#1A100E' : '#F8EDE2', iconBg: THEME.primary, text: 'Exclusive Deals', icon: <Svg width={ws(18)} height={ws(18)} viewBox="0 0 24 24" fill="none"><Path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" stroke="#FFFFFF" strokeWidth="1.8" fill="none" strokeLinejoin="round"/><Circle cx="7" cy="7" r="1.5" fill="#FFFFFF"/></Svg> },
+            { bg: darkMode ? '#1A100E' : THEME.light, iconBg: THEME.primary, text: '5L+ Customers', icon: <Svg width={ws(18)} height={ws(18)} viewBox="0 0 24 24" fill="none"><Path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="#FFFFFF" strokeWidth="1.8" fill="none" strokeLinecap="round"/><Circle cx="9" cy="7" r="4" stroke="#FFFFFF" strokeWidth="1.8" fill="none"/><Path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="#FFFFFF" strokeWidth="1.8" strokeLinecap="round" fill="none"/></Svg> },
+          ].map(({ bg, iconBg, text, icon }) => (
+            <View key={text} style={[s.gridItem, { backgroundColor: bg }]}>
+              <View style={[s.gridIcon, { backgroundColor: iconBg }]}>{icon}</View>
+              <Text style={[s.gridText, { color: darkMode ? '#CBD5E1' : '#374151' }]}>{text}</Text>
             </View>
-            <Text style={s.gridText}>Instant Services</Text>
-          </View>
-          
-          <View style={[s.gridItem, { backgroundColor: '#F3E4D4' }]}>
-            <View style={[s.gridIcon, { backgroundColor: THEME.secondary }]}>
-              <Svg width={ws(18)} height={ws(18)} viewBox="0 0 24 24" fill="none">
-                <Path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#FFFFFF" strokeWidth="1.8" fill="none" strokeLinejoin="round"/>
-                <Path d="M9 12l2 2 4-4" stroke="#FFFFFF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-              </Svg>
-            </View>
-            <Text style={s.gridText}>Verified Quality</Text>
-          </View>
-          
-          <View style={[s.gridItem, { backgroundColor: '#F8EDE2' }]}>
-            <View style={[s.gridIcon, { backgroundColor: THEME.primary }]}>
-              <Svg width={ws(18)} height={ws(18)} viewBox="0 0 24 24" fill="none">
-                <Path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" stroke="#FFFFFF" strokeWidth="1.8" fill="none" strokeLinejoin="round"/>
-                <Circle cx="7" cy="7" r="1.5" fill="#FFFFFF"/>
-              </Svg>
-            </View>
-            <Text style={s.gridText}>Exclusive Deals</Text>
-          </View>
-          
-          <View style={[s.gridItem, { backgroundColor: THEME.light }]}>
-            <View style={[s.gridIcon, { backgroundColor: THEME.primary }]}>
-              <Svg width={ws(18)} height={ws(18)} viewBox="0 0 24 24" fill="none">
-                <Path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="#FFFFFF" strokeWidth="1.8" fill="none" strokeLinecap="round"/>
-                <Circle cx="9" cy="7" r="4" stroke="#FFFFFF" strokeWidth="1.8" fill="none"/>
-                <Path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="#FFFFFF" strokeWidth="1.8" strokeLinecap="round" fill="none"/>
-              </Svg>
-            </View>
-            <Text style={s.gridText}>5L+ Customers</Text>
-          </View>
+          ))}
         </View>
 
         <View style={s.trustBadges}>
@@ -171,7 +146,7 @@ export default function CustomerSlide({ onBack, onContinue }: Props) {
 
         <View style={s.actionButtons}>
           {onBack && (
-            <TouchableOpacity style={[s.switchButton, { borderColor: THEME.primary }]} onPress={onBack}>
+            <TouchableOpacity style={[s.switchButton, { borderColor: THEME.primary, backgroundColor: darkMode ? '#111827' : '#FFFFFF' }]} onPress={onBack}>
               <Text style={[s.switchIcon, { color: THEME.primary }]}>‹</Text>
               <Text style={[s.switchButtonText, { color: THEME.primary }]}>Back</Text>
             </TouchableOpacity>
