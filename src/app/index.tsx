@@ -485,9 +485,12 @@ function AppContent() {
       return (
         <ApprovalPendingScreen
           role={pendingApprovalRole}
+          accountStatus={user?.status}
+          approvalRejectionReason={user?.approvalRejectionReason}
           supportPhone={appSettings?.supportPhone}
           whatsappNumber={appSettings?.whatsappNumber}
           onUseAnotherNumber={handleUseAnotherApprovalNumber}
+          onReapply={user?.status === 'inactive' ? handleUseAnotherApprovalNumber : undefined}
         />
       );
     }

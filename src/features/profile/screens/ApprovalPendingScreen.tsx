@@ -8,20 +8,28 @@ import type { UserRole } from '@/shared/types/navigation';
 
 type ApprovalPendingScreenProps = {
   role: Extract<UserRole, 'dealer'>;
+  accountStatus?: string | null;
+  approvalRejectionReason?: string | null;
   supportPhone?: string | null;
   whatsappNumber?: string | null;
   onUseAnotherNumber?: () => void;
+  onReapply?: () => void;
 };
 
 const ROLE_THEME = {
   dealer: {
     shell: '#F4F8FF',
     hero: ['#F8FBFF', '#E2ECFF', '#D4E3FF'] as [string, string, string],
+    rejectedHero: ['#FFF8F8', '#FFE8E8', '#FFD4D4'] as [string, string, string],
     accent: '#214D99',
     accentDeep: '#173E80',
     soft: '#EAF3FF',
     chip: '#DCEAFF',
+    rejectedChip: '#FFE0E0',
+    rejectedAccent: '#C0392B',
+    rejectedAccentDeep: '#922B21',
     glow: 'rgba(33,77,153,0.18)',
+    rejectedGlow: 'rgba(192,57,43,0.15)',
     support: '#0F766E',
   },
 } as const;
@@ -36,24 +44,42 @@ function sanitizeWhatsapp(value?: string | null) {
 
 export function ApprovalPendingScreen({
   role,
+  accountStatus,
+  approvalRejectionReason,
   supportPhone,
   whatsappNumber,
   onUseAnotherNumber,
+  onReapply,
 }: ApprovalPendingScreenProps) {
   const { tx, theme } = usePreferenceContext();
   const roleTheme = ROLE_THEME[role];
   const safePhone = sanitizePhone(supportPhone);
   const safeWhatsapp = sanitizeWhatsapp(whatsappNumber || supportPhone);
 
+  const isRejected = accountStatus === 'inactive';
   const roleLabel = 'Dealer';
-  const statusRows = useMemo(
-      () => [
-        'Your account request has been received',
-        'Admin approval is required before access',
-        'You can contact support for urgent queries',
-      ],
-    []
-  );
+
+  const heroColors = isRejected ? roleTheme.rejectedHero : roleTheme.hero;
+  const chipBg = isRejected ? roleTheme.rejectedChip : roleTheme.chip;
+  const accentColor = isRejected ? roleTheme.rejectedAccent : roleTheme.accent;
+  const accentDeepColor = isRejected ? roleTheme.rejectedAccentDeep : roleTheme.accentDeep;
+  const glowColor = isRejected ? roleTheme.rejectedGlow : roleTheme.glow;
+  const softColor = isRejected ? '#FFE8E8' : roleTheme.soft;
+
+  const statusRows = useMemo(() => {
+    if (isRejected) {
+      return [
+        'Your account application was reviewed',
+        'Admin has rejected your registration',
+        'You can reapply or contact support for help',
+      ];
+    }
+    return [
+      'Your account request has been received',
+      'Admin approval is required before access',
+      'You can contact support for urgent queries',
+    ];
+  }, [isRejected]);
 
   const handleCall = () => {
     if (!safePhone) return;
@@ -63,55 +89,96 @@ export function ApprovalPendingScreen({
   const handleWhatsapp = () => {
     if (!safeWhatsapp) return;
     const message = encodeURIComponent(
-      `Hello SRV Team, my ${roleLabel.toLowerCase()} account is waiting for admin approval.`
+      isRejected
+        ? `Hello SRV Team, my ${roleLabel.toLowerCase()} account registration was rejected. I would like to understand the reason and reapply.`
+        : `Hello SRV Team, my ${roleLabel.toLowerCase()} account is waiting for admin approval.`
     );
     void Linking.openURL(`https://wa.me/${safeWhatsapp}?text=${message}`).catch(() => {});
   };
 
   return (
     <ScrollView
-      style={[styles.screen, { backgroundColor: roleTheme.shell }]}
+      style={[styles.screen, { backgroundColor: isRejected ? '#FFF5F5' : roleTheme.shell }]}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      <LinearGradient colors={roleTheme.hero} style={styles.heroCard}>
-        <View style={[styles.heroGlow, { backgroundColor: roleTheme.glow }]} />
+      <LinearGradient colors={heroColors} style={styles.heroCard}>
+        <View style={[styles.heroGlow, { backgroundColor: glowColor }]} />
 
         <View style={styles.topRow}>
-          <View style={[styles.statusChip, { backgroundColor: roleTheme.chip }]}>
-            <AppIcon name="warning" size={15} color={roleTheme.accentDeep} />
-            <Text style={[styles.statusChipText, { color: roleTheme.accentDeep }]}>
-              Approval Pending
+          <View style={[styles.statusChip, { backgroundColor: chipBg }]}>
+            <AppIcon
+              name={isRejected ? 'close' : 'warning'}
+              size={15}
+              color={accentDeepColor}
+            />
+            <Text style={[styles.statusChipText, { color: accentDeepColor }]}>
+              {isRejected ? 'Application Rejected' : 'Approval Pending'}
             </Text>
           </View>
           <View style={[styles.roleChip, { backgroundColor: '#FFFFFF' }]}>
-            <AppIcon name="building" size={15} color={roleTheme.accent} />
-            <Text style={[styles.roleChipText, { color: roleTheme.accentDeep }]}>{roleLabel}</Text>
+            <AppIcon name="building" size={15} color={accentColor} />
+            <Text style={[styles.roleChipText, { color: accentDeepColor }]}>{roleLabel}</Text>
           </View>
         </View>
 
-        <Text style={[styles.eyebrow, { color: roleTheme.accentDeep }]}>Admin Review</Text>
+        <Text style={[styles.eyebrow, { color: accentDeepColor }]}>
+          {isRejected ? 'Registration Rejected' : 'Admin Review'}
+        </Text>
         <Text style={[styles.title, { color: theme.textPrimary }]}>
-          Wait for admin approval to access your account
+          {isRejected
+            ? 'Your dealer account has been rejected'
+            : 'Wait for admin approval to access your account'}
         </Text>
         <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
-          Your {roleLabel.toLowerCase()} account is created, but the next pages will unlock only
-          after admin approval.
+          {isRejected
+            ? 'Your registration was reviewed and rejected by the admin. Please check the reason below and reapply or contact support.'
+            : `Your ${roleLabel.toLowerCase()} account is created, but the next pages will unlock only after admin approval.`}
         </Text>
 
-        <View style={styles.progressCard}>
+        {/* Rejection reason box */}
+        {isRejected && approvalRejectionReason ? (
+          <View style={styles.rejectionReasonBox}>
+            <View style={styles.rejectionReasonHeader}>
+              <AppIcon name="warning" size={14} color={roleTheme.rejectedAccentDeep} />
+              <Text style={[styles.rejectionReasonLabel, { color: roleTheme.rejectedAccentDeep }]}>
+                Reason for Rejection
+              </Text>
+            </View>
+            <Text style={[styles.rejectionReasonText, { color: roleTheme.rejectedAccentDeep }]}>
+              {approvalRejectionReason}
+            </Text>
+          </View>
+        ) : null}
+
+        <View style={[styles.progressCard, isRejected && styles.progressCardRejected]}>
           {statusRows.map((item, index) => (
             <View key={item} style={styles.progressRow}>
               <View
                 style={[
                   styles.progressIcon,
-                  { backgroundColor: index === statusRows.length - 1 ? `${roleTheme.accent}14` : roleTheme.soft },
+                  {
+                    backgroundColor:
+                      index === statusRows.length - 1
+                        ? `${accentColor}14`
+                        : softColor,
+                  },
                 ]}
               >
                 <AppIcon
-                  name={index === statusRows.length - 1 ? 'message' : 'check'}
+                  name={
+                    isRejected
+                      ? index === 1
+                        ? 'close'
+                        : index === statusRows.length - 1
+                        ? 'message'
+                        : 'check'
+                      : index === statusRows.length - 1
+                      ? 'message'
+                      : 'check'
+                  }
                   size={13}
-                  color={roleTheme.accentDeep}
+                  color={accentDeepColor}
                 />
               </View>
               <Text style={[styles.progressText, { color: theme.textSecondary }]}>{item}</Text>
@@ -120,22 +187,54 @@ export function ApprovalPendingScreen({
         </View>
       </LinearGradient>
 
+      {/* Reapply card — only shown when rejected */}
+      {isRejected ? (
+        <View style={[styles.reapplyCard, { borderColor: `${roleTheme.rejectedAccent}30` }]}>
+          <View style={styles.reapplyHeader}>
+            <View style={[styles.reapplyIconWrap, { backgroundColor: roleTheme.rejectedChip }]}>
+              <AppIcon name="refresh" size={18} color={roleTheme.rejectedAccentDeep} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.reapplyTitle, { color: theme.textPrimary }]}>
+                Want to reapply?
+              </Text>
+              <Text style={[styles.reaplyCopy, { color: theme.textSecondary }]}>
+                Fix the issue mentioned above and submit a new application with the correct details.
+              </Text>
+            </View>
+          </View>
+          {onReapply ? (
+            <Pressable onPress={onReapply} style={styles.reapplyButtonShell}>
+              <LinearGradient
+                colors={[roleTheme.rejectedAccent, roleTheme.rejectedAccentDeep]}
+                style={styles.reapplyButton}
+              >
+                <AppIcon name="refresh" size={16} color="#FFFFFF" />
+                <Text style={styles.reapplyButtonText}>Reapply Now</Text>
+              </LinearGradient>
+            </Pressable>
+          ) : null}
+        </View>
+      ) : null}
+
       <View style={styles.supportCard}>
         <Text style={[styles.supportTitle, { color: theme.textPrimary }]}>Need help right now?</Text>
         <Text style={[styles.supportCopy, { color: theme.textSecondary }]}>
-          For any queries, contact our team and we will help you with the approval status.
+          {isRejected
+            ? 'Contact our team to understand the rejection reason or get help with reapplying.'
+            : 'For any queries, contact our team and we will help you with the approval status.'}
         </Text>
 
         {safePhone ? (
           <Pressable onPress={handleCall} style={styles.infoRow}>
-            <View style={[styles.infoIcon, { backgroundColor: roleTheme.soft }]}>
-              <AppIcon name="phone" size={16} color={roleTheme.accentDeep} />
+            <View style={[styles.infoIcon, { backgroundColor: isRejected ? '#FFE8E8' : roleTheme.soft }]}>
+              <AppIcon name="phone" size={16} color={accentDeepColor} />
             </View>
             <View style={styles.infoTextWrap}>
               <Text style={[styles.infoLabel, { color: theme.textMuted }]}>Support Number</Text>
               <Text style={[styles.infoValue, { color: theme.textPrimary }]}>{safePhone}</Text>
             </View>
-            <AppIcon name="chevronRight" size={18} color={roleTheme.accent} />
+            <AppIcon name="chevronRight" size={18} color={accentColor} />
           </Pressable>
         ) : null}
 
@@ -150,9 +249,9 @@ export function ApprovalPendingScreen({
 
         {onUseAnotherNumber ? (
           <Pressable onPress={onUseAnotherNumber} style={styles.secondaryShell}>
-            <View style={[styles.secondaryButton, { borderColor: `${roleTheme.accent}30` }]}>
-              <AppIcon name="chevronLeft" size={16} color={roleTheme.accent} />
-              <Text style={[styles.secondaryText, { color: roleTheme.accentDeep }]}>
+            <View style={[styles.secondaryButton, { borderColor: `${accentColor}30` }]}>
+              <AppIcon name="chevronLeft" size={16} color={accentColor} />
+              <Text style={[styles.secondaryText, { color: accentDeepColor }]}>
                 {tx('Use another number')}
               </Text>
             </View>
@@ -239,6 +338,32 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     maxWidth: 290,
   },
+  rejectionReasonBox: {
+    marginTop: 14,
+    backgroundColor: '#FFF0F0',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#FFCDD2',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    gap: 6,
+  },
+  rejectionReasonHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  rejectionReasonLabel: {
+    fontSize: 11,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+  },
+  rejectionReasonText: {
+    fontSize: 13,
+    lineHeight: 19,
+    fontWeight: '600',
+  },
   progressCard: {
     marginTop: 14,
     backgroundColor: '#FFFFFF',
@@ -246,6 +371,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 14,
     gap: 12,
+  },
+  progressCardRejected: {
+    backgroundColor: '#FFF8F8',
   },
   progressRow: {
     flexDirection: 'row',
@@ -264,6 +392,53 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
     fontWeight: '600',
+  },
+  reapplyCard: {
+    borderRadius: 24,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    gap: 14,
+    borderWidth: 1,
+    ...createShadow({ color: '#C0392B', offsetY: 6, blur: 18, opacity: 0.07, elevation: 4 }),
+  },
+  reapplyHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+  reapplyIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  reapplyTitle: {
+    fontSize: 15,
+    fontWeight: '900',
+    marginBottom: 4,
+  },
+  reaplyCopy: {
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  reapplyButtonShell: {
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  reapplyButton: {
+    minHeight: 50,
+    borderRadius: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  reapplyButtonText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '900',
   },
   supportCard: {
     borderRadius: 28,
