@@ -78,13 +78,21 @@ function getCatImage(id: string, apiImageUrl?: string | null): string {
   if (idLower.includes('mcb') || idLower.includes('eco') || idLower.includes('spn')) return CAT_IMAGES.mcb;
   if (idLower.includes('concealed')) return CAT_IMAGES.concealedbox;
   if (idLower.includes('fan') && !idLower.includes('exhaust')) return CAT_IMAGES.fanbox;
-  return apiImageUrl || CAT_IMAGES[id] || CAT_IMAGES.fanbox;
+  // Skip API image if it looks like a logo or profile photo
+  if (apiImageUrl) {
+    const isLogoLike = /logo|profile|avatar|white\.jpe?g|white\.png/i.test(apiImageUrl);
+    if (!isLogoLike) return apiImageUrl;
+  }
+  return CAT_IMAGES[id] || CAT_IMAGES.fanbox;
 }
 
 // ── Animated Category Image (float + breathe — same as ProductScreen) ─
-function AnimatedCatImage({ uri, size }: { uri: string; size: number }) {
+function AnimatedCatImage({ uri, fallbackUri, size }: { uri: string; fallbackUri?: string; size: number }) {
   const floatY = useRef(new Animated.Value(0)).current;
   const imgScale = useRef(new Animated.Value(1)).current;
+  const [imgSrc, setImgSrc] = useState(uri);
+
+  useEffect(() => { setImgSrc(uri); }, [uri]);
 
   useEffect(() => {
     const floatLoop = Animated.loop(
@@ -107,7 +115,12 @@ function AnimatedCatImage({ uri, size }: { uri: string; size: number }) {
   return (
     <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
       <Animated.View style={{ transform: [{ translateY: floatY }, { scale: imgScale }] }}>
-        <Image source={{ uri }} style={{ width: size, height: size }} resizeMode="contain" />
+        <Image
+          source={{ uri: imgSrc }}
+          style={{ width: size, height: size }}
+          resizeMode="contain"
+          onError={() => { if (fallbackUri && imgSrc !== fallbackUri) setImgSrc(fallbackUri); }}
+        />
       </Animated.View>
     </View>
   );
@@ -122,7 +135,7 @@ function HomeCategoryCard({
   onPress,
   buttonLabel,
 }: {
-  cat: { id: string; label: string; imageUrl?: string | null };
+  cat: { id: string; label: string; imageUrl?: string | null; _fallbackImg?: string };
   index: number;
   cardW: number;
   darkMode: boolean;
@@ -134,7 +147,10 @@ function HomeCategoryCard({
   const tiltY = useRef(new Animated.Value(0)).current;
   const entryY = useRef(new Animated.Value(50)).current;
   const entryOp = useRef(new Animated.Value(0)).current;
-  const imgUri = getCatImage(cat.id, cat.imageUrl);
+  const imgUri = cat._fallbackImg && !cat.imageUrl
+    ? cat._fallbackImg
+    : getCatImage(cat.id, cat.imageUrl);
+  const fallbackUri = cat._fallbackImg ?? getCatImage(cat.id, null);
 
   useEffect(() => {
     Animated.parallel([
@@ -192,7 +208,7 @@ function HomeCategoryCard({
               { backgroundColor: darkMode ? CUSTOMER_THEME.surfaceDark : '#FFFFFF' },
             ]}
           >
-            <AnimatedCatImage uri={imgUri} size={142} />
+            <AnimatedCatImage uri={imgUri} fallbackUri={fallbackUri} size={142} />
           </View>
           <View style={[homeCatStyles.accentLine, { backgroundColor: CUSTOMER_THEME.primaryDeep }]} />
           <View style={[homeCatStyles.infoZone, darkMode ? homeCatStyles.infoZoneDark : null]}>
@@ -602,13 +618,11 @@ export function HomeScreen({
   // Show only 4 specific hardcoded categories on home screen
   const displayedCategories = useMemo(() => {
     const hardcodedCategories = [
-      { id: 'Fan Box', label: 'Fan Box', searchTerms: ['fan', 'fanbox', 'fan-box'] },
-      { id: 'Concealed Box', label: 'Concealed Box', searchTerms: ['concealed', 'concealedbox', 'concealed-box'] },
-      { id: 'BUS BAR SUPER', label: 'Bus Bar Super', searchTerms: ['bus bar super', 'busbarsuper'] },
-      { id: 'ECO SPN DD MCB BOX', label: 'MCB Box', searchTerms: ['mcb', 'eco', 'spn', 'dd'] },
+      { id: 'Fan Box', label: 'Fan Box', fallbackImg: CAT_IMAGES.fanbox, searchTerms: ['fan', 'fanbox', 'fan-box'] },
+      { id: 'Concealed Box', label: 'Concealed Box', fallbackImg: CAT_IMAGES.concealedbox, searchTerms: ['concealed', 'concealedbox', 'concealed-box'] },
+      { id: 'BUS BAR SUPER', label: 'Bus Bar Super', fallbackImg: CAT_IMAGES.busbar, searchTerms: ['bus bar super', 'busbarsuper'] },
+      { id: 'ECO SPN DD MCB BOX', label: 'MCB Box', fallbackImg: CAT_IMAGES.mcb, searchTerms: ['mcb', 'eco', 'spn', 'dd'] },
     ];
-    
-    // Try to match with actual categories from database
     return hardcodedCategories.map(hardcoded => {
       const found = categories.find(c => {
         const cId = c.id.toLowerCase();
@@ -617,7 +631,13 @@ export function HomeScreen({
           cId.includes(term.toLowerCase()) || cLabel.includes(term.toLowerCase())
         );
       });
-      return found ? { ...found, label: hardcoded.label } : { id: hardcoded.id, label: hardcoded.label, count: 0 };
+      return {
+        id: hardcoded.id,
+        targetCategoryId: found?.id ?? hardcoded.id,
+        label: hardcoded.label,
+        imageUrl: hardcoded.fallbackImg,
+        _fallbackImg: hardcoded.fallbackImg,
+      };
     });
   }, [categories]);
 
@@ -749,7 +769,7 @@ export function HomeScreen({
               <HomeCategoryCard
                 key={cat.id} cat={cat} index={index}
                 cardW={catCardW} darkMode={darkMode}
-                onPress={() => onOpenProductCategory(cat.id)}
+                onPress={() => onOpenProductCategory(cat.targetCategoryId ?? cat.id)}
                 buttonLabel={pageContent.cardButtonLabel || 'View Products'}
               />
             ))}
@@ -1384,4 +1404,3 @@ const styles = StyleSheet.create({
   categoryPriceDark: { color: '#F87171' },
   notifDot: { position: 'absolute', top: 6, right: 6, width: 8, height: 8, borderRadius: 4, backgroundColor: '#6A2F12', borderWidth: 1.5, borderColor: '#fff' },
 });
-

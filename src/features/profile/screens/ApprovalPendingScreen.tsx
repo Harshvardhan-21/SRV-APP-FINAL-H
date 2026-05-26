@@ -7,7 +7,7 @@ import { createShadow } from '@/shared/theme/shadows';
 import type { UserRole } from '@/shared/types/navigation';
 
 type ApprovalPendingScreenProps = {
-  role: Extract<UserRole, 'dealer' | 'counterboy'>;
+  role: Extract<UserRole, 'dealer'>;
   supportPhone?: string | null;
   whatsappNumber?: string | null;
   onUseAnotherNumber?: () => void;
@@ -22,16 +22,6 @@ const ROLE_THEME = {
     soft: '#EAF3FF',
     chip: '#DCEAFF',
     glow: 'rgba(33,77,153,0.18)',
-    support: '#0F766E',
-  },
-  counterboy: {
-    shell: '#F8F1EA',
-    hero: ['#FFF9F5', '#F2E4D7', '#E8D3C2'] as [string, string, string],
-    accent: '#8B3C2A',
-    accentDeep: '#6F4E37',
-    soft: '#F5EDE4',
-    chip: '#EEDDD2',
-    glow: 'rgba(139,60,42,0.16)',
     support: '#0F766E',
   },
 } as const;
@@ -55,7 +45,7 @@ export function ApprovalPendingScreen({
   const safePhone = sanitizePhone(supportPhone);
   const safeWhatsapp = sanitizeWhatsapp(whatsappNumber || supportPhone);
 
-  const roleLabel = role === 'dealer' ? 'Dealer' : 'Counter Boy';
+  const roleLabel = 'Dealer';
   const statusRows = useMemo(
       () => [
         'Your account request has been received',
@@ -95,7 +85,7 @@ export function ApprovalPendingScreen({
             </Text>
           </View>
           <View style={[styles.roleChip, { backgroundColor: '#FFFFFF' }]}>
-            <AppIcon name={role === 'dealer' ? 'building' : 'star'} size={15} color={roleTheme.accent} />
+            <AppIcon name="building" size={15} color={roleTheme.accent} />
             <Text style={[styles.roleChipText, { color: roleTheme.accentDeep }]}>{roleLabel}</Text>
           </View>
         </View>

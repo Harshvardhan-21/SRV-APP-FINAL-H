@@ -103,7 +103,9 @@ function normalizeCbHomeCategory(id: string) {
 
 function getCbHomeCatImage(id: string, apiImageUrl?: string | null) {
   const remoteUrl = resolveRemoteImageUrl(apiImageUrl);
-  if (remoteUrl) return remoteUrl;
+  // Skip if it looks like a logo or profile photo
+  const isLogoLike = remoteUrl && /logo|profile|avatar|white\.jpe?g|white\.png/i.test(remoteUrl);
+  if (remoteUrl && !isLogoLike) return remoteUrl;
 
   const idLower = id.toLowerCase();
   if (idLower.includes('bus') || idLower.includes('bar')) return CB_HOME_CAT_IMAGES.busbar;
@@ -380,7 +382,7 @@ export function HomeScreen({
               <TouchableOpacity
                 key={cat.id}
                 style={[styles.cbCatCard, darkMode ? styles.cbCatCardDark : null, { width: catCardW }]}
-                onPress={() => onOpenProductCategory(cat.id)}
+                onPress={() => onOpenProductCategory(cat.targetCategoryId ?? cat.id)}
                 activeOpacity={0.88}
               >
                 <View style={[styles.cbCatImgZone, darkMode ? styles.cbCatImgZoneDark : null]}>
@@ -429,20 +431,21 @@ export function HomeScreen({
   const catCardW = Math.floor((width - 28 - 12) / 2);
 
   const browseCategoriesFour = useMemo(() => {
-    const merged = new Map<string, { id: string; label: string; imageUrl?: string | null }>();
+    const merged = new Map<string, { targetCategoryId: string }>();
     ctxCategories.forEach((category) => {
       const rawId = category.categoryId ?? (category as any).slug ?? category.label ?? category.id;
       const id = normalizeCbHomeCategory(String(rawId ?? ''));
       if (!CB_HOME_CATEGORY_ORDER.includes(id as (typeof CB_HOME_CATEGORY_ORDER)[number])) return;
       merged.set(id, {
-        id,
-        label: category.label || CB_HOME_LABELS[id] || id,
-        imageUrl: category.imageUrl ?? null,
+        targetCategoryId: String(category.id ?? rawId ?? id),
       });
     });
-    return CB_HOME_CATEGORY_ORDER.map(
-      (id) => merged.get(id) ?? { id, label: CB_HOME_LABELS[id] ?? id, imageUrl: null }
-    );
+    return CB_HOME_CATEGORY_ORDER.map((id) => ({
+      id,
+      targetCategoryId: merged.get(id)?.targetCategoryId ?? id,
+      label: CB_HOME_LABELS[id] ?? id,
+      imageUrl: null,
+    }));
   }, [ctxCategories]);
 
   return (
