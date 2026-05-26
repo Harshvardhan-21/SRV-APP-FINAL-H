@@ -1613,7 +1613,8 @@ export function OnboardingScreen({
     dealerApi.getByPhone(signupDealerPhone)
       .then((dealer) => {
         setDealerVerified(true);
-        setVerifiedDealerName(dealer.name);
+        const resolvedName = dealer.businessName || dealer.contactPerson || dealer.name;
+        setVerifiedDealerName(resolvedName);
         setVerifiedDealerCode(dealer.dealerCode ?? '');
         const nextSerial = Number(dealer.nextElectricianSerial ?? dealer.electricianCount ?? 0) + 1;
         setVerifiedDealerNextSerial(String(nextSerial).padStart(3, '0'));
@@ -2973,24 +2974,13 @@ export function OnboardingScreen({
                               />
                             ) : null}
                             {signupStep === 'dealer' && dealerVerified ? (
-                              <>
-                                <Info
-                                  text={`${verifiedDealerName} ${tx('verification successfully done.')}`}
-                                  kind="success"
-                                />
-                                <View style={s.verifiedDealerCard}>
-                                  <View style={s.verifiedDealerCardMain}>
-                                    <Text style={s.verifiedDealerCardLabel}>{tx('Dealer Name')}</Text>
-                                    <Text style={s.verifiedDealerCardValue}>{verifiedDealerName}</Text>
-                                  </View>
-                                  {verifiedDealerCode ? (
-                                    <View style={s.verifiedDealerCodeChip}>
-                                      <Text style={s.verifiedDealerCodeLabel}>{tx('Dealer Code')}</Text>
-                                      <Text style={s.verifiedDealerCodeValue}>{verifiedDealerCode}</Text>
-                                    </View>
-                                  ) : null}
+                              <View style={s.verifiedDealerCard}>
+                                <View style={s.verifiedDealerCardMain}>
+                                  <Text style={s.verifiedDealerCardLabel}>{tx('Connected Dealer')}</Text>
+                                  <Text style={s.verifiedDealerBusinessLabel}>{tx('Business Name *')}</Text>
+                                  <Text style={s.verifiedDealerCardValue}>{verifiedDealerName}</Text>
                                 </View>
-                              </>
+                              </View>
                             ) : null}
                             {dealerVerified && signupStep === 'dealer' ? (
                               <Button
@@ -3829,6 +3819,14 @@ const s = StyleSheet.create({
     fontWeight: '800',
     textTransform: 'uppercase',
     letterSpacing: 0.8,
+  },
+  verifiedDealerBusinessLabel: {
+    color: C.muted2,
+    fontSize: 11,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    marginTop: 8,
   },
   verifiedDealerCardValue: { color: C.text, fontSize: 14, fontWeight: '900' },
   verifiedDealerCodeChip: {

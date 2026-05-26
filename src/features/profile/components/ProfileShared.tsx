@@ -114,7 +114,9 @@ export type IconName =
   | 'location'
   | 'search'
   | 'trash'
-  | 'alert';
+  | 'alert'
+  | 'close'
+  | 'refresh';
 
 export function AppIcon({
   name,
@@ -780,6 +782,35 @@ export function AppIcon({
         <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
           <Circle cx="11" cy="11" r="6.5" stroke={color} strokeWidth={strokeWidth} />
           <Path d="M16 16l4 4" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" />
+        </Svg>
+      );
+    case 'close':
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+          <Path
+            d="M6 6l12 12M18 6L6 18"
+            stroke={color}
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+          />
+        </Svg>
+      );
+    case 'refresh':
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+          <Path
+            d="M4 12a8 8 0 018-8 8 8 0 016.9 4M20 12a8 8 0 01-8 8 8 8 0 01-6.9-4"
+            stroke={color}
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+          />
+          <Path
+            d="M19 4v4h-4M5 20v-4h4"
+            stroke={color}
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </Svg>
       );
     default:
