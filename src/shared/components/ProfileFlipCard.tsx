@@ -216,8 +216,8 @@ export default function ProfileFlipCard({ profile, role = 'electrician', photoUr
   );
 
   useEffect(() => {
-    const showBack = setTimeout(() => animateTo(true), 4500);
-    const showFront = setTimeout(() => animateTo(false), 9000);
+    const showBack = setTimeout(() => animateTo(true), 8000);
+    const showFront = setTimeout(() => animateTo(false), 13000);
     return () => {
       clearTimeout(showBack);
       clearTimeout(showFront);

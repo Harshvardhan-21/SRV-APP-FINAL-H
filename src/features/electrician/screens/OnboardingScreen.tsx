@@ -1295,6 +1295,15 @@ export function OnboardingScreen({
         signupTermsAgreed
       );
     }
+    if (role === 'counterboy') {
+      return (
+        signupName.trim().length >= 3 &&
+        signupPhone.length === 10 &&
+        signupOtpVerified &&
+        signupPasswordReady &&
+        signupTermsAgreed
+      );
+    }
     return (
       signupName.trim().length >= 3 &&
       dealerVerified &&
@@ -1451,6 +1460,22 @@ export function OnboardingScreen({
         return;
       }
 
+      if (role === 'counterboy') {
+        const res = await authApi.registerCounterBoy({
+          name: signupName.trim(),
+          phone: signupPhone,
+          email: signupEmail.trim() || undefined,
+          city: signupCity.trim() || undefined,
+          district: signupCity.trim() || undefined,
+          state: signupState.trim() || undefined,
+          address: signupAddress.trim() || undefined,
+          pincode: signupPincode.trim() || undefined,
+          password: signupPass.trim() || undefined,
+        });
+        finishLogin(res.user);
+        return;
+      }
+
       const res = await authApi.registerElectrician({
         name: signupName.trim(),
         phone: signupPhone,
@@ -1481,7 +1506,7 @@ export function OnboardingScreen({
         }
       } else if (message.toLowerCase().includes('otp')) {
         setError('signupOtp', message);
-      } else if (message.toLowerCase().includes('dealer')) {
+      } else if (role === 'electrician' && message.toLowerCase().includes('dealer')) {
         setError('signupDealerPhone', message);
       } else {
         setError('signupPhone', message);
@@ -1616,7 +1641,7 @@ export function OnboardingScreen({
         if (res.devOtp) {
           setError('signupPhone', `Dev OTP: ${res.devOtp}`);
         }
-        if (role === 'electrician') setSignupStep('otp');
+        if (role === 'electrician' || role === 'counterboy') setSignupStep('otp');
       })
       .catch((err: Error) => {
         setError('signupPhone', err.message || 'Could not send OTP. Please try again.');
@@ -1708,7 +1733,7 @@ export function OnboardingScreen({
       if (signupAddress.trim().length < 5)
         return setError('signupAddress', 'Please fill the address field.');
       setError('signupAddress');
-      setSignupStep('dealer');
+      setSignupStep(role === 'electrician' ? 'dealer' : 'password');
       return;
     }
     if (signupStep === 'dealer') {

@@ -1,7 +1,6 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  Alert,
   Animated,
   Easing,
   Image,
@@ -96,7 +95,9 @@ function normalizeHomeCategory(id: string) {
 
 function getCatImage(id: string, apiImageUrl?: string | null) {
   const remoteUrl = resolveRemoteImageUrl(apiImageUrl);
-  if (remoteUrl) return remoteUrl;
+  // Skip API image if it looks like a logo, profile photo, or non-product asset
+  const isLogoLike = remoteUrl && /logo|profile|avatar|white\.jpe?g|white\.png/i.test(remoteUrl);
+  if (remoteUrl && !isLogoLike) return remoteUrl;
 
   const idLower = id.toLowerCase();
   if (idLower.includes('bus') || idLower.includes('bar')) return CAT_IMAGES.busbar;
@@ -241,10 +242,13 @@ function ChevronRight({ color = '#173E80', size = 16 }: { color?: string; size?:
   );
 }
 
-function AnimatedCatImage({ uri, size }: { uri: string; size: number }) {
+function AnimatedCatImage({ uri, fallbackUri, size }: { uri: string; fallbackUri?: string; size: number }) {
   const floatY = useRef(new Animated.Value(0)).current;
   const imgScale = useRef(new Animated.Value(1)).current;
   const rotateZ = useRef(new Animated.Value(0)).current;
+  const [imgSrc, setImgSrc] = useState(uri);
+
+  useEffect(() => { setImgSrc(uri); }, [uri]);
 
   useEffect(() => {
     const floatLoop = Animated.loop(Animated.sequence([
@@ -275,7 +279,14 @@ function AnimatedCatImage({ uri, size }: { uri: string; size: number }) {
   return (
     <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
       <Animated.View style={{ transform: [{ translateY: floatY }, { scale: imgScale }, { rotate: swayDeg }] }}>
-        <Image source={{ uri }} style={{ width: size, height: size }} resizeMode="contain" />
+        <Image
+          source={{ uri: imgSrc }}
+          style={{ width: size, height: size }}
+          resizeMode="contain"
+          onError={() => {
+            if (fallbackUri && imgSrc !== fallbackUri) setImgSrc(fallbackUri);
+          }}
+        />
       </Animated.View>
     </View>
   );
@@ -305,6 +316,8 @@ function HomeCategoryCard({
   const imgUri = cat._fallbackImg && !cat.imageUrl
     ? cat._fallbackImg
     : getCatImage(cat.id, cat.imageUrl);
+  // Always have a CDN fallback in case the primary URI fails to load
+  const fallbackUri = cat._fallbackImg ?? getCatImage(cat.id, null);
 
   useEffect(() => {
     Animated.parallel([
@@ -341,7 +354,7 @@ function HomeCategoryCard({
           ]}
         >
           <View style={[homeCatStyles.imgZone, { backgroundColor: darkMode ? '#1E293B' : '#FFFFFF' }]}>
-            <AnimatedCatImage uri={imgUri} size={142} />
+            <AnimatedCatImage uri={imgUri} fallbackUri={fallbackUri} size={142} />
           </View>
           <View style={[homeCatStyles.accentLine, { backgroundColor: '#4A637B' }]} />
           <View style={[homeCatStyles.infoZone, darkMode ? homeCatStyles.infoZoneDark : null]}>
@@ -540,14 +553,14 @@ export function HomeScreen({
           cId.includes(term.toLowerCase()) || cLabel.includes(term.toLowerCase())
         );
       });
-      // If DB has an image use it, otherwise always use the hardcoded fallback
-      const imageUrl = found?.imageUrl ?? null;
       return {
-        id: found?.id ?? hardcoded.id,
+        id: hardcoded.id,
+        targetCategoryId: found?.id ?? hardcoded.id,
         label: hardcoded.label,
-        imageUrl: imageUrl,
-        // Pass fallback so HomeCategoryCard can use it when imageUrl is null
-        _fallbackImg: imageUrl ? undefined : hardcoded.fallbackImg,
+        // Keep homepage hero categories on canonical product visuals so admin/category
+        // logo uploads cannot replace the product image card.
+        imageUrl: hardcoded.fallbackImg,
+        _fallbackImg: hardcoded.fallbackImg,
       };
     });
   }, [categories]);
@@ -708,7 +721,7 @@ export function HomeScreen({
               <HomeCategoryCard
                 key={cat.id} cat={cat} index={index}
                 cardW={catCardW} darkMode={darkMode}
-                onPress={() => onOpenProductCategory(cat.id)}
+                onPress={() => onOpenProductCategory(cat.targetCategoryId ?? cat.id)}
                 buttonLabel={pageContent.cardButtonLabel || 'View Products'}
               />
             ))}

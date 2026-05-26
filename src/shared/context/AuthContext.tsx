@@ -63,10 +63,6 @@ function buildPreviewUser(role: UserRole): UserProfile {
     return {
       ...base,
       userCode: 'CUS-2048',
-      dealerName: 'SRV Dealer Hub',
-      dealerPhone: '9988776655',
-      dealerTown: 'Mansa',
-      dealerCode: 'DLR-1024',
     } as UserProfile;
   }
 
@@ -74,10 +70,6 @@ function buildPreviewUser(role: UserRole): UserProfile {
     return {
       ...base,
       counterboyCode: 'CB-512',
-      dealerName: 'SRV Dealer Hub',
-      dealerPhone: '9988776655',
-      dealerTown: 'Mansa',
-      dealerCode: 'DLR-1024',
     } as UserProfile;
   }
 

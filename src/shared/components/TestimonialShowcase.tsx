@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   Easing,
+  Image,
   Modal,
   Pressable,
   ScrollView,
@@ -24,6 +25,7 @@ export type TestimonialItem = {
   colors: readonly [string, string, string];
   ring: string;
   glow: string;
+  profileImage?: string | null;
 };
 
 const TESTIMONIAL_THEME_PRESETS = [
@@ -229,7 +231,15 @@ function TestimonialCard({
             ]}
           >
             <View style={[styles.avatarInner, { backgroundColor: item.glow }]}>
-              <Text style={[styles.initials, { color: item.ring }]}>{item.initials}</Text>
+              {item.profileImage ? (
+                <Image
+                  source={{ uri: item.profileImage }}
+                  style={styles.avatarImage}
+                  resizeMode="cover"
+                />
+              ) : (
+                <Text style={[styles.initials, { color: item.ring }]}>{item.initials}</Text>
+              )}
             </View>
           </Animated.View>
         </LinearGradient>
@@ -329,7 +339,15 @@ function DetailCard({
             >
               <View style={[styles.detailAvatarOuter, { borderColor: item.ring }]}>
                 <View style={[styles.detailAvatarInner, { backgroundColor: item.glow }]}>
-                  <Text style={[styles.detailInitials, { color: item.ring }]}>{item.initials}</Text>
+                  {item.profileImage ? (
+                    <Image
+                      source={{ uri: item.profileImage }}
+                      style={styles.detailAvatarImage}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <Text style={[styles.detailInitials, { color: item.ring }]}>{item.initials}</Text>
+                  )}
                 </View>
               </View>
             </LinearGradient>
@@ -561,6 +579,11 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '900',
   },
+  avatarImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+  },
   cardBody: {
     paddingHorizontal: 12,
     paddingTop: 10,
@@ -678,6 +701,11 @@ const styles = StyleSheet.create({
   detailInitials: {
     fontSize: 22,
     fontWeight: '900',
+  },
+  detailAvatarImage: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
   },
   detailInfo: {
     flex: 1,

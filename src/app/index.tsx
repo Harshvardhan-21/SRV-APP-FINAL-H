@@ -66,8 +66,8 @@ type OnboardingStartOptions = {
   passwordValue?: string;
 };
 
-function roleNeedsAdminApproval(role: UserRole | null | undefined): role is 'dealer' | 'counterboy' {
-  return role === 'dealer' || role === 'counterboy';
+function roleNeedsAdminApproval(role: UserRole | null | undefined): role is 'dealer' {
+  return role === 'dealer';
 }
 
 function isApprovedAccountStatus(status?: string | null) {
@@ -140,7 +140,6 @@ function AppContent() {
   useAppPreviewBridge();
   const previewState = useAppPreviewState();
   const [currentScreen, setCurrentScreen] = useState<Screen>('home');
-  const [screenResetKey, setScreenResetKey] = useState(0);
   const [showOnboarding, setShowOnboarding] = useState(!previewState.enabled);
   const [currentRole, setCurrentRole] = useState<UserRole>('electrician');
   const [authResolved, setAuthResolved] = useState(false);
@@ -300,10 +299,7 @@ function AppContent() {
       }
 
       if (screen === currentScreen) {
-        // Don't reset key for electricians screen — it causes unnecessary re-mount
-        if (screen !== 'electricians') {
-          setScreenResetKey((current) => current + 1);
-        }
+        return;
       }
 
       if (screen === 'product') {
@@ -1044,6 +1040,7 @@ function AppContent() {
     handleUseAnotherApprovalNumber,
     profileInitialSubPage,
     isPreviewMode,
+    user?.kycStatus,
   ]);
 
   if (showOnboarding && !isPreviewMode) {
@@ -1068,7 +1065,7 @@ function AppContent() {
       <View style={[styles.root, { backgroundColor: appTheme.bg }]}>
         <SafeAreaView style={[styles.safeArea, { backgroundColor: appTheme.bg }]} edges={['top']}>
           <ExpoStatusBar style={statusBarStyle} />
-          <View style={styles.content} key={`${currentRole}-${currentScreen}-${screenResetKey}`}>
+          <View style={styles.content}>
             {activeScreen}
           </View>
         </SafeAreaView>

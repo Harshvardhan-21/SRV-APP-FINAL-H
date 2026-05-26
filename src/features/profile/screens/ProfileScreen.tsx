@@ -187,12 +187,12 @@ export function ProfileScreen({
       gstNumber: authUser.gstNumber ?? '',
       panHolderName: '',
       panNumber: '',
-      dealerCode: authUser.dealerCode ?? '',
+      dealerCode: currentRole === 'dealer' ? authUser.dealerCode ?? '' : '',
       electricianCode: authUser.electricianCode ?? '',
       counterboyCode: authUser.counterboyCode ?? '',
       userCode: authUser.userCode ?? '',
     };
-  }, [authUser]);
+  }, [authUser, currentRole]);
 
   const [profile, setProfile] = useState<Profile>(buildProfileFromAuth);
   const [draft, setDraft] = useState<Profile>(buildProfileFromAuth);
@@ -1419,26 +1419,26 @@ export function ProfileScreen({
                         ? tx('Electrician Code')
                         : currentRole === 'counterboy'
                           ? tx('Counter Boy ID')
-                          : currentRole === 'user'
-                            ? tx('Customer ID')
-                            : tx('Dealer Code')}
+                        : currentRole === 'user'
+                          ? tx('Customer ID')
+                          : tx('Dealer Code')}
                     </Text>
-                  <View
-                    style={[
-                      styles.readOnlyField,
-                      { borderColor: theme.border, backgroundColor: theme.soft },
-                    ]}
-                  >
-                    <Text style={[styles.readOnlyText, { color: theme.textMuted }]}>
-                      {currentRole === 'electrician'
-                        ? profile.electricianCode
-                        : currentRole === 'counterboy'
-                          ? profile.counterboyCode || authUser?.counterboyCode || '—'
-                          : currentRole === 'user'
-                            ? profile.userCode || authUser?.userCode || '—'
-                            : profile.dealerCode}
-                    </Text>
-                  </View>
+                    <View
+                      style={[
+                        styles.readOnlyField,
+                        { borderColor: theme.border, backgroundColor: theme.soft },
+                      ]}
+                    >
+                      <Text style={[styles.readOnlyText, { color: theme.textMuted }]}>
+                        {currentRole === 'electrician'
+                          ? profile.electricianCode
+                          : currentRole === 'counterboy'
+                            ? profile.counterboyCode || authUser?.counterboyCode || '—'
+                            : currentRole === 'user'
+                              ? profile.userCode || authUser?.userCode || '—'
+                              : profile.dealerCode}
+                      </Text>
+                    </View>
                   </View>
                 </ScrollView>
                 <View style={styles.editActions}>

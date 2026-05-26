@@ -29,6 +29,30 @@ function sanitizeDealerSignupPayload(data: {
   };
 }
 
+function sanitizeCounterBoySignupPayload(data: {
+  name: string;
+  phone: string;
+  email?: string;
+  city?: string;
+  state?: string;
+  district?: string;
+  address?: string;
+  pincode?: string;
+  password?: string;
+}) {
+  return {
+    name: data.name.trim(),
+    phone: data.phone.trim(),
+    email: data.email?.trim() || undefined,
+    city: data.city?.trim() || undefined,
+    state: data.state?.trim() || undefined,
+    district: data.district?.trim() || undefined,
+    address: data.address?.trim() || undefined,
+    pincode: data.pincode?.trim() || undefined,
+    password: data.password?.trim() || undefined,
+  };
+}
+
 function sanitizeUserProfileUpdatePayload(data: Partial<UserProfile>) {
   return {
     name: data.name,
@@ -166,6 +190,10 @@ export const authApi = {
     email?: string;
     password?: string;
     role: 'electrician' | 'dealer' | 'user' | 'counterboy';
+    address?: string;
+    state?: string;
+    city?: string;
+    pincode?: string;
   }) => {
     if (data.role === 'dealer') {
       return authApi.registerDealer({
@@ -185,6 +213,11 @@ export const authApi = {
         phone: data.phone,
         email: data.email,
         password: data.password,
+        address: data.address,
+        state: data.state,
+        city: data.city,
+        district: data.city,
+        pincode: data.pincode,
       });
     }
     if (data.role === 'user') {
@@ -193,6 +226,11 @@ export const authApi = {
         phone: data.phone,
         email: data.email,
         password: data.password,
+        address: data.address,
+        state: data.state,
+        city: data.city,
+        district: data.city,
+        pincode: data.pincode,
       });
     }
     return authApi.registerElectrician({
@@ -327,12 +365,11 @@ export const authApi = {
     district?: string;
     address?: string;
     pincode?: string;
-    dealerPhone?: string;
     password?: string;
   }) => {
     const res = await api.post<{ accessToken: string; refreshToken: string; user: UserProfile }>(
       '/mobile/auth/signup/counterboy',
-      data
+      sanitizeCounterBoySignupPayload(data)
     );
     await storage.setTokens(res.accessToken, res.refreshToken);
     await storage.setUserProfile(res.user);
@@ -598,6 +635,7 @@ export const profileApi = {
     // Map documentType to the correct profile field and save to DB
     const fieldMap: Record<string, string> = {
       'aadhar-front': 'aadharFrontImage',
+      'aadhar-back':  'aadharFrontImage',
       'pan':          'panDocument',
       'gst':          'gstDocument',
     };

@@ -1,10 +1,11 @@
 // Customer Auth Screen â€” Role-aware account design
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  Animated, Easing, Image, KeyboardAvoidingView, Platform,
+  Animated, Easing, Image, KeyboardAvoidingView, Linking, Platform,
   Pressable, ScrollView, StyleSheet, Text, TextInput, View, Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Location from 'expo-location';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePreferenceContext } from '@/shared/preferences';
@@ -28,6 +29,7 @@ const LockIcon  = ({ c = '#6A2F12', s = 20 }) => <Svg width={s} height={s} viewB
 const EyeIcon   = ({ c = '#9CA3AF', s = 18 }) => <Svg width={s} height={s} viewBox="0 0 24 24" fill="none"><Path d="M2.5 12s3.3-5 9.5-5 9.5 5 9.5 5-3.3 5-9.5 5-9.5-5-9.5-5z" stroke={c} strokeWidth={1.8}/><Circle cx="12" cy="12" r="3" stroke={c} strokeWidth={1.8}/></Svg>;
 const EyeOffIcon= ({ c = '#9CA3AF', s = 18 }) => <Svg width={s} height={s} viewBox="0 0 24 24" fill="none"><Path d="M3 3l18 18" stroke={c} strokeWidth={1.8} strokeLinecap="round"/><Path d="M10.6 5.2c.5-.1.9-.2 1.4-.2 6.2 0 9.5 5 9.5 5a15.5 15.5 0 01-3.4 3.6M6.3 6.3A15.7 15.7 0 002.5 12s3.3 5 9.5 5c1 0 1.9-.1 2.7-.4" stroke={c} strokeWidth={1.8} strokeLinecap="round"/></Svg>;
 const SwitchRoleIcon = ({ c = '#fff', s = 16 }) => <Svg width={s} height={s} viewBox="0 0 24 24" fill="none"><Path d="M7 16H3m0 0l3-3m-3 3l3 3" stroke={c} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/><Path d="M17 8h4m0 0l-3-3m3 3l-3 3" stroke={c} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/><Path d="M3 8h10M11 16h10" stroke={c} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" strokeDasharray="3 2"/></Svg>;
+const LocationIcon = ({ c = '#6A2F12', s = 20 }) => <Svg width={s} height={s} viewBox="0 0 24 24" fill="none"><Path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" stroke={c} strokeWidth={1.8}/><Circle cx="12" cy="9" r="2.5" stroke={c} strokeWidth={1.8}/></Svg>;
 const ArrowRight  = ({ c = '#fff', s = 18 }) => <Svg width={s} height={s} viewBox="0 0 24 24" fill="none"><Path d="M5 12h14M13 6l6 6-6 6" stroke={c} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/></Svg>;
 
 // â”€â”€ Floating orbs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -148,6 +150,17 @@ export function UserAuthScreen({
   const sEmailRef = useRef<TextInput>(null);
   const sOtpRef   = useRef<TextInput>(null);
   const sPwdRef   = useRef<TextInput>(null);
+  const sAddressRef = useRef<TextInput>(null);
+  const sStateRef   = useRef<TextInput>(null);
+  const sCityRef    = useRef<TextInput>(null);
+  const sPincodeRef = useRef<TextInput>(null);
+
+  const [sAddress, setSAddress] = useState('');
+  const [sState, setSState]     = useState('');
+  const [sCity, setSCity]       = useState('');
+  const [sPincode, setSPincode] = useState('');
+  const [locationLoading, setLocationLoading] = useState(false);
+  const [locationMessage, setLocationMessage] = useState('');
 
   const normalizePhone = (value: string) => {
     const digits = value.trim().replace(/\D/g, '');
@@ -156,6 +169,79 @@ export function UserAuthScreen({
     }
     return digits.slice(-10);
   };
+
+  const requestCurrentLocation = useCallback(async () => {
+    if (locationLoading) return;
+    setLocationLoading(true);
+    setLocationMessage('');
+    try {
+      let permission = await Location.getForegroundPermissionsAsync();
+      if (!permission.granted) {
+        permission = await Location.requestForegroundPermissionsAsync();
+      }
+      const hasPermission =
+        permission.granted ||
+        permission.status === 'granted' ||
+        (Platform.OS === 'android' && permission.android?.accuracy !== 'none');
+      if (!hasPermission) {
+        if (permission.canAskAgain) {
+          Alert.alert('', tx('Please allow location permission to fetch your current address automatically.'));
+        } else {
+          Alert.alert('', tx('Location permission is blocked. Opening app settings so you can allow it.'));
+          await Linking.openSettings();
+        }
+        return;
+      }
+      const servicesEnabled = await Location.hasServicesEnabledAsync();
+      if (!servicesEnabled) {
+        if (Platform.OS === 'android') {
+          try { await Location.enableNetworkProviderAsync(); } catch {
+            Alert.alert('', tx('Please turn on device location to fetch the current address automatically.'));
+            return;
+          }
+        } else {
+          Alert.alert('', tx('Please turn on device location to fetch the current address automatically.'));
+          return;
+        }
+      }
+      let pos = await Location.getLastKnownPositionAsync({ maxAge: 1000 * 60 * 10, requiredAccuracy: 500 });
+      if (!pos) {
+        pos = await Location.getCurrentPositionAsync({
+          accuracy: Platform.OS === 'android' ? Location.Accuracy.Balanced : Location.Accuracy.High,
+          mayShowUserSettingsDialog: true,
+        });
+      }
+      const lookup = await Location.reverseGeocodeAsync({ latitude: pos.coords.latitude, longitude: pos.coords.longitude });
+      if (!lookup || lookup.length === 0) {
+        Alert.alert('', tx('Could not find address for your location. Please enter manually.'));
+        return;
+      }
+      const addr = lookup[0];
+      if (!addr) { Alert.alert('', tx('Address details not found. Please enter manually.')); return; }
+      const parts: string[] = [];
+      if (addr.formattedAddress) parts.push(addr.formattedAddress);
+      if (addr.name) parts.push(addr.name);
+      if (addr.streetNumber) parts.push(addr.streetNumber);
+      if (addr.street) parts.push(addr.street);
+      if (addr.district) parts.push(addr.district);
+      if (addr.city) parts.push(addr.city);
+      if (addr.subregion) parts.push(addr.subregion);
+      if (addr.region) parts.push(addr.region);
+      const resolvedAddress = parts.map(p => p.trim()).filter(Boolean).filter((p, i, a) => a.indexOf(p) === i).join(', ');
+      const resolvedState   = addr.region || '';
+      const resolvedCity    = addr.city || addr.district || addr.subregion || '';
+      const resolvedPincode = addr.postalCode || '';
+      if (resolvedAddress) setSAddress(resolvedAddress);
+      if (resolvedState)   setSState(resolvedState);
+      if (resolvedCity)    setSCity(resolvedCity);
+      if (resolvedPincode) setSPincode(resolvedPincode.replace(/\D/g, '').slice(0, 6));
+      setLocationMessage(tx('Address fetched successfully. Please review and update if needed.'));
+    } catch {
+      Alert.alert('', tx('Could not fetch location. Please enter address manually.'));
+    } finally {
+      setLocationLoading(false);
+    }
+  }, [locationLoading, tx]);
 
   const bg   = darkMode ? '#0F172A' : '#EEF3F8';
   const card = darkMode ? '#1E293B' : '#FFFFFF';
@@ -355,6 +441,10 @@ export function UserAuthScreen({
         email: sEmail.trim() || undefined,
         password: sPwd.trim() || undefined,
         role,
+        address: sAddress.trim() || undefined,
+        state: sState.trim() || undefined,
+        city: sCity.trim() || undefined,
+        pincode: sPincode.trim() || undefined,
       });
       (globalThis as typeof globalThis & { __srvLoginUser?: unknown }).__srvLoginUser = registerData.user;
       onAuthenticated(role, { passwordConfigured: !!sPwd.trim(), passwordValue: sPwd.trim() });
@@ -501,6 +591,95 @@ export function UserAuthScreen({
                 onSubmit={() => sPwdRef.current?.focus()} darkMode={darkMode} accentColor={P1} />
             )}
             
+            {/* Signup: Address with location fetch */}
+            {!isLogin && otpSentSignup && (
+              <View style={{ gap: 8 }}>
+                <View style={S.inputWrap}>
+                  <Text style={[S.inputLabel, { color: darkMode ? '#94A3B8' : '#6B7280' }]}>{tx('Address')} ({tx('optional')})</Text>
+                  <View style={[S.inputRow, { backgroundColor: darkMode ? '#1E293B' : '#FAFAFA', borderColor: darkMode ? '#334155' : '#E5E7EB' }]}>
+                    <View style={S.inputIcon}><LocationIcon c={P1} /></View>
+                    <TextInput
+                      ref={sAddressRef}
+                      style={[S.inputText, { color: darkMode ? '#F1F5F9' : '#111827' }]}
+                      value={sAddress}
+                      onChangeText={setSAddress}
+                      placeholder={locationLoading ? tx('Fetching current address...') : tx('Enter your complete address')}
+                      placeholderTextColor={darkMode ? '#475569' : '#9CA3AF'}
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      onSubmitEditing={() => sStateRef.current?.focus()}
+                      returnKeyType="next"
+                    />
+                    <Pressable
+                      onPress={() => { void requestCurrentLocation(); }}
+                      disabled={locationLoading}
+                      style={[S.locationBtn, locationLoading ? { opacity: 0.5 } : null]}
+                    >
+                      <Text style={[S.locationBtnText, { color: P1 }]}>
+                        {locationLoading ? tx('Locating') : tx('Current Address')}
+                      </Text>
+                    </Pressable>
+                  </View>
+                </View>
+                {locationMessage ? (
+                  <View style={[S.infoBox, { backgroundColor: '#EAF8EF', borderColor: '#A7F3D0' }]}>
+                    <Text style={{ color: '#1F9C5D', fontSize: 12, fontWeight: '600' }}>{locationMessage}</Text>
+                  </View>
+                ) : null}
+                <View style={{ flexDirection: 'row', gap: 8 }}>
+                  <View style={[S.inputWrap, { flex: 1 }]}>
+                    <Text style={[S.inputLabel, { color: darkMode ? '#94A3B8' : '#6B7280' }]}>{tx('State')}</Text>
+                    <View style={[S.inputRow, { backgroundColor: darkMode ? '#1E293B' : '#FAFAFA', borderColor: darkMode ? '#334155' : '#E5E7EB' }]}>
+                      <TextInput
+                        ref={sStateRef}
+                        style={[S.inputText, { color: darkMode ? '#F1F5F9' : '#111827' }]}
+                        value={sState}
+                        onChangeText={setSState}
+                        placeholder={tx('State')}
+                        placeholderTextColor={darkMode ? '#475569' : '#9CA3AF'}
+                        autoCapitalize="words"
+                        onSubmitEditing={() => sCityRef.current?.focus()}
+                        returnKeyType="next"
+                      />
+                    </View>
+                  </View>
+                  <View style={[S.inputWrap, { flex: 1 }]}>
+                    <Text style={[S.inputLabel, { color: darkMode ? '#94A3B8' : '#6B7280' }]}>{tx('City')}</Text>
+                    <View style={[S.inputRow, { backgroundColor: darkMode ? '#1E293B' : '#FAFAFA', borderColor: darkMode ? '#334155' : '#E5E7EB' }]}>
+                      <TextInput
+                        ref={sCityRef}
+                        style={[S.inputText, { color: darkMode ? '#F1F5F9' : '#111827' }]}
+                        value={sCity}
+                        onChangeText={setSCity}
+                        placeholder={tx('City')}
+                        placeholderTextColor={darkMode ? '#475569' : '#9CA3AF'}
+                        autoCapitalize="words"
+                        onSubmitEditing={() => sPincodeRef.current?.focus()}
+                        returnKeyType="next"
+                      />
+                    </View>
+                  </View>
+                </View>
+                <View style={[S.inputWrap, { width: '50%' }]}>
+                  <Text style={[S.inputLabel, { color: darkMode ? '#94A3B8' : '#6B7280' }]}>{tx('Pincode')}</Text>
+                  <View style={[S.inputRow, { backgroundColor: darkMode ? '#1E293B' : '#FAFAFA', borderColor: darkMode ? '#334155' : '#E5E7EB' }]}>
+                    <TextInput
+                      ref={sPincodeRef}
+                      style={[S.inputText, { color: darkMode ? '#F1F5F9' : '#111827' }]}
+                      value={sPincode}
+                      onChangeText={(v) => setSPincode(v.replace(/\D/g, '').slice(0, 6))}
+                      placeholder={tx('6-digit pincode')}
+                      placeholderTextColor={darkMode ? '#475569' : '#9CA3AF'}
+                      keyboardType="numeric"
+                      maxLength={6}
+                      onSubmitEditing={() => sPwdRef.current?.focus()}
+                      returnKeyType="next"
+                    />
+                  </View>
+                </View>
+              </View>
+            )}
+
             {!isLogin && otpSentSignup && (
               <Input
                 label={`${tx('Password')} (${tx('optional')})`}
@@ -743,5 +922,19 @@ const S = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   backToOnboardingText: { fontSize: 14, fontWeight: '800' },
+  locationBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: '#EAF3FF',
+    marginLeft: 4,
+  },
+  locationBtnText: { fontSize: 11, fontWeight: '800' },
+  infoBox: {
+    borderRadius: 8,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+  },
 });
 

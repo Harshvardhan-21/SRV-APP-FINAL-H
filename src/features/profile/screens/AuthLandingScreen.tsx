@@ -109,7 +109,8 @@ export function AuthLandingScreen({
       style={[styles.screen, { backgroundColor: roleTheme.shell }]}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
-    >      <LinearGradient colors={[roleTheme.p1, roleTheme.p2, roleTheme.p3]} style={styles.heroCard}>
+    >
+      <LinearGradient colors={[roleTheme.p1, roleTheme.p2, roleTheme.p3]} style={styles.heroCard}>
         <View style={[styles.heroOrbLarge, { backgroundColor: roleTheme.orb }]} />
         <View style={[styles.heroOrbSmall, { backgroundColor: roleTheme.orb }]} />
         <View style={styles.logoWrap}>
@@ -395,5 +396,4 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
 });
-
 

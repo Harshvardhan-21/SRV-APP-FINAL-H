@@ -117,8 +117,11 @@ function getCatImage(id: string, apiImageUrl?: string | null): string {
   // Try with original ID
   if (CAT_IMAGES[id]) return CAT_IMAGES[id];
   
-  // Try API image URL
-  if (apiImageUrl) return apiImageUrl;
+  // Try API image URL — skip if it looks like a logo or profile photo
+  if (apiImageUrl) {
+    const isLogoLike = /logo|profile|avatar|white\.jpe?g|white\.png/i.test(apiImageUrl);
+    if (!isLogoLike) return apiImageUrl;
+  }
   
   // Try to match by keywords for specific categories
   const idLower = id.toLowerCase();
@@ -164,11 +167,14 @@ function resolveRemoteImageUrl(value?: string | null): string | null {
 }
 
 // ── Animated Category Image (float + breathe + sway + shimmer — same as ProductScreen) ─
-function AnimatedCatImage({ uri, size }: { uri: string; size: number }) {
+function AnimatedCatImage({ uri, fallbackUri, size }: { uri: string; fallbackUri?: string; size: number }) {
   const floatY   = useRef(new Animated.Value(0)).current;
   const imgScale = useRef(new Animated.Value(1)).current;
   const rotateZ  = useRef(new Animated.Value(0)).current;
   const shimmerX = useRef(new Animated.Value(-1)).current;
+  const [imgSrc, setImgSrc] = useState(uri);
+
+  useEffect(() => { setImgSrc(uri); }, [uri]);
 
   useEffect(() => {
     const floatLoop = Animated.loop(Animated.sequence([
@@ -205,7 +211,9 @@ function AnimatedCatImage({ uri, size }: { uri: string; size: number }) {
         transform: [{ translateX: shimmerTX }, { rotate: '20deg' }], zIndex: 2,
       }} />
       <Animated.View style={{ transform: [{ translateY: floatY }, { scale: imgScale }, { rotate: swayDeg }] }}>
-        <Image source={{ uri }} style={{ width: size, height: size }} resizeMode="contain" />
+        <Image source={{ uri: imgSrc }} style={{ width: size, height: size }} resizeMode="contain"
+          onError={() => { if (fallbackUri && imgSrc !== fallbackUri) setImgSrc(fallbackUri); }}
+        />
       </Animated.View>
     </View>
   );
@@ -236,6 +244,8 @@ function HomeCategoryCard({
   const imgUri = (cat._fallbackImg && !cat.imageUrl)
     ? cat._fallbackImg
     : getCatImage(cat.id, cat.imageUrl);
+  // Always have a CDN fallback in case the primary URI fails to load
+  const fallbackUri = cat._fallbackImg ?? getCatImage(cat.id, null);
 
   useEffect(() => {
     Animated.parallel([
@@ -273,7 +283,7 @@ function HomeCategoryCard({
         >
           {/* White image zone */}
           <View style={[homeCatStyles.imgZone, { backgroundColor: darkMode ? '#1E293B' : '#FFFFFF' }]}>
-            <AnimatedCatImage uri={imgUri} size={homeCatStyles.imgZone.height - 8} />
+            <AnimatedCatImage uri={imgUri} fallbackUri={fallbackUri} size={homeCatStyles.imgZone.height - 8} />
           </View>
           {/* Accent line */}
           <View style={[homeCatStyles.accentLine, { backgroundColor: '#4A637B' }]} />
@@ -584,14 +594,12 @@ export function HomeScreen({
           cId.includes(term.toLowerCase()) || cLabel.includes(term.toLowerCase())
         );
       });
-      // If DB has an image use it, otherwise always use the hardcoded fallback
-      const imageUrl = found?.imageUrl ?? null;
       return {
-        id: found?.id ?? hardcoded.id,
+        id: hardcoded.id,
+        targetCategoryId: found?.id ?? hardcoded.id,
         label: hardcoded.label,
-        imageUrl: imageUrl,
-        // Pass fallback so HomeCategoryCard can use it when imageUrl is null
-        _fallbackImg: imageUrl ? undefined : hardcoded.fallbackImg,
+        imageUrl: hardcoded.fallbackImg,
+        _fallbackImg: hardcoded.fallbackImg,
       };
     });
   }, [categories]);
@@ -722,7 +730,7 @@ export function HomeScreen({
               <HomeCategoryCard
                 key={cat.id} cat={cat} index={index}
                 cardW={catCardW} darkMode={darkMode}
-                onPress={() => onOpenProductCategory(cat.id)}
+                onPress={() => onOpenProductCategory(cat.targetCategoryId ?? cat.id)}
                 buttonLabel={pageContent.cardButtonLabel || 'View Products'}
               />
             ))}
